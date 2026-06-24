@@ -100,7 +100,7 @@ void main() {
 
       // Should identify "Milk" as recurring because it appears twice with same description & amount
       expect(suggestions.length, 1);
-      expect(suggestions[0].description, 'milk');
+      expect(suggestions[0].description, 'Milk');
       expect(suggestions[0].amount, 60.0);
     });
   });
