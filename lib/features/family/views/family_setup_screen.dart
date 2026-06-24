@@ -1,0 +1,174 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:spendly/core/providers/state_providers.dart';
+
+class FamilySetupScreen extends ConsumerStatefulWidget {
+  const FamilySetupScreen({super.key});
+
+  @override
+  ConsumerState<FamilySetupScreen> createState() => _FamilySetupScreenState();
+}
+
+class _FamilySetupScreenState extends ConsumerState<FamilySetupScreen> {
+  final _createController = TextEditingController();
+  final _joinController = TextEditingController();
+  final _createFormKey = GlobalKey<FormState>();
+  final _joinFormKey = GlobalKey<FormState>();
+
+  @override
+  void dispose() {
+    _createController.dispose();
+    _joinController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _createFamily() async {
+    if (!_createFormKey.currentState!.validate()) return;
+    final name = _createController.text.trim();
+    final success = await ref.read(familyProvider.notifier).createFamily(name);
+    if (!mounted) return;
+    if (!success) {
+      _showError(ref.read(familyProvider).error ?? 'Failed to create family');
+    }
+  }
+
+  Future<void> _joinFamily() async {
+    if (!_joinFormKey.currentState!.validate()) return;
+    final code = _joinController.text.trim().toUpperCase();
+    final success = await ref.read(familyProvider.notifier).joinFamily(code);
+    if (!mounted) return;
+    if (!success) {
+      _showError(ref.read(familyProvider).error ?? 'Failed to join family');
+    }
+  }
+
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Theme.of(context).colorScheme.error,
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final familyState = ref.watch(familyProvider);
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Setup Family'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: () => ref.read(authProvider.notifier).signOut(),
+          )
+        ],
+      ),
+      body: familyState.isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+              padding: const EdgeInsets.all(28.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const Text(
+                    'Welcome to Spendly!',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 12),
+                  const Text(
+                    'To start tracking spending, you need to either create a new family group or join an existing one.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 16, color: Colors.grey),
+                  ),
+                  const SizedBox(height: 40),
+
+                  // CARD 1: CREATE FAMILY
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(20.0),
+                      child: Form(
+                        key: _createFormKey,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Text(
+                              'Create a Family',
+                              style: Theme.of(context).textTheme.titleLarge,
+                            ),
+                            const SizedBox(height: 8),
+                            const Text(
+                              'Start a new expense tracking group and invite others.',
+                              style: TextStyle(fontSize: 14, color: Colors.grey),
+                            ),
+                            const SizedBox(height: 16),
+                            TextFormField(
+                              controller: _createController,
+                              decoration: const InputDecoration(
+                                labelText: 'Family Name (e.g. Sharma Family)',
+                                prefixIcon: Icon(Icons.people),
+                              ),
+                              validator: (value) =>
+                                  value == null || value.isEmpty ? 'Please enter a family name' : null,
+                            ),
+                            const SizedBox(height: 16),
+                            ElevatedButton(
+                              onPressed: _createFamily,
+                              child: const Text('CREATE FAMILY'),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+                  const Center(child: Text('— OR —', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey))),
+                  const SizedBox(height: 24),
+
+                  // CARD 2: JOIN FAMILY
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(20.0),
+                      child: Form(
+                        key: _joinFormKey,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Text(
+                              'Join a Family',
+                              style: Theme.of(context).textTheme.titleLarge,
+                            ),
+                            const SizedBox(height: 8),
+                            const Text(
+                              'Enter a family code provided by a family administrator.',
+                              style: TextStyle(fontSize: 14, color: Colors.grey),
+                            ),
+                            const SizedBox(height: 16),
+                            TextFormField(
+                              controller: _joinController,
+                              decoration: const InputDecoration(
+                                labelText: 'Family Code (e.g. FAMILY-1234)',
+                                prefixIcon: Icon(Icons.vpn_key),
+                              ),
+                              validator: (value) =>
+                                  value == null || value.isEmpty ? 'Please enter a family code' : null,
+                            ),
+                            const SizedBox(height: 16),
+                            OutlinedButton(
+                              onPressed: _joinFamily,
+                              child: const Text('JOIN FAMILY'),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+    );
+  }
+}
