@@ -1,30 +1,107 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
-import 'package:spendly/main.dart';
+import 'package:spendly/core/utils/ai_insights.dart';
+import 'package:spendly/core/services/suggestions_service.dart';
+import 'package:spendly/models/expense.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  group('AI Insights Heuristics Tests', () {
+    test('generate returns a notice when budget exceeds 70%', () {
+      final now = DateTime.now();
+      final expenses = [
+        Expense(
+          id: '1',
+          familyId: 'fam_1',
+          createdBy: 'user_1',
+          amount: 8000.0,
+          category: 'Food',
+          description: 'Dinner',
+          paymentMethod: 'UPI',
+          expenseDate: now,
+          createdAt: now,
+          createdByName: 'Dad',
+        ),
+      ];
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+      // Budget limit is 10,000, spend is 8,000 (80%)
+      final insights = AiInsights.generate(expenses, 10000.0);
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+      expect(insights.any((item) => item.contains('used 80%')), isTrue);
+      expect(insights.any((item) => item.contains('Budget notice')), isTrue);
+    });
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    test('generate returns a warning when budget exceeds 90%', () {
+      final now = DateTime.now();
+      final expenses = [
+        Expense(
+          id: '1',
+          familyId: 'fam_1',
+          createdBy: 'user_1',
+          amount: 9500.0,
+          category: 'Rent',
+          description: 'Flat rent',
+          paymentMethod: 'Card',
+          expenseDate: now,
+          createdAt: now,
+          createdByName: 'Dad',
+        ),
+      ];
+
+      // Budget limit is 10,000, spend is 9,500 (95%)
+      final insights = AiInsights.generate(expenses, 10000.0);
+
+      expect(insights.any((item) => item.contains('used 95%')), isTrue);
+      expect(insights.any((item) => item.contains('Budget warning')), isTrue);
+    });
+  });
+
+  group('Smart Suggestions Service Tests', () {
+    test('generateSuggestions identifies recurring patterns', () {
+      final now = DateTime.now();
+      final expenses = [
+        Expense(
+          id: '1',
+          familyId: 'fam_1',
+          createdBy: 'user_1',
+          amount: 60.0,
+          category: 'Food',
+          description: 'Milk',
+          paymentMethod: 'UPI',
+          expenseDate: now,
+          createdAt: now,
+          createdByName: 'Dad',
+        ),
+        Expense(
+          id: '2',
+          familyId: 'fam_1',
+          createdBy: 'user_1',
+          amount: 60.0,
+          category: 'Food',
+          description: 'Milk',
+          paymentMethod: 'UPI',
+          expenseDate: now.subtract(const Duration(days: 1)),
+          createdAt: now,
+          createdByName: 'Dad',
+        ),
+        Expense(
+          id: '3',
+          familyId: 'fam_1',
+          createdBy: 'user_1',
+          amount: 500.0,
+          category: 'Petrol',
+          description: 'Fuel',
+          paymentMethod: 'Cash',
+          expenseDate: now,
+          createdAt: now,
+          createdByName: 'Dad',
+        ),
+      ];
+
+      final suggestions = SuggestionsService.generateSuggestions(expenses);
+
+      // Should identify "Milk" as recurring because it appears twice with same description & amount
+      expect(suggestions.length, 1);
+      expect(suggestions[0].description, 'milk');
+      expect(suggestions[0].amount, 60.0);
+    });
   });
 }
