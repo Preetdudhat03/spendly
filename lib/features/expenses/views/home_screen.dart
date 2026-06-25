@@ -47,13 +47,42 @@ class HomeScreen extends ConsumerWidget {
     // Suggestions
     final suggestions = SuggestionsService.generateSuggestions(expenseState.expenses);
 
+    final connection = ref.watch(connectionProvider);
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(familyState.family?.name ?? 'Spendly'),
+        title: Column(
+          children: [
+            Text(familyState.family?.name ?? 'Spendly'),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 8,
+                  height: 8,
+                  decoration: BoxDecoration(
+                    color: connection == ConnectionStatus.online
+                        ? Colors.green
+                        : (connection == ConnectionStatus.sandbox ? Colors.blue : Colors.amber),
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  connection == ConnectionStatus.online
+                      ? 'Online'
+                      : (connection == ConnectionStatus.sandbox ? 'Offline (Sandbox)' : 'Offline (No Connection)'),
+                  style: const TextStyle(fontSize: 11, color: Colors.grey, fontWeight: FontWeight.normal),
+                ),
+              ],
+            ),
+          ],
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: () {
+              ref.read(connectionProvider.notifier).checkConnection();
               ref.read(familyProvider.notifier).loadFamily();
             },
           ),
