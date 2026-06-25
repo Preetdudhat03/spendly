@@ -16,6 +16,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _passwordController = TextEditingController();
   final _nameController = TextEditingController();
   bool _isSignUp = false;
+  bool _obscurePassword = true;
 
   @override
   void dispose() {
@@ -260,15 +261,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _passwordController,
-                  obscureText: true,
+                  obscureText: _obscurePassword,
                   onChanged: (val) {
                     setState(() {});
                   },
                   decoration: InputDecoration(
                     labelText: 'Password',
                     prefixIcon: const Icon(Icons.lock),
-                    suffixIcon: _isSignUp
-                        ? IconButton(
+                    suffixIcon: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (_isSignUp)
+                          IconButton(
                             icon: const Icon(Icons.vpn_key_outlined, size: 20),
                             tooltip: 'Suggest Strong Password',
                             onPressed: () {
@@ -283,8 +287,21 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 ),
                               );
                             },
-                          )
-                        : null,
+                          ),
+                        IconButton(
+                          icon: Icon(
+                            _obscurePassword ? Icons.visibility : Icons.visibility_off,
+                            size: 20,
+                          ),
+                          tooltip: _obscurePassword ? 'Show Password' : 'Hide Password',
+                          onPressed: () {
+                            setState(() {
+                              _obscurePassword = !_obscurePassword;
+                            });
+                          },
+                        ),
+                      ],
+                    ),
                   ),
                   validator: (value) =>
                       value == null || value.length < 6 ? 'Password must be at least 6 characters' : null,

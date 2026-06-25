@@ -1,4 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart' hide Family;
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:spendly/core/constants/config.dart';
 import 'package:spendly/core/services/db_provider.dart';
 import 'package:spendly/core/services/db_service.dart';
 import 'package:spendly/models/family.dart';
@@ -432,4 +434,38 @@ class BudgetNotifier extends StateNotifier<BudgetState> {
 final budgetProvider = StateNotifierProvider<BudgetNotifier, BudgetState>((ref) {
   final db = ref.watch(dbServiceProvider);
   return BudgetNotifier(db);
+});
+
+// ==========================================
+// 5. Connection Status & Provider
+// ==========================================
+
+enum ConnectionStatus { checking, online, offline, sandbox }
+
+class ConnectionNotifier extends StateNotifier<ConnectionStatus> {
+  final DbService _dbService;
+
+  ConnectionNotifier(this._dbService) : super(ConnectionStatus.checking) {
+    checkConnection();
+  }
+
+  Future<void> checkConnection() async {
+    if (!AppConfig.isSupabaseConfigured) {
+      state = ConnectionStatus.sandbox;
+      return;
+    }
+    
+    try {
+      // Run a simple query to verify database is reachable
+      await Supabase.instance.client.from('users').select('id').limit(1);
+      state = ConnectionStatus.online;
+    } catch (e) {
+      state = ConnectionStatus.offline;
+    }
+  }
+}
+
+final connectionProvider = StateNotifierProvider<ConnectionNotifier, ConnectionStatus>((ref) {
+  final db = ref.watch(dbServiceProvider);
+  return ConnectionNotifier(db);
 });
