@@ -143,7 +143,7 @@ class HomeScreen extends ConsumerWidget {
                             ),
                             const SizedBox(height: 8),
                             SizedBox(
-                              height: 110,
+                              height: 120,
                               child: ListView.builder(
                                 scrollDirection: Axis.horizontal,
                                 itemCount: suggestions.length,
@@ -159,16 +159,69 @@ class HomeScreen extends ConsumerWidget {
                                         side: const BorderSide(color: Color(0xFFE2E8F0)),
                                       ),
                                       child: Padding(
-                                        padding: const EdgeInsets.all(12.0),
+                                        padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 10.0),
                                         child: Column(
                                           crossAxisAlignment: CrossAxisAlignment.start,
                                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                           children: [
-                                            Text(
-                                              '${sug.description.isEmpty ? sug.category : sug.description} • ${currencyFormat.format(sug.amount)}',
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                                            Row(
+                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                              children: [
+                                                Expanded(
+                                                  child: Text(
+                                                    '${sug.description.isEmpty ? sug.category : sug.description} • ${currencyFormat.format(sug.amount)}',
+                                                    maxLines: 1,
+                                                    overflow: TextOverflow.ellipsis,
+                                                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                                                  ),
+                                                ),
+                                                PopupMenuButton<String>(
+                                                  icon: const Icon(Icons.more_vert, size: 18),
+                                                  padding: EdgeInsets.zero,
+                                                  constraints: const BoxConstraints(),
+                                                  itemBuilder: (context) => [
+                                                    const PopupMenuItem(
+                                                      value: 'edit',
+                                                      child: Row(
+                                                        children: [
+                                                          Icon(Icons.edit_outlined, size: 18),
+                                                          SizedBox(width: 8),
+                                                          Text('Edit details'),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                    const PopupMenuItem(
+                                                      value: 'delete',
+                                                      child: Row(
+                                                        children: [
+                                                          Icon(Icons.delete_outline, size: 18, color: Colors.red),
+                                                          SizedBox(width: 8),
+                                                          Text('Hide card', style: TextStyle(color: Colors.red)),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  ],
+                                                  onSelected: (value) async {
+                                                    if (value == 'edit') {
+                                                      ref.read(selectedCategoryProvider.notifier).state = sug.category;
+                                                      ref.read(prefilledAmountProvider.notifier).state = sug.amount;
+                                                      ref.read(prefilledDescriptionProvider.notifier).state = sug.description;
+                                                      context.go('/add');
+                                                    } else if (value == 'delete') {
+                                                      final key = '${sug.category}|${sug.description}|${sug.amount}';
+                                                      await ref.read(blacklistSuggestionsProvider.notifier).blacklist(key);
+                                                      if (context.mounted) {
+                                                        ScaffoldMessenger.of(context).showSnackBar(
+                                                          const SnackBar(
+                                                            content: Text('Suggestion dismissed.'),
+                                                            duration: Duration(seconds: 2),
+                                                          ),
+                                                        );
+                                                      }
+                                                    }
+                                                  },
+                                                ),
+                                              ],
                                             ),
                                             GestureDetector(
                                               onTap: () async {
