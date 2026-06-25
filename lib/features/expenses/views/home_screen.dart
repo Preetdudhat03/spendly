@@ -77,22 +77,18 @@ class HomeScreen extends ConsumerWidget {
               ],
             ),
           ],
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: () {
-              ref.read(connectionProvider.notifier).checkConnection();
-              ref.read(familyProvider.notifier).loadFamily();
-            },
-          ),
-        ],
       ),
       body: expenseState.isLoading || familyState.isLoading
           ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
-              child: Builder(
+          : RefreshIndicator(
+              onRefresh: () async {
+                ref.read(connectionProvider.notifier).checkConnection();
+                await ref.read(familyProvider.notifier).loadFamily();
+              },
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+                child: Builder(
                 builder: (context) {
                   final width = MediaQuery.of(context).size.width;
                   final isWide = width > 720;
