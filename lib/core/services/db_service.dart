@@ -11,6 +11,7 @@ abstract class DbService {
   String? getCurrentUserId();
   String? getCurrentUserEmail();
   Future<String?> getCurrentUserDisplayName();
+  Future<String?> forgotPassword(String email);
 
   // Family Management
   Future<Family?> createFamily({required String name});

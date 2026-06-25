@@ -107,6 +107,22 @@ class MockDbService implements DbService {
     return 'User';
   }
 
+  @override
+  Future<String?> forgotPassword(String email) async {
+    final usersRaw = _prefs.getString(_keyUsers) ?? '{}';
+    final Map<String, dynamic> users = json.decode(usersRaw);
+
+    final normalizedEmail = email.toLowerCase().trim();
+    if (!users.containsKey(normalizedEmail)) {
+      throw Exception('Email not found.');
+    }
+
+    final tempPassword = 'TEMP-${Random().nextInt(9000) + 1000}';
+    users[normalizedEmail]['password'] = tempPassword;
+    await _prefs.setString(_keyUsers, json.encode(users));
+    return tempPassword;
+  }
+
   // --- Family ---
 
   @override

@@ -13,12 +13,12 @@ final sharedPreferencesProvider = Provider<SharedPreferences>((ref) {
 
 // Primary Database Service provider
 final dbServiceProvider = Provider<DbService>((ref) {
+  final prefs = ref.read(sharedPreferencesProvider);
   if (AppConfig.isSupabaseConfigured) {
     // Return Supabase service
-    return SupabaseDbService();
+    return SupabaseDbService(prefs);
   } else {
     // Return Mock service
-    final prefs = ref.read(sharedPreferencesProvider);
     return MockDbService(prefs);
   }
 });
