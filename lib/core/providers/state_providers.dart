@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart' hide Family;
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:spendly/core/constants/config.dart';
 import 'package:spendly/core/services/db_provider.dart';
 import 'package:spendly/core/services/db_service.dart';
@@ -508,4 +509,52 @@ class ConnectionNotifier extends StateNotifier<ConnectionStatus> {
 final connectionProvider = StateNotifierProvider<ConnectionNotifier, ConnectionStatus>((ref) {
   final db = ref.watch(dbServiceProvider);
   return ConnectionNotifier(db);
+});
+
+// ==========================================
+// 6. Blacklisted Suggestions Provider
+// ==========================================
+
+class BlacklistSuggestionsNotifier extends StateNotifier<Set<String>> {
+  BlacklistSuggestionsNotifier() : super({}) {
+    _loadBlacklist();
+  }
+
+  static const _prefKey = 'blacklisted_suggestions';
+
+  Future<void> _loadBlacklist() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final list = prefs.getStringList(_prefKey);
+      if (list != null) {
+        state = list.toSet();
+      }
+    } catch (e) {
+      debugPrint('Error loading blacklisted suggestions: $e');
+    }
+  }
+
+  Future<void> blacklist(String key) async {
+    state = {...state, key};
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setStringList(_prefKey, state.toList());
+    } catch (e) {
+      debugPrint('Error saving blacklisted suggestions: $e');
+    }
+  }
+
+  Future<void> clearBlacklist() async {
+    state = {};
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove(_prefKey);
+    } catch (e) {
+      debugPrint('Error clearing blacklisted suggestions: $e');
+    }
+  }
+}
+
+final blacklistSuggestionsProvider = StateNotifierProvider<BlacklistSuggestionsNotifier, Set<String>>((ref) {
+  return BlacklistSuggestionsNotifier();
 });

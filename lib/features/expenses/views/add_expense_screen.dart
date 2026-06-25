@@ -6,6 +6,8 @@ import 'package:spendly/core/providers/state_providers.dart';
 
 // Provider to hold quick-add categories selected from home screen
 final selectedCategoryProvider = StateProvider<String?>((ref) => null);
+final prefilledAmountProvider = StateProvider<double?>((ref) => null);
+final prefilledDescriptionProvider = StateProvider<String?>((ref) => null);
 
 class AddExpenseScreen extends ConsumerStatefulWidget {
   const AddExpenseScreen({super.key});
