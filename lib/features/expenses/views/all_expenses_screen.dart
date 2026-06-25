@@ -329,10 +329,12 @@ class _AllExpensesScreenState extends ConsumerState<AllExpensesScreen> {
       appBar: AppBar(
         title: const Text('All Family Expenses'),
       ),
-      body: Column(
-        children: [
-          // Search Bar
-          Padding(
+      body: Builder(
+        builder: (context) {
+          final isWide = MediaQuery.of(context).size.width > 720;
+
+          // Shared widgets
+          Widget searchBar = Padding(
             padding: const EdgeInsets.all(16.0),
             child: TextField(
               controller: _searchController,
@@ -358,10 +360,9 @@ class _AllExpensesScreenState extends ConsumerState<AllExpensesScreen> {
                 contentPadding: const EdgeInsets.symmetric(vertical: 12.0),
               ),
             ),
-          ),
+          );
 
-          // Horizontal Category Filter bar
-          SizedBox(
+          Widget categoryFiltersHorizontal = SizedBox(
             height: 50,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
@@ -387,124 +388,247 @@ class _AllExpensesScreenState extends ConsumerState<AllExpensesScreen> {
                 );
               },
             ),
-          ),
+          );
 
-          const SizedBox(height: 12),
+          Widget categoryFiltersWrap = Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: _categories.map((cat) {
+              final isSelected = _selectedFilterCategory == cat['name'];
+              return FilterChip(
+                avatar: Text(cat['emoji'] ?? '💰'),
+                label: Text(cat['name'] ?? ''),
+                selected: isSelected,
+                onSelected: (selected) {
+                  setState(() {
+                    _selectedFilterCategory = cat['name']!;
+                  });
+                },
+                selectedColor: Theme.of(context).primaryColor.withOpacity(0.2),
+                checkmarkColor: Theme.of(context).primaryColor,
+              );
+            }).toList(),
+          );
 
-          // Loading & List View
-          Expanded(
-            child: expenseState.isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : filteredExpenses.isEmpty
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.receipt_long_outlined, size: 64, color: Colors.grey[400]),
-                            const SizedBox(height: 16),
-                            Text(
-                              'No expenses found',
-                              style: TextStyle(fontSize: 18, color: Colors.grey[600], fontWeight: FontWeight.bold),
-                            ),
-                            const SizedBox(height: 6),
-                            const Text('Try adjusting filters or search query.', style: TextStyle(color: Colors.grey)),
-                          ],
-                        ),
-                      )
-                    : ListView.builder(
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                        itemCount: groupedKeys.length,
-                        itemBuilder: (context, groupIndex) {
-                          final dateKey = groupedKeys[groupIndex];
-                          final groupItems = groupedExpenses[dateKey]!;
+          // Calculate filtered summary statistics
+          final totalSpentFiltered = filteredExpenses.fold<double>(0.0, (sum, exp) => sum + exp.amount);
+          final formattedTotal = NumberFormat.currency(
+            locale: 'en_IN',
+            decimalDigits: 2,
+            symbol: '₹',
+          ).format(totalSpentFiltered);
 
-                          return Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // Sticky-style Date Header
-                              Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 12.0),
-                                child: Text(
-                                  _getDateHeaderLabel(dateKey),
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.bold,
-                                    color: Theme.of(context).primaryColor,
-                                    letterSpacing: 0.5,
-                                  ),
-                                ),
-                              ),
-
-                              // Card containing the day's expenses list
-                              Card(
-                                margin: EdgeInsets.zero,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(16),
-                                ),
-                                child: ListView.separated(
-                                  shrinkWrap: true,
-                                  physics: const NeverScrollableScrollPhysics(),
-                                  itemCount: groupItems.length,
-                                  separatorBuilder: (context, index) => const Divider(height: 1, indent: 70),
-                                  itemBuilder: (context, index) {
-                                    final exp = groupItems[index];
-                                    final amtStr = NumberFormat.currency(
-                                      locale: 'en_IN',
-                                      decimalDigits: 0,
-                                      symbol: '₹',
-                                    ).format(exp.amount);
-
-                                    return ListTile(
-                                      contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
-                                      leading: CircleAvatar(
-                                        radius: 22,
-                                        backgroundColor: _getCategoryColor(exp.category).withOpacity(0.12),
-                                        child: Text(
-                                          _getCategoryEmoji(exp.category),
-                                          style: const TextStyle(fontSize: 20),
-                                        ),
-                                      ),
-                                      title: Row(
-                                        children: [
-                                          Text(
-                                            exp.category,
-                                            style: const TextStyle(fontWeight: FontWeight.bold),
-                                          ),
-                                          const SizedBox(width: 8),
-                                          Container(
-                                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                            decoration: BoxDecoration(
-                                              color: Colors.grey[200],
-                                              borderRadius: BorderRadius.circular(6),
-                                            ),
-                                            child: Text(
-                                              exp.createdByName,
-                                              style: TextStyle(fontSize: 10, color: Colors.grey[700]),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      subtitle: Text(
-                                        exp.description.isNotEmpty ? exp.description : 'Logged via ${exp.paymentMethod}',
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                      trailing: Text(
-                                        amtStr,
-                                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                                      ),
-                                      onTap: () => _showExpenseDetail(exp),
-                                    );
-                                  },
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                            ],
-                          );
-                        },
+          Widget summaryPanel = Card(
+            margin: const EdgeInsets.all(16.0),
+            color: Theme.of(context).primaryColor.withOpacity(0.05),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+              side: BorderSide(color: Theme.of(context).primaryColor.withOpacity(0.15)),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Summary',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).primaryColor,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text('Total Transactions:', style: TextStyle(color: Colors.grey)),
+                      Text(
+                        '${filteredExpenses.length}',
+                        style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
-          ),
-        ],
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text('Filtered Spend:', style: TextStyle(color: Colors.grey)),
+                      Text(
+                        formattedTotal,
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).primaryColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          );
+
+          Widget expensesListView = expenseState.isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : filteredExpenses.isEmpty
+                  ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.receipt_long_outlined, size: 64, color: Colors.grey[400]),
+                          const SizedBox(height: 16),
+                          Text(
+                            'No expenses found',
+                            style: TextStyle(fontSize: 18, color: Colors.grey[600], fontWeight: FontWeight.bold),
+                          ),
+                          const SizedBox(height: 6),
+                          const Text('Try adjusting filters or search query.', style: TextStyle(color: Colors.grey)),
+                        ],
+                      ),
+                    )
+                  : ListView.builder(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      itemCount: groupedKeys.length,
+                      itemBuilder: (context, groupIndex) {
+                        final dateKey = groupedKeys[groupIndex];
+                        final groupItems = groupedExpenses[dateKey]!;
+
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Sticky-style Date Header
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 12.0),
+                              child: Text(
+                                _getDateHeaderLabel(dateKey),
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                  color: Theme.of(context).primaryColor,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                            ),
+
+                            // Card containing the day's expenses list
+                            Card(
+                              margin: EdgeInsets.zero,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              child: ListView.separated(
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                itemCount: groupItems.length,
+                                separatorBuilder: (context, index) => const Divider(height: 1, indent: 70),
+                                itemBuilder: (context, index) {
+                                  final exp = groupItems[index];
+                                  final amtStr = NumberFormat.currency(
+                                    locale: 'en_IN',
+                                    decimalDigits: 0,
+                                    symbol: '₹',
+                                  ).format(exp.amount);
+
+                                  return ListTile(
+                                    contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
+                                    leading: CircleAvatar(
+                                      radius: 22,
+                                      backgroundColor: _getCategoryColor(exp.category).withOpacity(0.12),
+                                      child: Text(
+                                        _getCategoryEmoji(exp.category),
+                                        style: const TextStyle(fontSize: 20),
+                                      ),
+                                    ),
+                                    title: Row(
+                                      children: [
+                                        Text(
+                                          exp.category,
+                                          style: const TextStyle(fontWeight: FontWeight.bold),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                          decoration: BoxDecoration(
+                                            color: Colors.grey[200],
+                                            borderRadius: BorderRadius.circular(6),
+                                          ),
+                                          child: Text(
+                                            exp.createdByName,
+                                            style: TextStyle(fontSize: 10, color: Colors.grey[700]),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    subtitle: Text(
+                                      exp.description.isNotEmpty ? exp.description : 'Logged via ${exp.paymentMethod}',
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    trailing: Text(
+                                      amtStr,
+                                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                                    ),
+                                    onTap: () => _showExpenseDetail(exp),
+                                  );
+                                },
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                          ],
+                        );
+                      },
+                    );
+
+          if (isWide) {
+            return Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Left Column: Search & Filters
+                Expanded(
+                  flex: 4,
+                  child: SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        searchBar,
+                        const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 16.0),
+                          child: Text(
+                            'Filter by Category',
+                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                          child: categoryFiltersWrap,
+                        ),
+                        const SizedBox(height: 16),
+                        summaryPanel,
+                      ],
+                    ),
+                  ),
+                ),
+                // Divider
+                VerticalDivider(width: 1, color: Colors.grey[300]),
+                // Right Column: Expenses List
+                Expanded(
+                  flex: 6,
+                  child: expensesListView,
+                ),
+              ],
+            );
+          } else {
+            return Column(
+              children: [
+                searchBar,
+                categoryFiltersHorizontal,
+                const SizedBox(height: 12),
+                Expanded(child: expensesListView),
+              ],
+            );
+          }
+        },
       ),
     );
   }

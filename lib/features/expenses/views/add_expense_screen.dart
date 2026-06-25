@@ -146,6 +146,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
   @override
   Widget build(BuildContext context) {
     final expenseState = ref.watch(expenseProvider);
+    final isWide = MediaQuery.of(context).size.width > 720;
 
     return Scaffold(
       appBar: AppBar(
@@ -153,8 +154,11 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
       ),
       body: expenseState.isLoading
           ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 10.0),
+          : Center(
+              child: Container(
+                constraints: BoxConstraints(maxWidth: isWide ? 600 : double.infinity),
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 10.0),
               child: Form(
                 key: _formKey,
                 child: Column(
@@ -375,6 +379,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
                     ),
                     const SizedBox(height: 20),
                   ],
+                ),
                 ),
               ),
             ),

@@ -126,11 +126,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
               padding: const EdgeInsets.all(20.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  // User Details Card
-                  Card(
+              child: Builder(
+                builder: (context) {
+                  final width = MediaQuery.of(context).size.width;
+                  final isWide = width > 720;
+
+                  Widget userDetailsCard = Card(
                     child: Padding(
                       padding: const EdgeInsets.all(20.0),
                       child: Column(
@@ -162,17 +163,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         ],
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 16),
+                  );
 
-                  // Family Code Card
-                  Card(
+                  Widget familyCodeCard = Card(
                     child: Padding(
                       padding: const EdgeInsets.all(20.0),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('Family Group', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold, fontSize: 13)),
+                          const Text('Family Group',
+                              style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold, fontSize: 13)),
                           const SizedBox(height: 4),
                           Text(familyName, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                           const SizedBox(height: 16),
@@ -188,7 +188,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                 Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    const Text('Invite Family Code', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                                    const Text('Invite Family Code',
+                                        style: TextStyle(fontSize: 12, color: Colors.grey)),
                                     Text(
                                       familyCode,
                                       style: TextStyle(
@@ -215,11 +216,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         ],
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 16),
+                  );
 
-                  // Budget Card
-                  Card(
+                  Widget budgetCard = Card(
                     child: Padding(
                       padding: const EdgeInsets.all(20.0),
                       child: Row(
@@ -228,7 +227,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text('Monthly Budget', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold, fontSize: 13)),
+                              const Text('Monthly Budget',
+                                  style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold, fontSize: 13)),
                               const SizedBox(height: 4),
                               Text(
                                 currencyFormat.format(currentBudget),
@@ -248,11 +248,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         ],
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 16),
+                  );
 
-                  // Family Members List Card
-                  Card(
+                  Widget familyMembersCard = Card(
                     child: Padding(
                       padding: const EdgeInsets.all(20.0),
                       child: Column(
@@ -271,7 +269,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                 contentPadding: EdgeInsets.zero,
                                 leading: CircleAvatar(
                                   backgroundColor: Theme.of(context).primaryColor.withOpacity(0.1),
-                                  child: Text(member.displayName.isNotEmpty ? member.displayName[0].toUpperCase() : 'M'),
+                                  child: Text(
+                                      member.displayName.isNotEmpty ? member.displayName[0].toUpperCase() : 'M'),
                                 ),
                                 title: Text(member.displayName, style: const TextStyle(fontWeight: FontWeight.bold)),
                                 trailing: Container(
@@ -295,11 +294,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         ],
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 16),
+                  );
 
-                  // Export Reports Card
-                  Card(
+                  Widget reportsCard = Card(
                     child: Padding(
                       padding: const EdgeInsets.all(20.0),
                       child: Column(
@@ -307,7 +304,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         children: [
                           Text('Family Reports', style: Theme.of(context).textTheme.titleMedium),
                           const SizedBox(height: 4),
-                          const Text('Generate and share expense history directly.', style: TextStyle(color: Colors.grey, fontSize: 13)),
+                          const Text('Generate and share expense history directly.',
+                              style: TextStyle(color: Colors.grey, fontSize: 13)),
                           const Divider(height: 24),
                           Row(
                             children: [
@@ -347,11 +345,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         ],
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 32),
+                  );
 
-                  // LOGOUT BUTTON
-                  ElevatedButton(
+                  Widget logoutButton = ElevatedButton(
                     onPressed: () {
                       ref.read(authProvider.notifier).signOut();
                     },
@@ -361,9 +357,61 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       padding: const EdgeInsets.symmetric(vertical: 18),
                     ),
                     child: const Text('LOGOUT FROM APP'),
-                  ),
-                  const SizedBox(height: 20),
-                ],
+                  );
+
+                  if (isWide) {
+                    return Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          flex: 5,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              userDetailsCard,
+                              const SizedBox(height: 16),
+                              familyCodeCard,
+                              const SizedBox(height: 24),
+                              logoutButton,
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 24),
+                        Expanded(
+                          flex: 5,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              budgetCard,
+                              const SizedBox(height: 16),
+                              familyMembersCard,
+                              const SizedBox(height: 16),
+                              reportsCard,
+                            ],
+                          ),
+                        ),
+                      ],
+                    );
+                  } else {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        userDetailsCard,
+                        const SizedBox(height: 16),
+                        familyCodeCard,
+                        const SizedBox(height: 16),
+                        budgetCard,
+                        const SizedBox(height: 16),
+                        familyMembersCard,
+                        const SizedBox(height: 16),
+                        reportsCard,
+                        const SizedBox(height: 32),
+                        logoutButton,
+                        const SizedBox(height: 20),
+                      ],
+                    );
+                  }
+                },
               ),
             ),
     );

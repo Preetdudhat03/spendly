@@ -92,20 +92,19 @@ class HomeScreen extends ConsumerWidget {
           ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Welcome message
-                  Text(
+              child: Builder(
+                builder: (context) {
+                  final width = MediaQuery.of(context).size.width;
+                  final isWide = width > 720;
+
+                  Widget welcomeMessage = Text(
                     'Hello, ${authState.displayName ?? "Family Member"}! 👋',
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
                           color: const Color(0xFF64748B),
                         ),
-                  ),
-                  const SizedBox(height: 18),
+                  );
 
-                  // Today and Month Summary Row
-                  Row(
+                  Widget summaryRow = Row(
                     children: [
                       Expanded(
                         child: _buildSummaryCard(
@@ -127,151 +126,213 @@ class HomeScreen extends ConsumerWidget {
                         ),
                       ),
                     ],
-                  ),
-                  const SizedBox(height: 20),
+                  );
 
-                  // Budget Card
-                  _buildBudgetCard(context, monthTotal, budgetLimit, budgetPercent, budgetColor, currencyFormat),
-                  const SizedBox(height: 24),
+                  Widget budgetCard = _buildBudgetCard(
+                      context, monthTotal, budgetLimit, budgetPercent, budgetColor, currencyFormat);
 
-                  // Smart Suggestions
-                  if (suggestions.isNotEmpty) ...[
-                    Text(
-                      'Frequently Logged',
-                      style: Theme.of(context).textTheme.titleLarge,
-                    ),
-                    const SizedBox(height: 8),
-                    SizedBox(
-                      height: 110,
-                      child: ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: suggestions.length,
-                        itemBuilder: (context, index) {
-                          final sug = suggestions[index];
-                          return Container(
-                            width: 220,
-                            margin: const EdgeInsets.only(right: 12),
-                            child: Card(
-                              color: const Color(0xFFF1F5F9),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
-                                side: const BorderSide(color: Color(0xFFE2E8F0)),
-                              ),
-                              child: Padding(
-                                padding: const EdgeInsets.all(12.0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      '${sug.description.isEmpty ? sug.category : sug.description} • ${currencyFormat.format(sug.amount)}',
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-                                    ),
-                                    GestureDetector(
-                                      onTap: () async {
-                                        await ref.read(expenseProvider.notifier).addExpense(
-                                              amount: sug.amount,
-                                              category: sug.category,
-                                              description: sug.description,
-                                              paymentMethod: 'UPI',
-                                              expenseDate: DateTime.now(),
-                                            );
-                                        if (context.mounted) {
-                                          ScaffoldMessenger.of(context).showSnackBar(
-                                            SnackBar(
-                                              content: Text('Logged ${sug.description} ${currencyFormat.format(sug.amount)}!'),
-                                              duration: const Duration(seconds: 2),
+                  Widget smartSuggestions = suggestions.isEmpty
+                      ? const SizedBox.shrink()
+                      : Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Frequently Logged',
+                              style: Theme.of(context).textTheme.titleLarge,
+                            ),
+                            const SizedBox(height: 8),
+                            SizedBox(
+                              height: 110,
+                              child: ListView.builder(
+                                scrollDirection: Axis.horizontal,
+                                itemCount: suggestions.length,
+                                itemBuilder: (context, index) {
+                                  final sug = suggestions[index];
+                                  return Container(
+                                    width: 220,
+                                    margin: const EdgeInsets.only(right: 12),
+                                    child: Card(
+                                      color: const Color(0xFFF1F5F9),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(16),
+                                        side: const BorderSide(color: Color(0xFFE2E8F0)),
+                                      ),
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(12.0),
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Text(
+                                              '${sug.description.isEmpty ? sug.category : sug.description} • ${currencyFormat.format(sug.amount)}',
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
                                             ),
-                                          );
-                                        }
-                                      },
-                                      child: Container(
-                                        padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
-                                        decoration: BoxDecoration(
-                                          color: Theme.of(context).primaryColor,
-                                          borderRadius: BorderRadius.circular(8),
-                                        ),
-                                        child: const Center(
-                                          child: Text(
-                                            'One Tap Save',
-                                            style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
-                                          ),
+                                            GestureDetector(
+                                              onTap: () async {
+                                                await ref.read(expenseProvider.notifier).addExpense(
+                                                      amount: sug.amount,
+                                                      category: sug.category,
+                                                      description: sug.description,
+                                                      paymentMethod: 'UPI',
+                                                      expenseDate: DateTime.now(),
+                                                    );
+                                                if (context.mounted) {
+                                                  ScaffoldMessenger.of(context).showSnackBar(
+                                                    SnackBar(
+                                                      content: Text(
+                                                          'Logged ${sug.description} ${currencyFormat.format(sug.amount)}!'),
+                                                      duration: const Duration(seconds: 2),
+                                                    ),
+                                                  );
+                                                }
+                                              },
+                                              child: Container(
+                                                padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
+                                                decoration: BoxDecoration(
+                                                  color: Theme.of(context).primaryColor,
+                                                  borderRadius: BorderRadius.circular(8),
+                                                ),
+                                                child: const Center(
+                                                  child: Text(
+                                                    'One Tap Save',
+                                                    style: TextStyle(
+                                                        color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
+                                                  ),
+                                                ),
+                                              ),
+                                            )
+                                          ],
                                         ),
                                       ),
-                                    )
-                                  ],
-                                ),
+                                    ),
+                                  );
+                                },
                               ),
                             ),
-                          );
-                        },
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                  ],
+                          ],
+                        );
 
-                  // Quick Add Row
-                  Text(
-                    'Quick Add Category',
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                  const SizedBox(height: 12),
-                  SizedBox(
-                    height: 100,
-                    child: ListView(
-                      scrollDirection: Axis.horizontal,
-                      children: [
-                        _buildQuickAddButton(context, ref, '🍔', 'Food'),
-                        _buildQuickAddButton(context, ref, '🚗', 'Petrol'),
-                        _buildQuickAddButton(context, ref, '🛒', 'Groceries'),
-                        _buildQuickAddButton(context, ref, '⚡', 'Electricity'),
-                        _buildQuickAddButton(context, ref, '💊', 'Medical'),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-
-                  // Recent Expenses List
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  Widget quickAddRow = Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Recent Expenses',
+                        'Quick Add Category',
                         style: Theme.of(context).textTheme.titleLarge,
                       ),
-                      TextButton(
-                        onPressed: () {
-                          // Navigate to All Expenses view
-                          context.push('/expenses');
-                        },
-                        child: const Text('View All'),
-                      )
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  if (expenseState.expenses.isEmpty)
-                    const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 24.0),
-                      child: Center(
-                        child: Text(
-                          'No expenses logged this month yet.',
-                          style: TextStyle(color: Colors.grey),
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        height: 100,
+                        child: ListView(
+                          scrollDirection: Axis.horizontal,
+                          children: [
+                            _buildQuickAddButton(context, ref, '🍔', 'Food'),
+                            _buildQuickAddButton(context, ref, '🚗', 'Petrol'),
+                            _buildQuickAddButton(context, ref, '🛒', 'Groceries'),
+                            _buildQuickAddButton(context, ref, '⚡', 'Electricity'),
+                            _buildQuickAddButton(context, ref, '💊', 'Medical'),
+                          ],
                         ),
                       ),
-                    )
-                  else
-                    ListView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: expenseState.expenses.length > 5 ? 5 : expenseState.expenses.length,
-                      itemBuilder: (context, index) {
-                        final exp = expenseState.expenses[index];
-                        return _buildExpenseListItem(context, ref, exp, currencyFormat);
-                      },
-                    ),
-                ],
+                    ],
+                  );
+
+                  Widget recentExpensesList = Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Recent Expenses',
+                            style: Theme.of(context).textTheme.titleLarge,
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              // Navigate to All Expenses view
+                              context.push('/expenses');
+                            },
+                            child: const Text('View All'),
+                          )
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      if (expenseState.expenses.isEmpty)
+                        const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 24.0),
+                          child: Center(
+                            child: Text(
+                              'No expenses logged this month yet.',
+                              style: TextStyle(color: Colors.grey),
+                            ),
+                          ),
+                        )
+                      else
+                        ListView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: expenseState.expenses.length > 5 ? 5 : expenseState.expenses.length,
+                          itemBuilder: (context, index) {
+                            final exp = expenseState.expenses[index];
+                            return _buildExpenseListItem(context, ref, exp, currencyFormat);
+                          },
+                        ),
+                    ],
+                  );
+
+                  if (isWide) {
+                    return Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          flex: 5,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              welcomeMessage,
+                              const SizedBox(height: 18),
+                              summaryRow,
+                              const SizedBox(height: 20),
+                              budgetCard,
+                              const SizedBox(height: 24),
+                              smartSuggestions,
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 24),
+                        Expanded(
+                          flex: 5,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              quickAddRow,
+                              const SizedBox(height: 24),
+                              recentExpensesList,
+                            ],
+                          ),
+                        ),
+                      ],
+                    );
+                  } else {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        welcomeMessage,
+                        const SizedBox(height: 18),
+                        summaryRow,
+                        const SizedBox(height: 20),
+                        budgetCard,
+                        const SizedBox(height: 24),
+                        smartSuggestions,
+                        if (suggestions.isNotEmpty) const SizedBox(height: 24),
+                        quickAddRow,
+                        const SizedBox(height: 24),
+                        recentExpensesList,
+                      ],
+                    );
+                  }
+                },
               ),
             ),
     );

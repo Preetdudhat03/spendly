@@ -69,24 +69,24 @@ class _FamilySetupScreenState extends ConsumerState<FamilySetupScreen> {
           ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
               padding: const EdgeInsets.all(28.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const Text(
+              child: Builder(
+                builder: (context) {
+                  final width = MediaQuery.of(context).size.width;
+                  final isWide = width > 720;
+
+                  Widget welcomeWidget = const Text(
                     'Welcome to Spendly!',
                     textAlign: TextAlign.center,
                     style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 12),
-                  const Text(
+                  );
+
+                  Widget subtitleWidget = const Text(
                     'To start tracking spending, you need to either create a new family group or join an existing one.',
                     textAlign: TextAlign.center,
                     style: TextStyle(fontSize: 16, color: Colors.grey),
-                  ),
-                  const SizedBox(height: 40),
+                  );
 
-                  // CARD 1: CREATE FAMILY
-                  Card(
+                  Widget createFamilyCard = Card(
                     child: Padding(
                       padding: const EdgeInsets.all(20.0),
                       child: Form(
@@ -122,14 +122,9 @@ class _FamilySetupScreenState extends ConsumerState<FamilySetupScreen> {
                         ),
                       ),
                     ),
-                  ),
+                  );
 
-                  const SizedBox(height: 24),
-                  const Center(child: Text('— OR —', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey))),
-                  const SizedBox(height: 24),
-
-                  // CARD 2: JOIN FAMILY
-                  Card(
+                  Widget joinFamilyCard = Card(
                     child: Padding(
                       padding: const EdgeInsets.all(20.0),
                       child: Form(
@@ -165,8 +160,50 @@ class _FamilySetupScreenState extends ConsumerState<FamilySetupScreen> {
                         ),
                       ),
                     ),
-                  ),
-                ],
+                  );
+
+                  if (isWide) {
+                    return Center(
+                      child: Container(
+                        constraints: const BoxConstraints(maxWidth: 1000),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            welcomeWidget,
+                            const SizedBox(height: 12),
+                            subtitleWidget,
+                            const SizedBox(height: 40),
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Expanded(child: createFamilyCard),
+                                const SizedBox(width: 24),
+                                Expanded(child: joinFamilyCard),
+                              ],
+                            )
+                          ],
+                        ),
+                      ),
+                    );
+                  } else {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        welcomeWidget,
+                        const SizedBox(height: 12),
+                        subtitleWidget,
+                        const SizedBox(height: 40),
+                        createFamilyCard,
+                        const SizedBox(height: 24),
+                        const Center(
+                            child: Text('— OR —',
+                                style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey))),
+                        const SizedBox(height: 24),
+                        joinFamilyCard,
+                      ],
+                    );
+                  }
+                },
               ),
             ),
     );

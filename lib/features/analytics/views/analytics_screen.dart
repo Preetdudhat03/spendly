@@ -37,41 +37,114 @@ class AnalyticsScreen extends ConsumerWidget {
               ? _buildEmptyState(context)
               : SingleChildScrollView(
                   padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Overview total
-                      _buildMonthOverviewCard(context, monthTotal, currencyFormat),
-                      const SizedBox(height: 24),
+                  child: Builder(
+                    builder: (context) {
+                      final width = MediaQuery.of(context).size.width;
+                      final isWide = width > 720;
 
-                      // Category Breakdown Pie Chart
-                      Text('Category Breakdown', style: Theme.of(context).textTheme.titleLarge),
-                      const SizedBox(height: 12),
-                      _buildCategoryBreakdownCard(context, currentMonthExpenses, monthTotal),
-                      const SizedBox(height: 24),
+                      Widget overviewWidget = _buildMonthOverviewCard(context, monthTotal, currencyFormat);
+                      Widget highestCategoryWidget =
+                          _buildHighestCategoryCard(context, currentMonthExpenses, currencyFormat);
 
-                      // Spending Trend Line Chart
-                      Text('Spending Trend', style: Theme.of(context).textTheme.titleLarge),
-                      const SizedBox(height: 12),
-                      _buildTrendLineChartCard(context, currentMonthExpenses),
-                      const SizedBox(height: 24),
+                      Widget categoryBreakdownWidget = Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Category Breakdown', style: Theme.of(context).textTheme.titleLarge),
+                          const SizedBox(height: 12),
+                          _buildCategoryBreakdownCard(context, currentMonthExpenses, monthTotal),
+                        ],
+                      );
 
-                      // Highest Category Card
-                      _buildHighestCategoryCard(context, currentMonthExpenses, currencyFormat),
-                      const SizedBox(height: 24),
+                      Widget trendLineWidget = Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Spending Trend', style: Theme.of(context).textTheme.titleLarge),
+                          const SizedBox(height: 12),
+                          _buildTrendLineChartCard(context, currentMonthExpenses),
+                        ],
+                      );
 
-                      // Family Member Contributions
-                      Text('Contributions', style: Theme.of(context).textTheme.titleLarge),
-                      const SizedBox(height: 12),
-                      _buildMemberContributionsCard(context, currentMonthExpenses, currencyFormat),
-                      const SizedBox(height: 24),
+                      Widget contributionsWidget = Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Contributions', style: Theme.of(context).textTheme.titleLarge),
+                          const SizedBox(height: 12),
+                          _buildMemberContributionsCard(context, currentMonthExpenses, currencyFormat),
+                        ],
+                      );
 
-                      // AI Insights Card
-                      Text('AI Insights', style: Theme.of(context).textTheme.titleLarge),
-                      const SizedBox(height: 12),
-                      _buildAiInsightsCard(context, insights),
-                      const SizedBox(height: 30),
-                    ],
+                      Widget insightsWidget = Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('AI Insights', style: Theme.of(context).textTheme.titleLarge),
+                          const SizedBox(height: 12),
+                          _buildAiInsightsCard(context, insights),
+                        ],
+                      );
+
+                      if (isWide) {
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Expanded(child: overviewWidget),
+                                const SizedBox(width: 20),
+                                Expanded(child: highestCategoryWidget),
+                              ],
+                            ),
+                            const SizedBox(height: 24),
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Expanded(
+                                  flex: 5,
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      categoryBreakdownWidget,
+                                      const SizedBox(height: 24),
+                                      contributionsWidget,
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(width: 24),
+                                Expanded(
+                                  flex: 5,
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      trendLineWidget,
+                                      const SizedBox(height: 24),
+                                      insightsWidget,
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 30),
+                          ],
+                        );
+                      } else {
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            overviewWidget,
+                            const SizedBox(height: 24),
+                            categoryBreakdownWidget,
+                            const SizedBox(height: 24),
+                            trendLineWidget,
+                            const SizedBox(height: 24),
+                            highestCategoryWidget,
+                            const SizedBox(height: 24),
+                            contributionsWidget,
+                            const SizedBox(height: 24),
+                            insightsWidget,
+                            const SizedBox(height: 30),
+                          ],
+                        );
+                      }
+                    },
                   ),
                 ),
     );

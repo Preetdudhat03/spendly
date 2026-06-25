@@ -14,58 +14,112 @@ class MainLayout extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final isWide = MediaQuery.of(context).size.width > 720;
+
     return Scaffold(
-      body: IndexedStack(
-        index: initialTab,
-        children: const [
-          HomeScreen(),
-          AddExpenseScreen(),
-          AnalyticsScreen(),
-          ProfileScreen(),
+      body: Row(
+        children: [
+          if (isWide)
+            NavigationRail(
+              selectedIndex: initialTab,
+              onDestinationSelected: (index) {
+                switch (index) {
+                  case 0:
+                    context.go('/home');
+                    break;
+                  case 1:
+                    context.go('/add');
+                    break;
+                  case 2:
+                    context.go('/analytics');
+                    break;
+                  case 3:
+                    context.go('/profile');
+                    break;
+                }
+              },
+              labelType: NavigationRailLabelType.all,
+              indicatorColor: Theme.of(context).primaryColor,
+              destinations: const [
+                NavigationRailDestination(
+                  icon: Icon(Icons.home_outlined),
+                  selectedIcon: Icon(Icons.home, color: Colors.white),
+                  label: Text('Home'),
+                ),
+                NavigationRailDestination(
+                  icon: Icon(Icons.add_circle_outline),
+                  selectedIcon: Icon(Icons.add_circle, color: Colors.white),
+                  label: Text('Add'),
+                ),
+                NavigationRailDestination(
+                  icon: Icon(Icons.bar_chart_outlined),
+                  selectedIcon: Icon(Icons.bar_chart, color: Colors.white),
+                  label: Text('Analytics'),
+                ),
+                NavigationRailDestination(
+                  icon: Icon(Icons.person_outline),
+                  selectedIcon: Icon(Icons.person, color: Colors.white),
+                  label: Text('Profile'),
+                ),
+              ],
+            ),
+          Expanded(
+            child: IndexedStack(
+              index: initialTab,
+              children: const [
+                HomeScreen(),
+                AddExpenseScreen(),
+                AnalyticsScreen(),
+                ProfileScreen(),
+              ],
+            ),
+          ),
         ],
       ),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: initialTab,
-        onDestinationSelected: (index) {
-          switch (index) {
-            case 0:
-              context.go('/home');
-              break;
-            case 1:
-              context.go('/add');
-              break;
-            case 2:
-              context.go('/analytics');
-              break;
-            case 3:
-              context.go('/profile');
-              break;
-          }
-        },
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.home_outlined),
-            selectedIcon: Icon(Icons.home, color: Colors.white),
-            label: 'Home',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.add_circle_outline),
-            selectedIcon: Icon(Icons.add_circle, color: Colors.white),
-            label: 'Add',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.bar_chart_outlined),
-            selectedIcon: Icon(Icons.bar_chart, color: Colors.white),
-            label: 'Analytics',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.person_outline),
-            selectedIcon: Icon(Icons.person, color: Colors.white),
-            label: 'Profile',
-          ),
-        ],
-        indicatorColor: Theme.of(context).primaryColor,
-      ),
+      bottomNavigationBar: isWide
+          ? null
+          : NavigationBar(
+              selectedIndex: initialTab,
+              onDestinationSelected: (index) {
+                switch (index) {
+                  case 0:
+                    context.go('/home');
+                    break;
+                  case 1:
+                    context.go('/add');
+                    break;
+                  case 2:
+                    context.go('/analytics');
+                    break;
+                  case 3:
+                    context.go('/profile');
+                    break;
+                }
+              },
+              destinations: const [
+                NavigationDestination(
+                  icon: Icon(Icons.home_outlined),
+                  selectedIcon: Icon(Icons.home, color: Colors.white),
+                  label: 'Home',
+                ),
+                NavigationDestination(
+                  icon: Icon(Icons.add_circle_outline),
+                  selectedIcon: Icon(Icons.add_circle, color: Colors.white),
+                  label: 'Add',
+                ),
+                NavigationDestination(
+                  icon: Icon(Icons.bar_chart_outlined),
+                  selectedIcon: Icon(Icons.bar_chart, color: Colors.white),
+                  label: 'Analytics',
+                ),
+                NavigationDestination(
+                  icon: Icon(Icons.person_outline),
+                  selectedIcon: Icon(Icons.person, color: Colors.white),
+                  label: 'Profile',
+                ),
+              ],
+              indicatorColor: Theme.of(context).primaryColor,
+            ),
     );
   }
 }

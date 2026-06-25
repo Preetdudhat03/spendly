@@ -206,11 +206,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
     final connection = ref.watch(connectionProvider);
+    final isWide = MediaQuery.of(context).size.width > 720;
 
     return Scaffold(
       body: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(28.0),
+        child: Container(
+          constraints: BoxConstraints(maxWidth: isWide ? 500 : double.infinity),
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(28.0),
           child: Form(
             key: _formKey,
             child: Column(
@@ -403,6 +406,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   child: Text(_isSignUp ? 'Already have an account? Login' : "Don't have an account? Sign Up"),
                 ),
               ],
+            ),
             ),
           ),
         ),
