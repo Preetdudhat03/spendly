@@ -77,6 +77,7 @@ class HomeScreen extends ConsumerWidget {
               ],
             ),
           ],
+        ),
       ),
       body: expenseState.isLoading || familyState.isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -331,6 +332,7 @@ class HomeScreen extends ConsumerWidget {
                 },
               ),
             ),
+          ),
     );
   }
 

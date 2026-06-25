@@ -383,6 +383,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
                 ),
               ),
             ),
+          ),
     );
   }
 }
