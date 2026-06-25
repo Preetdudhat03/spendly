@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spendly/core/providers/state_providers.dart';
+import 'package:spendly/core/utils/crypto_utils.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -48,6 +49,47 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           backgroundColor: Theme.of(context).colorScheme.error,
         ),
       );
+    }
+  }
+
+  String _checkPasswordStrength(String password) {
+    if (password.isEmpty) return '';
+    if (password.length < 6) return 'Weak';
+    
+    bool hasUppercase = password.contains(RegExp(r'[A-Z]'));
+    bool hasDigits = password.contains(RegExp(r'[0-9]'));
+    bool hasSpecialCharacters = password.contains(RegExp(r'[!@#\$%^&*(),.?":{}|<>]'));
+    
+    if (password.length >= 8 && hasUppercase && hasDigits && hasSpecialCharacters) {
+      return 'Strong';
+    }
+    if (password.length >= 6 && (hasDigits || hasSpecialCharacters)) {
+      return 'Medium';
+    }
+    return 'Weak';
+  }
+
+  Color _getStrengthColor(String strength) {
+    switch (strength) {
+      case 'Strong':
+        return Colors.green;
+      case 'Medium':
+        return Colors.orange;
+      case 'Weak':
+      default:
+        return Colors.red;
+    }
+  }
+
+  double _getStrengthPercent(String strength) {
+    switch (strength) {
+      case 'Strong':
+        return 1.0;
+      case 'Medium':
+        return 0.6;
+      case 'Weak':
+      default:
+        return 0.3;
     }
   }
 
@@ -219,13 +261,82 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 TextFormField(
                   controller: _passwordController,
                   obscureText: true,
-                  decoration: const InputDecoration(
+                  onChanged: (val) {
+                    setState(() {});
+                  },
+                  decoration: InputDecoration(
                     labelText: 'Password',
-                    prefixIcon: Icon(Icons.lock),
+                    prefixIcon: const Icon(Icons.lock),
+                    suffixIcon: _isSignUp
+                        ? IconButton(
+                            icon: const Icon(Icons.vpn_key_outlined, size: 20),
+                            tooltip: 'Suggest Strong Password',
+                            onPressed: () {
+                              final strongPass = CryptoUtils.generateStrongPassword();
+                              setState(() {
+                                _passwordController.text = strongPass;
+                              });
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Generated secure password! Copy or write it down.'),
+                                  duration: Duration(seconds: 4),
+                                ),
+                              );
+                            },
+                          )
+                        : null,
                   ),
                   validator: (value) =>
                       value == null || value.length < 6 ? 'Password must be at least 6 characters' : null,
                 ),
+                if (_isSignUp) ...[
+                  const SizedBox(height: 8),
+                  Builder(
+                    builder: (context) {
+                      final strength = _checkPasswordStrength(_passwordController.text);
+                      if (strength.isEmpty) return const SizedBox.shrink();
+                      final color = _getStrengthColor(strength);
+                      final percent = _getStrengthPercent(strength);
+                      
+                      String tip = 'Tip: Use at least 6 characters, including numbers and symbols.';
+                      if (strength == 'Medium') {
+                        tip = 'Tip: Add capital letters and symbols to make it Strong.';
+                      } else if (strength == 'Strong') {
+                        tip = 'Excellent! Your password is highly secure.';
+                      }
+
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Password Strength: $strength',
+                                style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: color),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 6),
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(4),
+                            child: LinearProgressIndicator(
+                              value: percent,
+                              minHeight: 6,
+                              color: color,
+                              backgroundColor: Colors.grey[200],
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            tip,
+                            style: const TextStyle(fontSize: 12, color: Colors.grey),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                ],
                 if (!_isSignUp) ...[
                   Align(
                     alignment: Alignment.centerRight,

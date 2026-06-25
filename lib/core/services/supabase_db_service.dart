@@ -1,6 +1,7 @@
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:spendly/core/services/db_service.dart';
+import 'package:spendly/core/utils/crypto_utils.dart';
 import 'package:spendly/models/family.dart';
 import 'package:spendly/models/family_member.dart';
 import 'package:spendly/models/expense.dart';
@@ -26,7 +27,7 @@ class SupabaseDbService implements DbService {
   Future<String?> signUp({required String email, required String password, required String displayName}) async {
     final response = await _client.from('users').insert({
       'email': email.toLowerCase().trim(),
-      'password': password,
+      'password': CryptoUtils.hashPassword(password),
       'display_name': displayName,
     }).select().single();
 
@@ -48,7 +49,8 @@ class SupabaseDbService implements DbService {
         .eq('email', normalizedEmail)
         .maybeSingle();
 
-    if (response == null || response['password'] != password) {
+    final hashedPassword = CryptoUtils.hashPassword(password);
+    if (response == null || response['password'] != hashedPassword) {
       throw Exception('Invalid email or password.');
     }
 
@@ -105,7 +107,7 @@ class SupabaseDbService implements DbService {
     // Update password in public.users table
     await _client
         .from('users')
-        .update({'password': tempPassword})
+        .update({'password': CryptoUtils.hashPassword(tempPassword)})
         .eq('email', normalizedEmail);
 
     return tempPassword;

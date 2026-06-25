@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:math';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:spendly/core/services/db_service.dart';
+import 'package:spendly/core/utils/crypto_utils.dart';
 import 'package:spendly/models/family.dart';
 import 'package:spendly/models/family_member.dart';
 import 'package:spendly/models/expense.dart';
@@ -41,7 +42,7 @@ class MockDbService implements DbService {
     users[email.toLowerCase()] = {
       'id': userId,
       'email': email,
-      'password': password,
+      'password': CryptoUtils.hashPassword(password),
       'displayName': displayName,
     };
 
@@ -56,7 +57,8 @@ class MockDbService implements DbService {
     final Map<String, dynamic> users = json.decode(usersRaw);
 
     final normalizedEmail = email.toLowerCase();
-    if (!users.containsKey(normalizedEmail) || users[normalizedEmail]['password'] != password) {
+    final hashedPassword = CryptoUtils.hashPassword(password);
+    if (!users.containsKey(normalizedEmail) || users[normalizedEmail]['password'] != hashedPassword) {
       throw Exception('Invalid email or password.');
     }
 
@@ -118,7 +120,7 @@ class MockDbService implements DbService {
     }
 
     final tempPassword = 'TEMP-${Random().nextInt(9000) + 1000}';
-    users[normalizedEmail]['password'] = tempPassword;
+    users[normalizedEmail]['password'] = CryptoUtils.hashPassword(tempPassword);
     await _prefs.setString(_keyUsers, json.encode(users));
     return tempPassword;
   }
