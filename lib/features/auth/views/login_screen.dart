@@ -205,6 +205,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
+    final connection = ref.watch(connectionProvider);
 
     return Scaffold(
       body: Center(
@@ -233,7 +234,28 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
-                const SizedBox(height: 40),
+                const SizedBox(height: 12),
+                Center(
+                  child: Chip(
+                    avatar: CircleAvatar(
+                      backgroundColor: connection == ConnectionStatus.online
+                          ? Colors.green
+                          : (connection == ConnectionStatus.sandbox ? Colors.blue : Colors.amber),
+                      radius: 6,
+                    ),
+                    label: Text(
+                      connection == ConnectionStatus.online
+                          ? 'Connected to Supabase'
+                          : (connection == ConnectionStatus.sandbox
+                              ? 'Offline Sandbox (Local Mode)'
+                              : 'Offline (No Connection)'),
+                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+                    ),
+                    backgroundColor: Colors.grey[100],
+                    side: BorderSide.none,
+                  ),
+                ),
+                const SizedBox(height: 28),
                 if (_isSignUp) ...[
                   TextFormField(
                     controller: _nameController,

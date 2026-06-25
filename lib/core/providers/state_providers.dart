@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart' hide Family;
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:spendly/core/constants/config.dart';
@@ -444,22 +446,36 @@ enum ConnectionStatus { checking, online, offline, sandbox }
 
 class ConnectionNotifier extends StateNotifier<ConnectionStatus> {
   final DbService _dbService;
+  Timer? _timer;
 
   ConnectionNotifier(this._dbService) : super(ConnectionStatus.checking) {
     checkConnection();
+    // Run connection checks every 10 seconds
+    _timer = Timer.periodic(const Duration(seconds: 10), (_) => checkConnection());
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
   }
 
   Future<void> checkConnection() async {
-    if (!AppConfig.isSupabaseConfigured) {
+    if (!AppConfig.isSupabaseConfigured || !AppConfig.isSupabaseInitialized) {
       state = ConnectionStatus.sandbox;
       return;
     }
     
     try {
-      // Run a simple query to verify database is reachable
+      // Try to query users table
       await Supabase.instance.client.from('users').select('id').limit(1);
       state = ConnectionStatus.online;
+    } on PostgrestException catch (e) {
+      // If table doesn't exist but we get database response, we are online!
+      debugPrint('Connection check: PostgrestException (Supabase is reachable): $e');
+      state = ConnectionStatus.online;
     } catch (e) {
+      debugPrint('Connection check failed: $e');
       state = ConnectionStatus.offline;
     }
   }

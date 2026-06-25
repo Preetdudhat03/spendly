@@ -6,6 +6,7 @@ import 'package:spendly/core/constants/config.dart';
 import 'package:spendly/core/services/db_provider.dart';
 import 'package:spendly/core/services/router_service.dart';
 import 'package:spendly/core/theme/app_theme.dart';
+import 'package:spendly/core/providers/state_providers.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,7 +21,10 @@ void main() async {
         url: AppConfig.supabaseUrl,
         anonKey: AppConfig.supabaseAnonKey,
       );
+      AppConfig.isSupabaseInitialized = true;
+      debugPrint('Supabase initialized successfully!');
     } catch (e) {
+      AppConfig.isSupabaseInitialized = false;
       debugPrint('Error initializing Supabase: $e');
     }
   }
@@ -47,6 +51,55 @@ class SpendlyApp extends ConsumerWidget {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       routerConfig: router,
+      builder: (context, child) {
+        return ConnectionListenerWidget(child: child!);
+      },
     );
+  }
+}
+
+class ConnectionListenerWidget extends ConsumerWidget {
+  final Widget child;
+
+  const ConnectionListenerWidget({super.key, required this.child});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Listen to connection changes to show Toast Messages globally
+    ref.listen<ConnectionStatus>(connectionProvider, (previous, next) {
+      if (next == ConnectionStatus.offline) {
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Row(
+              children: [
+                Icon(Icons.wifi_off, color: Colors.white),
+                SizedBox(width: 12),
+                Text('You are offline. Running in offline/cached mode.'),
+              ],
+            ),
+            backgroundColor: Colors.amber,
+            duration: Duration(seconds: 4),
+          ),
+        );
+      } else if (next == ConnectionStatus.online && previous == ConnectionStatus.offline) {
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Row(
+              children: [
+                Icon(Icons.wifi, color: Colors.white),
+                SizedBox(width: 12),
+                Text('You are online. Connected to Supabase!'),
+              ],
+            ),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 3),
+          ),
+        );
+      }
+    });
+
+    return child;
   }
 }

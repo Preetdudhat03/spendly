@@ -14,39 +14,6 @@ class MainLayout extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Listen to connection changes to show Toast Messages
-    ref.listen<ConnectionStatus>(connectionProvider, (previous, next) {
-      if (next == ConnectionStatus.offline) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Row(
-              children: [
-                Icon(Icons.wifi_off, color: Colors.white),
-                SizedBox(width: 12),
-                Text('You are offline. Running in offline mode.'),
-              ],
-            ),
-            backgroundColor: Colors.amber,
-            duration: Duration(seconds: 4),
-          ),
-        );
-      } else if (next == ConnectionStatus.online && previous == ConnectionStatus.offline) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Row(
-              children: [
-                Icon(Icons.wifi, color: Colors.white),
-                SizedBox(width: 12),
-                Text('You are online. Connected to Supabase!'),
-              ],
-            ),
-            backgroundColor: Colors.green,
-            duration: Duration(seconds: 3),
-          ),
-        );
-      }
-    });
-
     return Scaffold(
       body: IndexedStack(
         index: initialTab,

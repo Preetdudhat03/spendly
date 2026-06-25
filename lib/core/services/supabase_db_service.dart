@@ -25,43 +25,69 @@ class SupabaseDbService implements DbService {
 
   @override
   Future<String?> signUp({required String email, required String password, required String displayName}) async {
-    final response = await _client.from('users').insert({
-      'email': email.toLowerCase().trim(),
-      'password': CryptoUtils.hashPassword(password),
-      'display_name': displayName,
-    }).select().single();
+    final cleanEmail = email.toLowerCase().trim();
+    debugPrint('Supabase Auth: signUp requested for $cleanEmail');
+    try {
+      final hashedPassword = CryptoUtils.hashPassword(password);
+      final response = await _client.from('users').insert({
+        'email': cleanEmail,
+        'password': hashedPassword,
+        'display_name': displayName,
+      }).select().single();
 
-    final userId = response['id'] as String;
+      debugPrint('Supabase Auth: signUp database insert succeeded: $response');
+      final userId = response['id'] as String;
 
-    await _prefs.setString(_keySupaUserId, userId);
-    await _prefs.setString(_keySupaUserEmail, email.toLowerCase().trim());
-    await _prefs.setString(_keySupaUserDisplayName, displayName);
+      await _prefs.setString(_keySupaUserId, userId);
+      await _prefs.setString(_keySupaUserEmail, cleanEmail);
+      await _prefs.setString(_keySupaUserDisplayName, displayName);
 
-    return userId;
+      return userId;
+    } catch (e, stack) {
+      debugPrint('Supabase Auth: signUp failed with exception: $e');
+      debugPrint('Supabase Auth: signUp stacktrace: $stack');
+      rethrow;
+    }
   }
 
   @override
   Future<String?> signIn({required String email, required String password}) async {
     final normalizedEmail = email.toLowerCase().trim();
-    final response = await _client
-        .from('users')
-        .select()
-        .eq('email', normalizedEmail)
-        .maybeSingle();
+    debugPrint('Supabase Auth: signIn requested for $normalizedEmail');
+    try {
+      final response = await _client
+          .from('users')
+          .select()
+          .eq('email', normalizedEmail)
+          .maybeSingle();
 
-    final hashedPassword = CryptoUtils.hashPassword(password);
-    if (response == null || response['password'] != hashedPassword) {
-      throw Exception('Invalid email or password.');
+      debugPrint('Supabase Auth: signIn select result: $response');
+
+      if (response == null) {
+        debugPrint('Supabase Auth: signIn failed - email not found in database');
+        throw Exception('Invalid email or password.');
+      }
+
+      final hashedPassword = CryptoUtils.hashPassword(password);
+      if (response['password'] != hashedPassword) {
+        debugPrint('Supabase Auth: signIn failed - password hash mismatch');
+        throw Exception('Invalid email or password.');
+      }
+
+      final userId = response['id'] as String;
+      final displayName = response['display_name'] as String;
+
+      await _prefs.setString(_keySupaUserId, userId);
+      await _prefs.setString(_keySupaUserEmail, normalizedEmail);
+      await _prefs.setString(_keySupaUserDisplayName, displayName);
+
+      debugPrint('Supabase Auth: signIn successful, session saved for user: $userId');
+      return userId;
+    } catch (e, stack) {
+      debugPrint('Supabase Auth: signIn failed with exception: $e');
+      debugPrint('Supabase Auth: signIn stacktrace: $stack');
+      rethrow;
     }
-
-    final userId = response['id'] as String;
-    final displayName = response['display_name'] as String;
-
-    await _prefs.setString(_keySupaUserId, userId);
-    await _prefs.setString(_keySupaUserEmail, normalizedEmail);
-    await _prefs.setString(_keySupaUserDisplayName, displayName);
-
-    return userId;
   }
 
   @override
