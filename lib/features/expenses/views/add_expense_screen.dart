@@ -48,13 +48,23 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
     // Use postFrameCallback to read provider state without side effects during build
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final quickCategory = ref.read(selectedCategoryProvider);
-      if (quickCategory != null) {
-        setState(() {
+      final quickAmount = ref.read(prefilledAmountProvider);
+      final quickDesc = ref.read(prefilledDescriptionProvider);
+
+      setState(() {
+        if (quickCategory != null) {
           _selectedCategory = quickCategory;
-        });
-        // Reset the quick category so it doesn't affect future navigation
-        ref.read(selectedCategoryProvider.notifier).state = null;
-      }
+          ref.read(selectedCategoryProvider.notifier).state = null;
+        }
+        if (quickAmount != null) {
+          _amountController.text = quickAmount.toStringAsFixed(0);
+          ref.read(prefilledAmountProvider.notifier).state = null;
+        }
+        if (quickDesc != null) {
+          _descriptionController.text = quickDesc;
+          ref.read(prefilledDescriptionProvider.notifier).state = null;
+        }
+      });
     });
   }
 

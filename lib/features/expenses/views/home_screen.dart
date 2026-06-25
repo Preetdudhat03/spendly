@@ -45,7 +45,11 @@ class HomeScreen extends ConsumerWidget {
     final currencyFormat = NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 0);
 
     // Suggestions
-    final suggestions = SuggestionsService.generateSuggestions(expenseState.expenses);
+    final blacklistedKeys = ref.watch(blacklistSuggestionsProvider);
+    final suggestions = SuggestionsService.generateSuggestions(expenseState.expenses).where((sug) {
+      final key = '${sug.category}|${sug.description}|${sug.amount}';
+      return !blacklistedKeys.contains(key);
+    }).toList();
 
     final connection = ref.watch(connectionProvider);
 
