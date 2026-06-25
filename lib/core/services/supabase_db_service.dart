@@ -350,6 +350,38 @@ class SupabaseDbService implements DbService {
   }
 
   @override
+  Future<Expense> updateExpense({
+    required String id,
+    required double amount,
+    required String category,
+    required String description,
+    required String paymentMethod,
+    required DateTime expenseDate,
+  }) async {
+    final displayName = await getCurrentUserDisplayName() ?? 'Family Member';
+    final data = await _client.from('expenses').update({
+      'amount': amount,
+      'category': category,
+      'description': description,
+      'payment_method': paymentMethod,
+      'expense_date': expenseDate.toIso8601String(),
+    }).eq('id', id).select().single();
+
+    return Expense(
+      id: data['id'] as String,
+      familyId: data['family_id'] as String,
+      createdBy: data['created_by'] as String,
+      amount: (data['amount'] as num).toDouble(),
+      category: data['category'] as String,
+      description: data['description'] as String? ?? '',
+      paymentMethod: data['payment_method'] as String? ?? 'UPI',
+      expenseDate: DateTime.parse(data['expense_date'] as String),
+      createdAt: DateTime.parse(data['created_at'] as String),
+      createdByName: displayName,
+    );
+  }
+
+  @override
   Future<void> deleteExpense(String id) async {
     await _client.from('expenses').delete().eq('id', id);
   }

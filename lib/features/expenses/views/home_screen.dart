@@ -243,10 +243,10 @@ class HomeScreen extends ConsumerWidget {
                       ),
                       TextButton(
                         onPressed: () {
-                          // Switch to Add Tab
-                          context.go('/add');
+                          // Navigate to All Expenses view
+                          context.push('/expenses');
                         },
-                        child: const Text('Add New'),
+                        child: const Text('View All'),
                       )
                     ],
                   ),
@@ -495,9 +495,14 @@ class HomeScreen extends ConsumerWidget {
       case 'fuel':
       case 'petrol':
         return '🚗';
+      case 'recharges':
+        return '📱';
+      case 'travel':
+        return '✈️';
+      case 'gas':
+        return '⛽';
       case 'electricity':
       case 'water':
-      case 'gas':
       case 'utility':
         return '⚡';
       case 'medical':

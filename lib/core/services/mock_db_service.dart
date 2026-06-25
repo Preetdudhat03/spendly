@@ -358,6 +358,49 @@ class MockDbService implements DbService {
   }
 
   @override
+  Future<Expense> updateExpense({
+    required String id,
+    required double amount,
+    required String category,
+    required String description,
+    required String paymentMethod,
+    required DateTime expenseDate,
+  }) async {
+    final expensesRaw = _prefs.getStringList(_keyExpenses) ?? [];
+    final List<String> updated = [];
+    Expense? updatedExpense;
+
+    for (var eStr in expensesRaw) {
+      final e = Expense.fromJson(json.decode(eStr));
+      if (e.id == id) {
+        final newExpense = Expense(
+          id: e.id,
+          familyId: e.familyId,
+          createdBy: e.createdBy,
+          amount: amount,
+          category: category,
+          description: description,
+          paymentMethod: paymentMethod,
+          expenseDate: expenseDate,
+          createdAt: e.createdAt,
+          createdByName: e.createdByName,
+        );
+        updatedExpense = newExpense;
+        updated.add(json.encode(newExpense.toJson()));
+      } else {
+        updated.add(eStr);
+      }
+    }
+
+    if (updatedExpense == null) {
+      throw Exception('Expense not found.');
+    }
+
+    await _prefs.setStringList(_keyExpenses, updated);
+    return updatedExpense;
+  }
+
+  @override
   Future<void> deleteExpense(String id) async {
     final expensesRaw = _prefs.getStringList(_keyExpenses) ?? [];
     final List<String> updated = [];

@@ -12,3 +12,8 @@ GeneratedPluginRegistrant.java
 key.properties
 **/*.keystore
 **/*.jks
+
+# JVM and Kotlin temporary files
+.kotlin/
+*.hprof
+*.log

@@ -5,6 +5,7 @@ import 'package:spendly/core/providers/state_providers.dart';
 import 'package:spendly/features/auth/views/login_screen.dart';
 import 'package:spendly/features/family/views/family_setup_screen.dart';
 import 'package:spendly/features/navigation/views/main_layout.dart';
+import 'package:spendly/features/expenses/views/all_expenses_screen.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   // Watch auth and family states to trigger router refresh on changes
@@ -54,6 +55,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/family-setup',
         builder: (context, state) => const FamilySetupScreen(),
+      ),
+      GoRoute(
+        path: '/expenses',
+        builder: (context, state) => const AllExpensesScreen(),
       ),
       // Shell route or sub-paths for MainLayout
       GoRoute(

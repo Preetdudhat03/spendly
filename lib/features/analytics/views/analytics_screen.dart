@@ -451,6 +451,12 @@ class AnalyticsScreen extends ConsumerWidget {
       case 'petrol':
       case 'fuel':
         return const Color(0xFF3B82F6); // Blue
+      case 'recharges':
+        return const Color(0xFF06B6D4); // Cyan
+      case 'travel':
+        return const Color(0xFF14B8A6); // Teal
+      case 'gas':
+        return const Color(0xFFF97316); // Orange
       case 'electricity':
       case 'utility':
         return const Color(0xFF8B5CF6); // Purple

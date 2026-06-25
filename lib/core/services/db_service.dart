@@ -29,6 +29,14 @@ abstract class DbService {
     required String paymentMethod,
     required DateTime expenseDate,
   });
+  Future<Expense> updateExpense({
+    required String id,
+    required double amount,
+    required String category,
+    required String description,
+    required String paymentMethod,
+    required DateTime expenseDate,
+  });
   Future<void> deleteExpense(String id);
 
   // Budget

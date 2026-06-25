@@ -364,6 +364,30 @@ class ExpenseNotifier extends StateNotifier<ExpenseState> {
       state = state.copyWith(isLoading: false, error: e.toString());
     }
   }
+
+  Future<void> updateExpense({
+    required String id,
+    required double amount,
+    required String category,
+    required String description,
+    required String paymentMethod,
+    required DateTime expenseDate,
+  }) async {
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      await _dbService.updateExpense(
+        id: id,
+        amount: amount,
+        category: category,
+        description: description,
+        paymentMethod: paymentMethod,
+        expenseDate: expenseDate,
+      );
+      await loadExpenses();
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+    }
+  }
 }
 
 final expenseProvider = StateNotifierProvider<ExpenseNotifier, ExpenseState>((ref) {
