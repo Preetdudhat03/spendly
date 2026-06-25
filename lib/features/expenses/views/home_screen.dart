@@ -507,6 +507,8 @@ class HomeScreen extends ConsumerWidget {
         return '⚡';
       case 'medical':
         return '💊';
+      case 'insurances':
+        return '🛡️';
       case 'shopping':
         return '🛍️';
       case 'rent':

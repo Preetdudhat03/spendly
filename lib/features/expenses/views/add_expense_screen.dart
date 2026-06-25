@@ -32,6 +32,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
     {'name': 'Gas', 'emoji': '⛽'},
     {'name': 'Electricity', 'emoji': '⚡'},
     {'name': 'Medical', 'emoji': '💊'},
+    {'name': 'Insurances', 'emoji': '🛡️'},
     {'name': 'Rent', 'emoji': '🏠'},
     {'name': 'Shopping', 'emoji': '🛍️'},
     {'name': 'Entertainment', 'emoji': '🎬'},

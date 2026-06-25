@@ -26,6 +26,7 @@ class _AllExpensesScreenState extends ConsumerState<AllExpensesScreen> {
     {'name': 'Gas', 'emoji': '⛽'},
     {'name': 'Electricity', 'emoji': '⚡'},
     {'name': 'Medical', 'emoji': '💊'},
+    {'name': 'Insurances', 'emoji': '🛡️'},
     {'name': 'Rent', 'emoji': '🏠'},
     {'name': 'Shopping', 'emoji': '🛍️'},
     {'name': 'Entertainment', 'emoji': '🎬'},
@@ -59,6 +60,8 @@ class _AllExpensesScreenState extends ConsumerState<AllExpensesScreen> {
         return '⚡';
       case 'medical':
         return '💊';
+      case 'insurances':
+        return '🛡️';
       case 'shopping':
         return '🛍️';
       case 'rent':
@@ -92,6 +95,8 @@ class _AllExpensesScreenState extends ConsumerState<AllExpensesScreen> {
         return const Color(0xFF8B5CF6);
       case 'medical':
         return const Color(0xFFEF4444);
+      case 'insurances':
+        return const Color(0xFF4F46E5);
       case 'shopping':
         return const Color(0xFFEC4899);
       case 'rent':
@@ -545,6 +550,7 @@ class _EditExpenseFormState extends State<_EditExpenseForm> {
     {'name': 'Gas', 'emoji': '⛽'},
     {'name': 'Electricity', 'emoji': '⚡'},
     {'name': 'Medical', 'emoji': '💊'},
+    {'name': 'Insurances', 'emoji': '🛡️'},
     {'name': 'Rent', 'emoji': '🏠'},
     {'name': 'Shopping', 'emoji': '🛍️'},
     {'name': 'Entertainment', 'emoji': '🎬'},
