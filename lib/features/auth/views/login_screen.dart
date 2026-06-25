@@ -51,6 +51,114 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     }
   }
 
+  void _showForgotPasswordDialog() {
+    final recoveryEmailController = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Recover Password'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const Text(
+              'Enter your email address to recover your account with a temporary password.',
+              style: TextStyle(fontSize: 14, color: Colors.grey),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: recoveryEmailController,
+              keyboardType: TextInputType.emailAddress,
+              decoration: const InputDecoration(
+                labelText: 'Email Address',
+                prefixIcon: Icon(Icons.email),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('CANCEL'),
+          ),
+          TextButton(
+            onPressed: () async {
+              final email = recoveryEmailController.text.trim();
+              if (email.isEmpty || !email.contains('@')) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Please enter a valid email address.')),
+                );
+                return;
+              }
+
+              Navigator.pop(context); // Close inputs dialog
+              
+              // Call forgot password
+              final tempPassword = await ref.read(authProvider.notifier).forgotPassword(email);
+              
+              if (!mounted) return;
+
+              if (tempPassword != null) {
+                // Show recovery success dialog with temporary password
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: const Text('Recovery Email Mock'),
+                    content: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        const Text(
+                          'An email with a temporary password would be sent in production.\n\nSince this is custom database authentication, here is your temporary recovery password:',
+                          style: TextStyle(fontSize: 14),
+                        ),
+                        const SizedBox(height: 16),
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF1F5F9),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: SelectableText(
+                            tempPassword,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                              color: Theme.of(context).primaryColor,
+                              letterSpacing: 1.5,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        const Text(
+                          'Use this temporary password to log in, and you can edit your nickname or reset it later.',
+                          style: TextStyle(fontSize: 12, color: Colors.grey),
+                        ),
+                      ],
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('OK'),
+                      ),
+                    ],
+                  ),
+                );
+              } else {
+                final error = ref.read(authProvider).error ?? 'Email not found.';
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(error), backgroundColor: Colors.redAccent),
+                );
+              }
+            },
+            child: const Text('RECOVER'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
@@ -118,7 +226,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   validator: (value) =>
                       value == null || value.length < 6 ? 'Password must be at least 6 characters' : null,
                 ),
-                const SizedBox(height: 32),
+                if (!_isSignUp) ...[
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton(
+                      onPressed: _showForgotPasswordDialog,
+                      child: const Text('Forgot Password?'),
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 16),
                 if (authState.isLoading)
                   const Center(child: CircularProgressIndicator())
                 else
