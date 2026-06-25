@@ -1,3 +1,4 @@
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:spendly/core/services/db_service.dart';
 import 'package:spendly/models/family.dart';
@@ -7,6 +8,14 @@ import 'package:spendly/models/budget.dart';
 
 class SupabaseDbService implements DbService {
   final SupabaseClient _client = Supabase.instance.client;
+  final SharedPreferences _prefs;
+
+  SupabaseDbService(this._prefs);
+
+  // Local storage session keys
+  static const String _keySupaUserId = 'supabase_user_id';
+  static const String _keySupaUserEmail = 'supabase_user_email';
+  static const String _keySupaUserDisplayName = 'supabase_user_display_name';
 
   // Cache of user ID -> display name to quickly populate createdByName on expenses
   final Map<String, String> _memberNamesCache = {};
@@ -15,43 +24,91 @@ class SupabaseDbService implements DbService {
 
   @override
   Future<String?> signUp({required String email, required String password, required String displayName}) async {
-    final response = await _client.auth.signUp(
-      email: email,
-      password: password,
-      data: {'display_name': displayName},
-    );
-    return response.user?.id;
+    final response = await _client.from('users').insert({
+      'email': email.toLowerCase().trim(),
+      'password': password,
+      'display_name': displayName,
+    }).select().single();
+
+    final userId = response['id'] as String;
+
+    await _prefs.setString(_keySupaUserId, userId);
+    await _prefs.setString(_keySupaUserEmail, email.toLowerCase().trim());
+    await _prefs.setString(_keySupaUserDisplayName, displayName);
+
+    return userId;
   }
 
   @override
   Future<String?> signIn({required String email, required String password}) async {
-    final response = await _client.auth.signInWithPassword(
-      email: email,
-      password: password,
-    );
-    return response.user?.id;
+    final normalizedEmail = email.toLowerCase().trim();
+    final response = await _client
+        .from('users')
+        .select()
+        .eq('email', normalizedEmail)
+        .maybeSingle();
+
+    if (response == null || response['password'] != password) {
+      throw Exception('Invalid email or password.');
+    }
+
+    final userId = response['id'] as String;
+    final displayName = response['display_name'] as String;
+
+    await _prefs.setString(_keySupaUserId, userId);
+    await _prefs.setString(_keySupaUserEmail, normalizedEmail);
+    await _prefs.setString(_keySupaUserDisplayName, displayName);
+
+    return userId;
   }
 
   @override
   Future<void> signOut() async {
-    await _client.auth.signOut();
+    await _prefs.remove(_keySupaUserId);
+    await _prefs.remove(_keySupaUserEmail);
+    await _prefs.remove(_keySupaUserDisplayName);
     _memberNamesCache.clear();
   }
 
   @override
   String? getCurrentUserId() {
-    return _client.auth.currentUser?.id;
+    return _prefs.getString(_keySupaUserId);
   }
 
   @override
   String? getCurrentUserEmail() {
-    return _client.auth.currentUser?.email;
+    return _prefs.getString(_keySupaUserEmail);
   }
 
   @override
   Future<String?> getCurrentUserDisplayName() async {
-    final metadata = _client.auth.currentUser?.userMetadata;
-    return metadata?['display_name'] as String? ?? 'User';
+    return _prefs.getString(_keySupaUserDisplayName) ?? 'User';
+  }
+
+  @override
+  Future<String?> forgotPassword(String email) async {
+    final normalizedEmail = email.toLowerCase().trim();
+    final response = await _client
+        .from('users')
+        .select()
+        .eq('email', normalizedEmail)
+        .maybeSingle();
+
+    if (response == null) {
+      throw Exception('Email not found.');
+    }
+
+    // Generate random 4-digit numeric temp password code
+    final int rand = DateTime.now().millisecondsSinceEpoch % 9000 + 1000;
+    final tempPassword = 'TEMP-$rand';
+
+    // Update password in public.users table
+    await _client
+        .from('users')
+        .update({'password': tempPassword})
+        .eq('email', normalizedEmail);
+
+    return tempPassword;
   }
 
   // --- Family ---
