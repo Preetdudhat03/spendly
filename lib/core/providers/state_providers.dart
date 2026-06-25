@@ -144,6 +144,18 @@ class AuthNotifier extends StateNotifier<AuthState> {
       state = state.copyWith(error: e.toString());
     }
   }
+
+  Future<String?> forgotPassword(String email) async {
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      final tempPassword = await _dbService.forgotPassword(email);
+      state = state.copyWith(isLoading: false);
+      return tempPassword;
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+      return null;
+    }
+  }
 }
 
 final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {

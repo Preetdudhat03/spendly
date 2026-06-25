@@ -202,22 +202,18 @@ class SupabaseDbService implements DbService {
     final family = await getCurrentFamily();
     if (family == null) return [];
 
-    final list = await _client.from('family_members').select().eq('family_id', family.id);
+    final list = await _client
+        .from('family_members')
+        .select('*, users(display_name)')
+        .eq('family_id', family.id);
+        
     final List<FamilyMember> members = [];
 
     for (var data in list) {
-      // In a real database, we would query metadata or joins.
-      // Here, we can query auth user details or fallback.
       final userId = data['user_id'] as String;
-      
-      // Let's resolve their display name if they are the current user
-      String displayName = data['role'] == 'admin' ? 'Family Admin' : 'Family Member';
-      if (userId == getCurrentUserId()) {
-        displayName = await getCurrentUserDisplayName() ?? displayName;
-      } else {
-        // Fallback names for other users, or use cached names
-        displayName = _memberNamesCache[userId] ?? displayName;
-      }
+      final usersMap = data['users'] as Map<String, dynamic>?;
+      final displayName = usersMap?['display_name'] as String? ?? 
+          (data['role'] == 'admin' ? 'Family Admin' : 'Family Member');
 
       final member = FamilyMember(
         id: data['id'] as String,
@@ -240,10 +236,12 @@ class SupabaseDbService implements DbService {
     final userId = getCurrentUserId();
     if (userId == null) return;
 
-    // Update user auth metadata
-    await _client.auth.updateUser(
-      UserAttributes(data: {'display_name': name}),
-    );
+    await _client
+        .from('users')
+        .update({'display_name': name})
+        .eq('id', userId);
+
+    await _prefs.setString(_keySupaUserDisplayName, name);
     _memberNamesCache[userId] = name;
   }
 
