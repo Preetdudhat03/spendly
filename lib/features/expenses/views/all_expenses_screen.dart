@@ -731,6 +731,7 @@ class _EditExpenseFormState extends State<_EditExpenseForm> {
   @override
   Widget build(BuildContext context) {
     final dateStr = DateFormat('MMMM dd, yyyy').format(_selectedDate);
+    final isWide = MediaQuery.of(context).size.width > 720;
 
     return Scaffold(
       appBar: AppBar(
@@ -740,136 +741,141 @@ class _EditExpenseFormState extends State<_EditExpenseForm> {
           onPressed: () => Navigator.pop(context),
         ),
       ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.only(
-          left: 28.0,
-          right: 28.0,
-          top: 20.0,
-          bottom: MediaQuery.of(context).viewInsets.bottom + 28.0,
-        ),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Amount field
-              TextFormField(
-                controller: _amountController,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
-                textAlign: TextAlign.center,
-                decoration: const InputDecoration(
-                  prefixText: '₹ ',
-                  labelText: 'Amount spent',
-                  alignLabelWithHint: true,
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) return 'Enter amount';
-                  if (double.tryParse(value) == null || double.parse(value) <= 0) {
-                    return 'Enter valid amount';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 24),
-
-              // Description
-              TextFormField(
-                controller: _descriptionController,
-                decoration: const InputDecoration(
-                  labelText: 'Description (e.g. Milk, Petrol, Vegetables)',
-                  prefixIcon: Icon(Icons.description_outlined),
-                ),
-              ),
-              const SizedBox(height: 24),
-
-              // Category Selector label
-              const Text(
-                'Select Category',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-              ),
-              const SizedBox(height: 12),
-
-              // Category grid wrap
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: _categories.map((cat) {
-                  final isSelected = _selectedCategory.toLowerCase() == cat['name']!.toLowerCase();
-                  return ChoiceChip(
-                    avatar: Text(cat['emoji']!),
-                    label: Text(cat['name']!),
-                    selected: isSelected,
-                    onSelected: (selected) {
-                      if (selected) {
-                        setState(() {
-                          _selectedCategory = cat['name']!;
-                        });
+      body: Center(
+        child: Container(
+          constraints: BoxConstraints(maxWidth: isWide ? 600 : double.infinity),
+          child: SingleChildScrollView(
+            padding: EdgeInsets.only(
+              left: 28.0,
+              right: 28.0,
+              top: 20.0,
+              bottom: MediaQuery.of(context).viewInsets.bottom + 28.0,
+            ),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Amount field
+                  TextFormField(
+                    controller: _amountController,
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+                    textAlign: TextAlign.center,
+                    decoration: const InputDecoration(
+                      prefixText: '₹ ',
+                      labelText: 'Amount spent',
+                      alignLabelWithHint: true,
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) return 'Enter amount';
+                      if (double.tryParse(value) == null || double.parse(value) <= 0) {
+                        return 'Enter valid amount';
                       }
+                      return null;
                     },
-                    selectedColor: Theme.of(context).primaryColor.withOpacity(0.2),
-                    checkmarkColor: Theme.of(context).primaryColor,
-                  );
-                }).toList(),
-              ),
-
-              const SizedBox(height: 24),
-
-              // Payment Method SegmentedButton
-              const Text(
-                'Payment Method',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-              ),
-              const SizedBox(height: 12),
-              SegmentedButton<String>(
-                segments: const [
-                  ButtonSegment(value: 'UPI', label: Text('UPI'), icon: Icon(Icons.mobile_friendly)),
-                  ButtonSegment(value: 'Cash', label: Text('Cash'), icon: Icon(Icons.money)),
-                  ButtonSegment(value: 'Card', label: Text('Card'), icon: Icon(Icons.credit_card)),
-                ],
-                selected: {_paymentMethod},
-                onSelectionChanged: (selection) {
-                  setState(() {
-                    _paymentMethod = selection.first;
-                  });
-                },
-              ),
-
-              const SizedBox(height: 24),
-
-              // Date Picker
-              InkWell(
-                onTap: _selectDate,
-                borderRadius: BorderRadius.circular(12),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.grey[400]!),
-                    borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.calendar_today, color: Colors.grey),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          'Expense Date: $dateStr',
-                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-                        ),
-                      ),
-                      const Icon(Icons.arrow_drop_down, color: Colors.grey),
+                  const SizedBox(height: 24),
+    
+                  // Description
+                  TextFormField(
+                    controller: _descriptionController,
+                    decoration: const InputDecoration(
+                      labelText: 'Description (e.g. Milk, Petrol, Vegetables)',
+                      prefixIcon: Icon(Icons.description_outlined),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+    
+                  // Category Selector label
+                  const Text(
+                    'Select Category',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                  const SizedBox(height: 12),
+    
+                  // Category grid wrap
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: _categories.map((cat) {
+                      final isSelected = _selectedCategory.toLowerCase() == cat['name']!.toLowerCase();
+                      return ChoiceChip(
+                        avatar: Text(cat['emoji']!),
+                        label: Text(cat['name']!),
+                        selected: isSelected,
+                        onSelected: (selected) {
+                          if (selected) {
+                            setState(() {
+                              _selectedCategory = cat['name']!;
+                            });
+                          }
+                        },
+                        selectedColor: Theme.of(context).primaryColor.withOpacity(0.2),
+                        checkmarkColor: Theme.of(context).primaryColor,
+                      );
+                    }).toList(),
+                  ),
+    
+                  const SizedBox(height: 24),
+    
+                  // Payment Method SegmentedButton
+                  const Text(
+                    'Payment Method',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                  const SizedBox(height: 12),
+                  SegmentedButton<String>(
+                    segments: const [
+                      ButtonSegment(value: 'UPI', label: Text('UPI'), icon: Icon(Icons.mobile_friendly)),
+                      ButtonSegment(value: 'Cash', label: Text('Cash'), icon: Icon(Icons.money)),
+                      ButtonSegment(value: 'Card', label: Text('Card'), icon: Icon(Icons.credit_card)),
                     ],
+                    selected: {_paymentMethod},
+                    onSelectionChanged: (selection) {
+                      setState(() {
+                        _paymentMethod = selection.first;
+                      });
+                    },
                   ),
-                ),
+    
+                  const SizedBox(height: 24),
+    
+                  // Date Picker
+                  InkWell(
+                    onTap: _selectDate,
+                    borderRadius: BorderRadius.circular(12),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey[400]!),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.calendar_today, color: Colors.grey),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              'Expense Date: $dateStr',
+                              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                            ),
+                          ),
+                          const Icon(Icons.arrow_drop_down, color: Colors.grey),
+                        ],
+                      ),
+                    ),
+                  ),
+    
+                  const SizedBox(height: 40),
+    
+                  ElevatedButton(
+                    onPressed: _submit,
+                    child: const Text('SAVE CHANGES'),
+                  ),
+                ],
               ),
-
-              const SizedBox(height: 40),
-
-              ElevatedButton(
-                onPressed: _submit,
-                child: const Text('SAVE CHANGES'),
-              ),
-            ],
+            ),
           ),
         ),
       ),
