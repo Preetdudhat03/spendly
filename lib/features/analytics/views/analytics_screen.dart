@@ -462,6 +462,8 @@ class AnalyticsScreen extends ConsumerWidget {
         return const Color(0xFF8B5CF6); // Purple
       case 'medical':
         return const Color(0xFFEF4444); // Red
+      case 'insurances':
+        return const Color(0xFF4F46E5); // Indigo
       case 'shopping':
         return const Color(0xFFEC4899); // Pink
       case 'rent':
