@@ -20,10 +20,39 @@ class _VerifyEmailScreenState extends ConsumerState<VerifyEmailScreen> {
       setState(() {
         _signUpTriggered = true;
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Verification email sent! Please check your inbox.'),
-          backgroundColor: Colors.green,
+
+      // Show confirmation dialog with steps
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => AlertDialog(
+          title: const Row(
+            children: [
+              Icon(Icons.mark_email_read, color: Color(0xFF636AE8), size: 28),
+              SizedBox(width: 12),
+              Text('Confirm Email'),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                'A verification link has been sent to:\n${ref.read(authProvider).email}\n\n'
+                'Please follow these steps to continue:\n'
+                '1. Open your email inbox and find the email from Spendly.\n'
+                '2. Click the confirmation link to activate your new account.\n'
+                '3. Once confirmed, return to this screen and click "I HAVE VERIFIED MY EMAIL" to complete your migration.',
+                style: const TextStyle(fontSize: 14, height: 1.5),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('OK, GOT IT'),
+            ),
+          ],
         ),
       );
     } else {

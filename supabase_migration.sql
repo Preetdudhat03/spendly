@@ -26,26 +26,36 @@ create index if not exists idx_profiles_email on public.profiles(email);
 -- Disable Row Level Security (RLS) on profiles to match other tables (Phase 1/2 compatibility)
 alter table public.profiles disable row level security;
 
--- 3. Trigger to auto-create profiles for direct sign-ups (new users)
+-- 3. Trigger to auto-create profiles ONLY when the email is confirmed
 create or replace function public.handle_new_user()
 returns trigger as $$
+declare
+  legacy_id uuid;
 begin
-  insert into public.profiles (id, email, display_name, migration_completed)
-  values (
-    new.id,
-    new.email,
-    coalesce(new.raw_user_meta_data->>'display_name', split_part(new.email, '@', 1)),
-    true
-  )
-  on conflict (id) do nothing;
+  -- Only create profile if the email is confirmed!
+  if new.email_confirmed_at is not null then
+    legacy_id := (new.raw_user_meta_data->>'legacy_user_id')::uuid;
+    
+    insert into public.profiles (id, email, display_name, legacy_user_id, migration_completed)
+    values (
+      new.id,
+      new.email,
+      coalesce(new.raw_user_meta_data->>'display_name', split_part(new.email, '@', 1)),
+      legacy_id,
+      case when legacy_id is null then true else false end -- true for new users, false for migrating users
+    )
+    on conflict (id) do update set
+      email = excluded.email,
+      display_name = coalesce(profiles.display_name, excluded.display_name);
+  end if;
   return new;
 end;
 $$ language plpgsql security definer;
 
--- Bind the trigger function
+-- Bind the trigger function to run on insert or update
 drop trigger if exists on_auth_user_created on auth.users;
 create trigger on_auth_user_created
-  after insert on auth.users
+  after insert or update on auth.users
   for each row execute procedure public.handle_new_user();
 
 -- 4. Transactional RPC function to complete legacy user relationship migration atomically

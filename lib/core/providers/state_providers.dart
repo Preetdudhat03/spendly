@@ -306,10 +306,21 @@ class AuthNotifier extends StateNotifier<AuthState> {
       await client.auth.signUp(
         email: state.email!,
         password: state.pendingPassword!,
-        data: {'display_name': state.displayName ?? 'User'},
+        data: {
+          'display_name': state.displayName ?? 'User',
+          'legacy_user_id': state.legacyUserId,
+        },
       );
       state = state.copyWith(isLoading: false);
       return true;
+    } on AuthException catch (e) {
+      final msg = e.message.toLowerCase();
+      if (msg.contains('already exists') || msg.contains('already registered')) {
+        state = state.copyWith(isLoading: false);
+        return true;
+      }
+      state = state.copyWith(isLoading: false, error: e.message);
+      return false;
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
       return false;
