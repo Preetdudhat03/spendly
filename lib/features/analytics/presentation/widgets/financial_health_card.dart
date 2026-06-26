@@ -1,0 +1,190 @@
+import 'dart:math';
+import 'package:flutter/material.dart';
+import 'package:spendly/features/analytics/providers/analytics_providers.dart';
+
+class FinancialHealthCard extends StatelessWidget {
+  final AnalyticsState state;
+
+  const FinancialHealthCard({super.key, required this.state});
+
+  Color _getScoreColor(int score) {
+    if (score >= 90) return Colors.emerald;
+    if (score >= 75) return Colors.blue;
+    if (score >= 50) return Colors.orange;
+    return Colors.rose;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final score = state.financialHealthScore;
+    final color = _getScoreColor(score);
+    final label = state.healthScoreLabel;
+
+    return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(28),
+        side: const BorderSide(color: Color(0xFFF1F5F9)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Title
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Financial Health Score',
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'Calculated using budget discipline metrics',
+                      style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                    ),
+                  ],
+                ),
+                Icon(Icons.health_and_safety_outlined, size: 20, color: color),
+              ],
+            ),
+            const SizedBox(height: 24),
+
+            // Gauge + Score Display
+            Center(
+              child: SizedBox(
+                width: 200,
+                height: 110,
+                child: CustomPaint(
+                  painter: _GaugePainter(score: score, color: color),
+                  child: Align(
+                    alignment: Alignment.bottomCenter,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          '$score',
+                          style: TextStyle(
+                            fontSize: 34,
+                            fontWeight: FontWeight.w900,
+                            color: color,
+                            letterSpacing: -1,
+                          ),
+                        ),
+                        Text(
+                          label.toUpperCase(),
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w800,
+                            color: color,
+                            letterSpacing: 0.8,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            const Divider(),
+            const SizedBox(height: 12),
+
+            // Factors Breakdown list
+            Text(
+              'Contributing Factors',
+              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey[600]),
+            ),
+            const SizedBox(height: 10),
+            _buildFactorRow('Budget Adherence', state.totalSpent <= state.budgetLimit ? 'On Track' : 'Limit Exceeded', state.totalSpent <= state.budgetLimit ? Colors.emerald : Colors.rose),
+            _buildFactorRow('Expense Consistency', state.totalTransactions > 0 ? 'Consistent logging' : 'Needs transactions', state.totalTransactions > 0 ? Colors.emerald : Colors.grey),
+            _buildFactorRow('Savings Potential', state.savingsOpportunities.isNotEmpty ? 'Optimization found' : 'Perfect alignment', Colors.blue),
+            _buildFactorRow('Category Diversity', state.categoryShares.length >= 3 ? 'Good distribution' : 'Highly concentrated', state.categoryShares.length >= 3 ? Colors.emerald : Colors.orange),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFactorRow(String name, String status, Color statusColor) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(name, style: const TextStyle(fontSize: 12, color: Colors.black87)),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+            decoration: BoxDecoration(
+              color: statusColor.withOpacity(0.08),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(
+              status,
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+                color: statusColor,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _GaugePainter extends CustomPainter {
+  final int score;
+  final Color color;
+
+  _GaugePainter({required this.score, required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height);
+    final radius = min(size.width / 2, size.height) - 10;
+
+    // Draw background track arc (180 degrees to 360 degrees)
+    final bgPaint = Paint()
+      ..color = const Color(0xFFF1F5F9)
+      ..strokeCap = StrokeCap.round
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 14;
+
+    canvas.drawArc(
+      Rect.fromCircle(center: center, radius: radius),
+      pi, // Start from left (180 deg)
+      pi, // Sweep full semi-circle
+      false,
+      bgPaint,
+    );
+
+    // Draw foreground score arc
+    final fgPaint = Paint()
+      ..color = color
+      ..strokeCap = StrokeCap.round
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 14;
+
+    final double sweepAngle = pi * (score / 100);
+
+    canvas.drawArc(
+      Rect.fromCircle(center: center, radius: radius),
+      pi,
+      sweepAngle,
+      false,
+      fgPaint,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+}

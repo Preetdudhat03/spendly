@@ -1,0 +1,285 @@
+import 'dart:math';
+import 'package:flutter/material.dart';
+import 'package:fl_chart/fl_chart.dart';
+import 'package:intl/intl.dart';
+import 'package:spendly/features/analytics/providers/analytics_providers.dart';
+import 'package:spendly/features/analytics/presentation/widgets/category_donut_chart.dart';
+import 'package:spendly/models/expense.dart';
+
+class MonthlyStackedChart extends StatelessWidget {
+  final AnalyticsState state;
+
+  const MonthlyStackedChart({super.key, required this.state});
+
+  @override
+  Widget build(BuildContext context) {
+    // We want to access all expenses to construct the last 6 months.
+    // The provider state doesn't filter out allExpenses, but we can access it reactively.
+    // Let's filter the expenses dynamically.
+    final allExpenses = widget.state.filteredExpenses; 
+    // Wait, the state.filteredExpenses is filtered by the active range (e.g. This Month).
+    // To construct the 6-month stacked chart, we should pull from the full list of expenses!
+    // Let's look up how to get full expenses. Oh, we can watch expenseProvider!
+    // Let's make it a ConsumerWidget so we can read expenseProvider directly.
+    return _StackedChartConsumer(state: state);
+  }
+}
+
+class _StackedChartConsumer extends ConsumerWidget {
+  final AnalyticsState state;
+
+  const _StackedChartConsumer({required this.state});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final expenseState = ref.watch(expenseProvider);
+    final allExpenses = expenseState.expenses;
+
+    if (allExpenses.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    final currencyFmt = NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 0);
+
+    // Calculate last 6 months
+    final now = DateTime.now();
+    final List<DateTime> months = [];
+    for (int i = 5; i >= 0; i--) {
+      months.add(DateTime(now.year, now.month - i, 1));
+    }
+
+    // Build stacked bar group data
+    double maxMonthTotal = 1000.0;
+    final List<BarChartGroupData> barGroups = [];
+    final monthFormat = DateFormat('MMM');
+
+    // To prevent rendering cluttered categories, we'll keep track of active categories for the legend
+    final Set<String> categoriesSeen = {};
+
+    for (int i = 0; i < months.length; i++) {
+      final month = months[i];
+      final monthExpenses = allExpenses.where((e) {
+        return e.expenseDate.year == month.year && e.expenseDate.month == month.month;
+      }).toList();
+
+      final Map<String, double> catSums = {};
+      double monthTotal = 0;
+      for (var e in monthExpenses) {
+        catSums[e.category] = (catSums[e.category] ?? 0) + e.amount;
+        monthTotal += e.amount;
+        categoriesSeen.add(e.category);
+      }
+
+      maxMonthTotal = max(maxMonthTotal, monthTotal);
+
+      // Build stack items
+      final List<BarChartRodStackItem> stackItems = [];
+      double currentSum = 0;
+
+      // Sort categories to maintain visual stability
+      final sortedCats = catSums.keys.toList()..sort();
+
+      for (var cat in sortedCats) {
+        final amt = catSums[cat] ?? 0.0;
+        if (amt > 0) {
+          final meta = getCategoryMetadata(cat);
+          stackItems.add(
+            BarChartRodStackItem(
+              currentSum,
+              currentSum + amt,
+              meta.color,
+            ),
+          );
+          currentSum += amt;
+        }
+      }
+
+      barGroups.add(
+        BarChartGroupData(
+          x: i,
+          barRods: [
+            BarChartRodData(
+              toY: monthTotal,
+              rodStackItems: stackItems,
+              color: Colors.transparent, // Background color when stack items don't cover
+              width: 22,
+              borderRadius: BorderRadius.circular(4),
+            ),
+          ],
+        ),
+      );
+    }
+
+    maxMonthTotal = maxMonthTotal * 1.15;
+
+    // Show legend for up to 8 top categories in the list
+    final List<String> legendCategories = categoriesSeen.toList();
+    if (legendCategories.length > 8) {
+      legendCategories.removeRange(8, legendCategories.length);
+    }
+
+    return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(28),
+        side: const BorderSide(color: Color(0xFFF1F5F9)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Title
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Monthly Distribution',
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'Category splits over the last 6 months',
+                      style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                    ),
+                  ],
+                ),
+                Icon(Icons.bar_chart, size: 20, color: Theme.of(context).primaryColor),
+              ],
+            ),
+            const SizedBox(height: 24),
+
+            // Bar Chart Area
+            SizedBox(
+              height: 200,
+              child: BarChart(
+                BarChartData(
+                  alignment: BarChartAlignment.spaceAround,
+                  maxY: maxMonthTotal,
+                  barTouchData: BarTouchData(
+                    touchTooltipData: BarTouchTooltipData(
+                      getTooltipColor: (group) => Colors.black.withOpacity(0.85),
+                      getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                        final monthIdx = group.x.toInt();
+                        if (monthIdx < 0 || monthIdx >= months.length) return null;
+                        
+                        final month = months[monthIdx];
+                        final monthExpenses = allExpenses.where((e) {
+                          return e.expenseDate.year == month.year && e.expenseDate.month == month.month;
+                        }).toList();
+
+                        // Group spending by category to compile tooltip text
+                        final Map<String, double> catSums = {};
+                        for (var e in monthExpenses) {
+                          catSums[e.category] = (catSums[e.category] ?? 0) + e.amount;
+                        }
+
+                        final listLines = catSums.entries
+                            .map((e) => '${e.key}: ${currencyFmt.format(e.value)}')
+                            .join('\n');
+
+                        return BarTooltipItem(
+                          '${DateFormat('MMMM yyyy').format(month)}\nTotal: ${currencyFmt.format(rod.toY)}\n\n$listLines',
+                          const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                        );
+                      },
+                    ),
+                  ),
+                  titlesData: FlTitlesData(
+                    show: true,
+                    rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                    topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                    leftTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        reservedSize: 42,
+                        getTitlesWidget: (value, meta) {
+                          if (value == 0) return const SizedBox.shrink();
+                          String formatted = '';
+                          if (value >= 1000) {
+                            formatted = '₹${(value / 1000).toStringAsFixed(0)}k';
+                          } else {
+                            formatted = '₹${value.toStringAsFixed(0)}';
+                          }
+                          return SideTitleWidget(
+                            axisSide: meta.axisSide,
+                            child: Text(
+                              formatted,
+                              style: TextStyle(color: Colors.grey[500], fontSize: 10, fontWeight: FontWeight.bold),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    bottomTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        reservedSize: 28,
+                        getTitlesWidget: (value, meta) {
+                          final idx = value.toInt();
+                          if (idx >= 0 && idx < months.length) {
+                            return SideTitleWidget(
+                              axisSide: meta.axisSide,
+                              child: Text(
+                                monthFormat.format(months[idx]),
+                                style: TextStyle(color: Colors.grey[600], fontSize: 11, fontWeight: FontWeight.bold),
+                              ),
+                            );
+                          }
+                          return const SizedBox.shrink();
+                        },
+                      ),
+                    ),
+                  ),
+                  gridData: FlGridData(
+                    show: true,
+                    drawVerticalLine: false,
+                    getDrawingHorizontalLine: (value) => FlLine(
+                      color: const Color(0xFFF1F5F9),
+                      strokeWidth: 1,
+                    ),
+                  ),
+                  borderData: FlBorderData(show: false),
+                  barGroups: barGroups,
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+
+            // Legend indicators
+            Wrap(
+              spacing: 12,
+              runSpacing: 8,
+              children: legendCategories.map((cat) {
+                final meta = getCategoryMetadata(cat);
+                return Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 10,
+                      height: 10,
+                      decoration: BoxDecoration(
+                        color: meta.color,
+                        borderRadius: BorderRadius.circular(2.5),
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      meta.name,
+                      style: TextStyle(fontSize: 10.5, color: Colors.grey[600], fontWeight: FontWeight.w600),
+                    ),
+                  ],
+                );
+              }).toList(),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

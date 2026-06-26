@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:spendly/core/providers/state_providers.dart';
 import 'package:spendly/features/expenses/views/home_screen.dart';
 import 'package:spendly/features/expenses/views/add_expense_screen.dart';
-import 'package:spendly/features/analytics/views/analytics_screen.dart';
+import 'package:spendly/features/analytics/presentation/pages/analytics_page.dart';
 import 'package:spendly/features/profile/views/profile_screen.dart';
 
 class MainLayout extends ConsumerWidget {
@@ -69,7 +69,7 @@ class MainLayout extends ConsumerWidget {
               children: const [
                 HomeScreen(),
                 AddExpenseScreen(),
-                AnalyticsScreen(),
+                AnalyticsPage(),
                 ProfileScreen(),
               ],
             ),

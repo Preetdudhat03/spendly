@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:spendly/core/utils/ai_insights.dart';
 import 'package:spendly/core/services/suggestions_service.dart';
 import 'package:spendly/models/expense.dart';
+import 'package:spendly/features/analytics/providers/analytics_providers.dart';
 
 void main() {
   group('AI Insights Heuristics Tests', () {
@@ -102,6 +103,24 @@ void main() {
       expect(suggestions.length, 1);
       expect(suggestions[0].description, 'Milk');
       expect(suggestions[0].amount, 60.0);
+    });
+  });
+
+  group('Analytics Model Tests', () {
+    test('CategoryShare calculates correct properties', () {
+      final share = CategoryShare(
+        category: 'Food',
+        amount: 1500.0,
+        percentage: 30.0,
+        prevAmount: 1000.0,
+        diffPercent: 50.0,
+        isIncrease: true,
+      );
+      expect(share.category, 'Food');
+      expect(share.amount, 1500.0);
+      expect(share.percentage, 30.0);
+      expect(share.diffPercent, 50.0);
+      expect(share.isIncrease, isTrue);
     });
   });
 }
