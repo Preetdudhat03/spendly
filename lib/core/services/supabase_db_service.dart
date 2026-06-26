@@ -273,7 +273,7 @@ class SupabaseDbService implements DbService {
 
     final list = await _client
         .from('family_members')
-        .select('*, users(display_name)')
+        .select('*, users(display_name), profiles(display_name)')
         .eq('family_id', family.id);
         
     final List<FamilyMember> members = [];
@@ -281,7 +281,9 @@ class SupabaseDbService implements DbService {
     for (var data in list) {
       final userId = data['user_id'] as String;
       final usersMap = data['users'] as Map<String, dynamic>?;
-      final displayName = usersMap?['display_name'] as String? ?? 
+      final profilesMap = data['profiles'] as Map<String, dynamic>?;
+      final displayName = profilesMap?['display_name'] as String? ?? 
+          usersMap?['display_name'] as String? ?? 
           (data['role'] == 'admin' ? 'Family Admin' : 'Family Member');
 
       final member = FamilyMember(
@@ -305,12 +307,22 @@ class SupabaseDbService implements DbService {
     final userId = getCurrentUserId();
     if (userId == null) return;
 
-    await _client
-        .from('users')
-        .update({'display_name': name})
-        .eq('id', userId);
-
-    await _prefs.setString(_keySupaUserDisplayName, name);
+    final nativeUser = _client.auth.currentUser;
+    if (nativeUser != null) {
+      // Update display name in profiles table
+      await _client
+          .from('profiles')
+          .update({'display_name': name})
+          .eq('id', userId);
+    } else {
+      // Fallback for legacy user
+      await _client
+          .from('users')
+          .update({'display_name': name})
+          .eq('id', userId);
+      await _prefs.setString(_keySupaUserDisplayName, name);
+    }
+    
     _memberNamesCache[userId] = name;
   }
 
