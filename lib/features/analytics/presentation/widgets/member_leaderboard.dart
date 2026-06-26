@@ -87,7 +87,7 @@ class FamilyMemberLeaderboard extends StatelessWidget {
                     children: [
                       // Avatar with index badge
                       Stack(
-                        clipBehavior: Clip: Clip.none,
+                        clipBehavior: Clip.none,
                         children: [
                           CircleAvatar(
                             radius: 20,

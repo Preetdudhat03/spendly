@@ -13,9 +13,9 @@ class FinancialSummaryCards extends StatelessWidget {
     
     // Calculate budget status color
     final progress = state.budgetProgressPercent;
-    Color budgetProgressColor = Colors.emerald;
+    Color budgetProgressColor = Colors.green;
     if (progress >= 0.8) {
-      budgetProgressColor = Colors.rose;
+      budgetProgressColor = Colors.red;
     } else if (progress >= 0.5) {
       budgetProgressColor = Colors.orange;
     }
@@ -40,7 +40,7 @@ class FinancialSummaryCards extends StatelessWidget {
                 Icon(
                   state.totalSpentDiffPercent >= 0 ? Icons.arrow_upward : Icons.arrow_downward,
                   size: 14,
-                  color: state.totalSpentDiffPercent >= 0 ? Colors.rose : Colors.emerald,
+                  color: state.totalSpentDiffPercent >= 0 ? Colors.red : Colors.green,
                 ),
                 const SizedBox(width: 4),
                 Text(
@@ -48,7 +48,7 @@ class FinancialSummaryCards extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
-                    color: state.totalSpentDiffPercent >= 0 ? Colors.rose : Colors.emerald,
+                    color: state.totalSpentDiffPercent >= 0 ? Colors.red : Colors.green,
                   ),
                 ),
               ],
@@ -68,7 +68,7 @@ class FinancialSummaryCards extends StatelessWidget {
                 Icon(
                   state.dailyAverageDiffPercent >= 0 ? Icons.arrow_upward : Icons.arrow_downward,
                   size: 14,
-                  color: state.dailyAverageDiffPercent >= 0 ? Colors.rose : Colors.emerald,
+                  color: state.dailyAverageDiffPercent >= 0 ? Colors.red : Colors.green,
                 ),
                 const SizedBox(width: 4),
                 Text(

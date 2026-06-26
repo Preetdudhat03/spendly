@@ -28,24 +28,24 @@ class BudgetAnalysisCard extends StatelessWidget {
     final forecastExceedAmount = max(0.0, projectedSpend - budget);
 
     String forecastMessage = '';
-    Color forecastBg = Colors.emerald.withOpacity(0.06);
-    Color forecastBorder = Colors.emerald.withOpacity(0.2);
-    Color forecastTextColor = Colors.emerald[800]!;
+    Color forecastBg = Colors.green.withOpacity(0.06);
+    Color forecastBorder = Colors.green.withOpacity(0.2);
+    Color forecastTextColor = Colors.green[800]!;
     IconData forecastIcon = Icons.check_circle_outline;
 
     if (isExceededForecast && budget > 0) {
       forecastMessage = 'If spending continues at current pace, you will exceed your budget by ${currencyFmt.format(forecastExceedAmount)} (Projected total: ${currencyFmt.format(projectedSpend)}).';
-      forecastBg = Colors.rose.withOpacity(0.06);
-      forecastBorder = Colors.rose.withOpacity(0.2);
-      forecastTextColor = Colors.rose[800]!;
+      forecastBg = Colors.red.withOpacity(0.06);
+      forecastBorder = Colors.red.withOpacity(0.2);
+      forecastTextColor = Colors.red[800]!;
       forecastIcon = Icons.warning_amber_rounded;
     } else {
       forecastMessage = 'You are on track to stay within your budget. Projected monthly total: ${currencyFmt.format(projectedSpend)}.';
     }
 
-    Color progressColor = Colors.emerald;
+    Color progressColor = Colors.green;
     if (progress >= 0.8) {
-      progressColor = Colors.rose;
+      progressColor = Colors.red;
     } else if (progress >= 0.5) {
       progressColor = Colors.orange;
     }
@@ -97,7 +97,7 @@ class BudgetAnalysisCard extends StatelessWidget {
                       const SizedBox(height: 10),
                       _buildInfoRow(context, 'Total Spent', currencyFmt.format(spent), progressColor),
                       const SizedBox(height: 10),
-                      _buildInfoRow(context, 'Remaining', currencyFmt.format(remaining), remaining > 0 ? Colors.emerald : Colors.grey),
+                      _buildInfoRow(context, 'Remaining', currencyFmt.format(remaining), remaining > 0 ? Colors.green : Colors.grey),
                     ],
                   ),
                 ),

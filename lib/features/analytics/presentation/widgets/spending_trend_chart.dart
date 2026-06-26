@@ -223,7 +223,6 @@ class SpendingTrendChart extends StatelessWidget {
                       LineChartBarData(
                         spots: currentSpots,
                         isCurved: true,
-                        curveMode: CurveMode.quadratic,
                         color: Theme.of(context).primaryColor,
                         barWidth: 4,
                         isStrokeCapRound: true,
@@ -245,7 +244,6 @@ class SpendingTrendChart extends StatelessWidget {
                         LineChartBarData(
                           spots: prevSpots,
                           isCurved: true,
-                          curveMode: CurveMode.quadratic,
                           color: Colors.grey[400],
                           barWidth: 2,
                           dashArray: [6, 6],

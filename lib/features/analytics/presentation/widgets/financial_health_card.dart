@@ -8,10 +8,10 @@ class FinancialHealthCard extends StatelessWidget {
   const FinancialHealthCard({super.key, required this.state});
 
   Color _getScoreColor(int score) {
-    if (score >= 90) return Colors.emerald;
+    if (score >= 90) return Colors.green;
     if (score >= 75) return Colors.blue;
     if (score >= 50) return Colors.orange;
-    return Colors.rose;
+    return Colors.red;
   }
 
   @override
@@ -103,10 +103,10 @@ class FinancialHealthCard extends StatelessWidget {
               style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey[600]),
             ),
             const SizedBox(height: 10),
-            _buildFactorRow('Budget Adherence', state.totalSpent <= state.budgetLimit ? 'On Track' : 'Limit Exceeded', state.totalSpent <= state.budgetLimit ? Colors.emerald : Colors.rose),
-            _buildFactorRow('Expense Consistency', state.totalTransactions > 0 ? 'Consistent logging' : 'Needs transactions', state.totalTransactions > 0 ? Colors.emerald : Colors.grey),
+            _buildFactorRow('Budget Adherence', state.totalSpent <= state.budgetLimit ? 'On Track' : 'Limit Exceeded', state.totalSpent <= state.budgetLimit ? Colors.green : Colors.red),
+            _buildFactorRow('Expense Consistency', state.totalTransactions > 0 ? 'Consistent logging' : 'Needs transactions', state.totalTransactions > 0 ? Colors.green : Colors.grey),
             _buildFactorRow('Savings Potential', state.savingsOpportunities.isNotEmpty ? 'Optimization found' : 'Perfect alignment', Colors.blue),
-            _buildFactorRow('Category Diversity', state.categoryShares.length >= 3 ? 'Good distribution' : 'Highly concentrated', state.categoryShares.length >= 3 ? Colors.emerald : Colors.orange),
+            _buildFactorRow('Category Diversity', state.categoryShares.length >= 3 ? 'Good distribution' : 'Highly concentrated', state.categoryShares.length >= 3 ? Colors.green : Colors.orange),
           ],
         ),
       ),

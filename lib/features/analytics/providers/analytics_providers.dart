@@ -136,6 +136,8 @@ class AnalyticsState {
   final String healthScoreLabel;
   final List<String> aiInsights;
   final List<String> aiRecommendations;
+  final Map<String, int> timeOfDayCounts;
+  final Map<String, double> timeOfDayAmounts;
 
   AnalyticsState({
     required this.filterType,
@@ -173,6 +175,8 @@ class AnalyticsState {
     required this.healthScoreLabel,
     required this.aiInsights,
     required this.aiRecommendations,
+    required this.timeOfDayCounts,
+    required this.timeOfDayAmounts,
   });
 
   factory AnalyticsState.initial(DateTimeRange range, DateTimeRange prevRange) {
@@ -212,6 +216,8 @@ class AnalyticsState {
       healthScoreLabel: 'Excellent',
       aiInsights: [],
       aiRecommendations: [],
+      timeOfDayCounts: const {},
+      timeOfDayAmounts: const {},
     );
   }
 
@@ -251,6 +257,8 @@ class AnalyticsState {
     String? healthScoreLabel,
     List<String>? aiInsights,
     List<String>? aiRecommendations,
+    Map<String, int>? timeOfDayCounts,
+    Map<String, double>? timeOfDayAmounts,
   }) {
     return AnalyticsState(
       filterType: filterType ?? this.filterType,
@@ -288,6 +296,8 @@ class AnalyticsState {
       healthScoreLabel: healthScoreLabel ?? this.healthScoreLabel,
       aiInsights: aiInsights ?? this.aiInsights,
       aiRecommendations: aiRecommendations ?? this.aiRecommendations,
+      timeOfDayCounts: timeOfDayCounts ?? this.timeOfDayCounts,
+      timeOfDayAmounts: timeOfDayAmounts ?? this.timeOfDayAmounts,
     );
   }
 }
@@ -928,6 +938,8 @@ class AnalyticsNotifier extends StateNotifier<AnalyticsState> {
       healthScoreLabel: scoreLabel,
       aiInsights: aiInsights,
       aiRecommendations: aiRecommendations,
+      timeOfDayCounts: timeOfDayCounts,
+      timeOfDayAmounts: timeOfDayAmounts,
     );
   }
 }

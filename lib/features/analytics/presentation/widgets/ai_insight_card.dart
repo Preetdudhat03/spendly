@@ -125,7 +125,7 @@ class AiInsightCard extends StatelessWidget {
                         ),
                       ],
                     ),
-                    Icon(Icons.tips_and_updates_outlined, size: 20, color: Colors.emerald[600]),
+                    Icon(Icons.tips_and_updates_outlined, size: 20, color: Colors.green[600]),
                   ],
                 ),
                 const SizedBox(height: 16),
@@ -149,7 +149,7 @@ class AiInsightCard extends StatelessWidget {
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Icon(Icons.check_circle_outline_rounded, size: 16, color: Colors.emerald[700]),
+                            Icon(Icons.check_circle_outline_rounded, size: 16, color: Colors.green[700]),
                             const SizedBox(width: 10),
                             Expanded(
                               child: Text(
@@ -157,7 +157,7 @@ class AiInsightCard extends StatelessWidget {
                                 style: TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w600,
-                                  color: Colors.emerald[900],
+                                  color: Colors.green[900],
                                   height: 1.3,
                                 ),
                               ),

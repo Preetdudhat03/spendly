@@ -1,10 +1,12 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
 import 'package:spendly/features/analytics/providers/analytics_providers.dart';
 import 'package:spendly/features/analytics/presentation/widgets/category_donut_chart.dart';
 import 'package:spendly/models/expense.dart';
+import 'package:spendly/core/providers/state_providers.dart';
 
 class MonthlyStackedChart extends StatelessWidget {
   final AnalyticsState state;
@@ -13,14 +15,6 @@ class MonthlyStackedChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // We want to access all expenses to construct the last 6 months.
-    // The provider state doesn't filter out allExpenses, but we can access it reactively.
-    // Let's filter the expenses dynamically.
-    final allExpenses = widget.state.filteredExpenses; 
-    // Wait, the state.filteredExpenses is filtered by the active range (e.g. This Month).
-    // To construct the 6-month stacked chart, we should pull from the full list of expenses!
-    // Let's look up how to get full expenses. Oh, we can watch expenseProvider!
-    // Let's make it a ConsumerWidget so we can read expenseProvider directly.
     return _StackedChartConsumer(state: state);
   }
 }

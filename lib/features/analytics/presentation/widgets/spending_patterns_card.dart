@@ -19,7 +19,7 @@ class SpendingPatternsCard extends StatelessWidget {
       weekendIcon = Icons.trending_up_rounded;
       weekendColor = Colors.orange;
       if (state.weekendOverspendPercent > 40) {
-        weekendColor = Colors.rose;
+        weekendColor = Colors.red;
       }
     }
 
@@ -61,7 +61,7 @@ class SpendingPatternsCard extends StatelessWidget {
     // 3. Category concentration
     String concentrationText = 'Your spending is well-diversified across categories.';
     IconData concIcon = Icons.category_outlined;
-    Color concColor = Colors.emerald;
+    Color concColor = Colors.green;
 
     if (state.categoryShares.isNotEmpty) {
       final topCat = state.categoryShares.first;

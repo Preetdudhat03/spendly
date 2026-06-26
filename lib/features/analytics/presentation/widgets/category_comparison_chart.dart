@@ -78,7 +78,7 @@ class CategoryComparisonChart extends StatelessWidget {
                   compText = 'New category spend';
                 }
 
-                final compColor = isIncrease ? Colors.rose : Colors.emerald;
+                final compColor = isIncrease ? Colors.red : Colors.green;
 
                 return Padding(
                   padding: const EdgeInsets.symmetric(vertical: 10.0),
