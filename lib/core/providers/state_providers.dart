@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart' hide Family;
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:spendly/core/constants/config.dart';
 import 'package:spendly/core/services/db_provider.dart';
 import 'package:spendly/core/services/db_service.dart';
@@ -557,4 +558,12 @@ class BlacklistSuggestionsNotifier extends StateNotifier<Set<String>> {
 
 final blacklistSuggestionsProvider = StateNotifierProvider<BlacklistSuggestionsNotifier, Set<String>>((ref) {
   return BlacklistSuggestionsNotifier();
+});
+
+// ==========================================
+// 7. Package Info Provider
+// ==========================================
+
+final packageInfoProvider = FutureProvider<PackageInfo>((ref) async {
+  return await PackageInfo.fromPlatform();
 });

@@ -359,13 +359,20 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     child: const Text('LOGOUT FROM APP'),
                   );
 
+                  final packageInfoAsync = ref.watch(packageInfoProvider);
+                  final versionStr = packageInfoAsync.when(
+                    data: (info) => 'Version ${info.version}',
+                    loading: () => 'Version loading...',
+                    error: (e, s) => 'Version unknown',
+                  );
+
                   Widget versionFooter = Padding(
                     padding: const EdgeInsets.symmetric(vertical: 24.0),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          'Version 1.2.4',
+                          versionStr,
                           style: TextStyle(
                             fontSize: 13,
                             color: Colors.grey[500],
