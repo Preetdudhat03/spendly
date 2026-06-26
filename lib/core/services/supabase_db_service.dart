@@ -93,6 +93,11 @@ class SupabaseDbService implements DbService {
 
   @override
   Future<void> signOut() async {
+    try {
+      await _client.auth.signOut();
+    } catch (e) {
+      debugPrint('Error signing out from Supabase Auth: $e');
+    }
     await _prefs.remove(_keySupaUserId);
     await _prefs.remove(_keySupaUserEmail);
     await _prefs.remove(_keySupaUserDisplayName);
@@ -101,16 +106,37 @@ class SupabaseDbService implements DbService {
 
   @override
   String? getCurrentUserId() {
+    final nativeUser = _client.auth.currentUser;
+    if (nativeUser != null) {
+      return nativeUser.id;
+    }
     return _prefs.getString(_keySupaUserId);
   }
 
   @override
   String? getCurrentUserEmail() {
+    final nativeUser = _client.auth.currentUser;
+    if (nativeUser != null) {
+      return nativeUser.email;
+    }
     return _prefs.getString(_keySupaUserEmail);
   }
 
   @override
   Future<String?> getCurrentUserDisplayName() async {
+    final nativeUser = _client.auth.currentUser;
+    if (nativeUser != null) {
+      try {
+        final profile = await _client.from('profiles').select('display_name').eq('id', nativeUser.id).maybeSingle();
+        if (profile != null) {
+          final name = profile['display_name'] as String?;
+          if (name != null && name.isNotEmpty) return name;
+        }
+      } catch (e) {
+        debugPrint('Error getting display name from profile: $e');
+      }
+      return nativeUser.userMetadata?['display_name'] as String? ?? 'User';
+    }
     return _prefs.getString(_keySupaUserDisplayName) ?? 'User';
   }
 
@@ -138,6 +164,20 @@ class SupabaseDbService implements DbService {
         .eq('email', normalizedEmail);
 
     return tempPassword;
+  }
+
+  @override
+  Future<void> completeUserMigration(String oldUserId, String newUserId) async {
+    debugPrint('Supabase Auth: completing user migration from $oldUserId to $newUserId');
+    await _client.rpc('complete_user_migration', params: {
+      'old_user_id': oldUserId,
+      'new_user_id': newUserId,
+    });
+    
+    // Clear legacy SharedPreferences session to complete cutover
+    await _prefs.remove(_keySupaUserId);
+    await _prefs.remove(_keySupaUserEmail);
+    await _prefs.remove(_keySupaUserDisplayName);
   }
 
   // --- Family ---
