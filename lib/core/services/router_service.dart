@@ -3,6 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:spendly/core/providers/state_providers.dart';
 import 'package:spendly/features/auth/views/login_screen.dart';
+import 'package:spendly/features/auth/views/register_screen.dart';
+import 'package:spendly/features/auth/views/forgot_password_screen.dart';
+import 'package:spendly/features/auth/views/verify_email_screen.dart';
 import 'package:spendly/features/family/views/family_setup_screen.dart';
 import 'package:spendly/features/navigation/views/main_layout.dart';
 import 'package:spendly/features/expenses/views/all_expenses_screen.dart';
@@ -18,24 +21,36 @@ final routerProvider = Provider<GoRouter>((ref) {
     refreshListenable: _ProviderListenable(ref),
     redirect: (context, state) {
       final isLoggedIn = auth.userId != null;
-      final isLoggingIn = state.matchedLocation == '/login';
+      final isPendingMigration = auth.isMigrationPending;
+      
+      final publicRoutes = ['/login', '/register', '/forgot-password', '/verify-email'];
+      final isPublicRoute = publicRoutes.contains(state.matchedLocation);
 
       if (!isLoggedIn) {
-        return isLoggingIn ? null : '/login';
+        // If unauthenticated, allow public routes, else redirect to /login
+        return isPublicRoute ? null : '/login';
       }
 
-      // User is logged in
-      if (isLoggingIn) {
+      // User is logged in (either legacy user or native Supabase user)
+      if (isPendingMigration) {
+        // If they are in the middle of a migration, they MUST go to /verify-email
+        return state.matchedLocation == '/verify-email' ? null : '/verify-email';
+      }
+
+      // If they are logged in and verified, prevent accessing public authentication routes
+      if (state.matchedLocation == '/login' || 
+          state.matchedLocation == '/register' || 
+          state.matchedLocation == '/forgot-password') {
         return '/home';
       }
 
-      // Check if user has family setup
+      // Wait for states to load before making family routing decisions
+      if (auth.isLoading || family.isLoading) {
+        return null;
+      }
+
       final hasFamily = family.family != null;
       final isSettingUpFamily = state.matchedLocation == '/family-setup';
-
-      if (auth.isLoading || family.isLoading) {
-        return null; // Wait for loaders
-      }
 
       if (!hasFamily && !isSettingUpFamily) {
         return '/family-setup';
@@ -51,6 +66,18 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/login',
         builder: (context, state) => const LoginScreen(),
+      ),
+      GoRoute(
+        path: '/register',
+        builder: (context, state) => const RegisterScreen(),
+      ),
+      GoRoute(
+        path: '/forgot-password',
+        builder: (context, state) => const ForgotPasswordScreen(),
+      ),
+      GoRoute(
+        path: '/verify-email',
+        builder: (context, state) => const VerifyEmailScreen(),
       ),
       GoRoute(
         path: '/family-setup',
