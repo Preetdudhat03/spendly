@@ -359,37 +359,68 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     child: const Text('LOGOUT FROM APP'),
                   );
 
-                  if (isWide) {
-                    return Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                  Widget versionFooter = Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 24.0),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        Expanded(
-                          flex: 5,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              userDetailsCard,
-                              const SizedBox(height: 16),
-                              familyCodeCard,
-                              const SizedBox(height: 24),
-                              logoutButton,
-                            ],
+                        Text(
+                          'Version 1.2.4',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Colors.grey[500],
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
-                        const SizedBox(width: 24),
-                        Expanded(
-                          flex: 5,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              budgetCard,
-                              const SizedBox(height: 16),
-                              familyMembersCard,
-                              const SizedBox(height: 16),
-                              reportsCard,
-                            ],
+                        const SizedBox(height: 4),
+                        Text(
+                          'Developed by Preet',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Colors.grey[500],
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
+                      ],
+                    ),
+                  );
+
+                  if (isWide) {
+                    return Column(
+                      children: [
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              flex: 5,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  userDetailsCard,
+                                  const SizedBox(height: 16),
+                                  familyCodeCard,
+                                  const SizedBox(height: 24),
+                                  logoutButton,
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 24),
+                            Expanded(
+                              flex: 5,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  budgetCard,
+                                  const SizedBox(height: 16),
+                                  familyMembersCard,
+                                  const SizedBox(height: 16),
+                                  reportsCard,
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        versionFooter,
                       ],
                     );
                   } else {
@@ -407,7 +438,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         reportsCard,
                         const SizedBox(height: 32),
                         logoutButton,
-                        const SizedBox(height: 20),
+                        versionFooter,
                       ],
                     );
                   }
