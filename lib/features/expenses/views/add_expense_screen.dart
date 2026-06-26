@@ -39,6 +39,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
     {'name': 'Shopping', 'emoji': '🛍️'},
     {'name': 'Entertainment', 'emoji': '🎬'},
     {'name': 'Education', 'emoji': '📚'},
+    {'name': 'College', 'emoji': '🎓'},
     {'name': 'Others', 'emoji': '💰'},
   ];
 

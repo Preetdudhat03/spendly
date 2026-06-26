@@ -633,6 +633,9 @@ class HomeScreen extends ConsumerWidget {
         return '🎬';
       case 'education':
         return '📚';
+      case 'college':
+      case 'collage':
+        return '🎓';
       default:
         return '💰';
     }

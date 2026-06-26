@@ -545,6 +545,9 @@ class AnalyticsScreen extends ConsumerWidget {
         return const Color(0xFFF43F5E); // Rose
       case 'education':
         return const Color(0xFF636AE8); // Violet
+      case 'college':
+      case 'collage':
+        return const Color(0xFF312E81); // Indigo 900
       default:
         return const Color(0xFF64748B); // Slate
     }

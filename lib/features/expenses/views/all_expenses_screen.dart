@@ -31,6 +31,7 @@ class _AllExpensesScreenState extends ConsumerState<AllExpensesScreen> {
     {'name': 'Shopping', 'emoji': '🛍️'},
     {'name': 'Entertainment', 'emoji': '🎬'},
     {'name': 'Education', 'emoji': '📚'},
+    {'name': 'College', 'emoji': '🎓'},
     {'name': 'Others', 'emoji': '💰'},
   ];
 
@@ -70,6 +71,9 @@ class _AllExpensesScreenState extends ConsumerState<AllExpensesScreen> {
         return '🎬';
       case 'education':
         return '📚';
+      case 'college':
+      case 'collage':
+        return '🎓';
       default:
         return '💰';
     }
@@ -105,6 +109,9 @@ class _AllExpensesScreenState extends ConsumerState<AllExpensesScreen> {
         return const Color(0xFFF43F5E);
       case 'education':
         return const Color(0xFF636AE8);
+      case 'college':
+      case 'collage':
+        return const Color(0xFF312E81);
       default:
         return const Color(0xFF64748B);
     }
@@ -679,6 +686,7 @@ class _EditExpenseFormState extends State<_EditExpenseForm> {
     {'name': 'Shopping', 'emoji': '🛍️'},
     {'name': 'Entertainment', 'emoji': '🎬'},
     {'name': 'Education', 'emoji': '📚'},
+    {'name': 'College', 'emoji': '🎓'},
     {'name': 'Others', 'emoji': '💰'},
   ];
 
