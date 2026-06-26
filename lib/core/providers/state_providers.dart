@@ -5,8 +5,10 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:spendly/core/constants/config.dart';
+import 'package:spendly/core/providers/auth_providers.dart';
 import 'package:spendly/core/services/db_provider.dart';
 import 'package:spendly/core/services/db_service.dart';
+import 'package:spendly/core/utils/crypto_utils.dart';
 import 'package:spendly/models/family.dart';
 import 'package:spendly/models/family_member.dart';
 import 'package:spendly/models/expense.dart';
@@ -22,6 +24,11 @@ class AuthState {
   final String? email;
   final String? displayName;
   final String? error;
+  
+  // Migration support fields
+  final bool isMigrationPending;
+  final String? legacyUserId;
+  final String? pendingPassword;
 
   AuthState({
     required this.isLoading,
@@ -29,6 +36,9 @@ class AuthState {
     this.email,
     this.displayName,
     this.error,
+    this.isMigrationPending = false,
+    this.legacyUserId,
+    this.pendingPassword,
   });
 
   factory AuthState.initial() => AuthState(isLoading: false);
@@ -39,6 +49,9 @@ class AuthState {
     String? email,
     String? displayName,
     String? error,
+    bool? isMigrationPending,
+    String? legacyUserId,
+    String? pendingPassword,
   }) {
     return AuthState(
       isLoading: isLoading ?? this.isLoading,
@@ -46,6 +59,9 @@ class AuthState {
       email: email ?? this.email,
       displayName: displayName ?? this.displayName,
       error: error,
+      isMigrationPending: isMigrationPending ?? this.isMigrationPending,
+      legacyUserId: legacyUserId ?? this.legacyUserId,
+      pendingPassword: pendingPassword ?? this.pendingPassword,
     );
   }
 }
@@ -55,46 +71,153 @@ class AuthNotifier extends StateNotifier<AuthState> {
   final Ref _ref;
 
   AuthNotifier(this._dbService, this._ref) : super(AuthState.initial()) {
+    // Listen to native Supabase Auth user changes
+    _ref.listen(currentUserProvider, (previous, nextUser) {
+      _updateStateFromProviders();
+    });
+
+    // Listen to native Profile changes
+    _ref.listen(profileProvider, (previous, nextProfile) {
+      _updateStateFromProviders();
+    });
+
+    // Run initial checks
     _checkCurrentSession();
   }
 
   Future<void> _checkCurrentSession() async {
     state = state.copyWith(isLoading: true);
-    final userId = _dbService.getCurrentUserId();
-    if (userId != null) {
+    
+    // Check native user first
+    final user = _ref.read(currentUserProvider);
+    if (user != null) {
+      _updateStateFromProviders();
+      _ref.read(familyProvider.notifier).loadFamily();
+      return;
+    }
+
+    // Check legacy user in SharedPreferences
+    final legacyId = _dbService.getCurrentUserId();
+    if (legacyId != null) {
       final email = _dbService.getCurrentUserEmail();
       final displayName = await _dbService.getCurrentUserDisplayName();
       state = AuthState(
         isLoading: false,
-        userId: userId,
+        userId: legacyId,
         email: email,
         displayName: displayName,
       );
-      // Automatically load family info
       _ref.read(familyProvider.notifier).loadFamily();
     } else {
       state = AuthState.initial();
     }
   }
 
+  void _updateStateFromProviders() {
+    final user = _ref.read(currentUserProvider);
+    if (user == null) {
+      // If legacy session still exists in SharedPreferences, keep it active
+      final legacyId = _dbService.getCurrentUserId();
+      if (legacyId != null && !state.isMigrationPending) {
+        return; // Don't wipe legacy session if active
+      }
+      if (!state.isMigrationPending) {
+        state = AuthState.initial();
+      }
+      return;
+    }
+
+    // Native user is logged in
+    final profileAsync = _ref.read(profileProvider);
+    profileAsync.when(
+      data: (profile) {
+        state = AuthState(
+          isLoading: false,
+          userId: user.id,
+          email: user.email,
+          displayName: profile?.displayName ?? user.userMetadata?['display_name'] as String? ?? 'User',
+        );
+        // Load family data for native user
+        _ref.read(familyProvider.notifier).loadFamily();
+      },
+      loading: () {
+        state = state.copyWith(isLoading: true);
+      },
+      error: (e, s) {
+        state = state.copyWith(isLoading: false, error: e.toString());
+      },
+    );
+  }
+
   Future<bool> signIn(String email, String password) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      final userId = await _dbService.signIn(email: email, password: password);
-      if (userId != null) {
-        final userEmail = _dbService.getCurrentUserEmail();
-        final displayName = await _dbService.getCurrentUserDisplayName();
-        state = AuthState(
-          isLoading: false,
-          userId: userId,
-          email: userEmail,
-          displayName: displayName,
+      // 1. Try native Supabase Auth sign-in
+      try {
+        final client = Supabase.instance.client;
+        final response = await client.auth.signInWithPassword(
+          email: email.toLowerCase().trim(),
+          password: password,
         );
-        // Refresh family, expenses, budget
-        _ref.read(familyProvider.notifier).loadFamily();
-        return true;
+        if (response.user != null) {
+          _updateStateFromProviders();
+          return true;
+        }
+      } on AuthException catch (supabaseError) {
+        final msg = supabaseError.message.toLowerCase();
+        // If it's invalid credentials, check legacy database
+        if (msg.contains('invalid login credentials') || msg.contains('invalid_credentials')) {
+          final client = Supabase.instance.client;
+          final legacyUser = await client.from('users').select().eq('email', email.toLowerCase().trim()).maybeSingle();
+          if (legacyUser == null) {
+            state = state.copyWith(isLoading: false, error: 'Invalid email or password.');
+            return false;
+          }
+
+          // Check legacy password
+          final hashedInput = CryptoUtils.hashPassword(password);
+          if (legacyUser['password'] != hashedInput) {
+            state = state.copyWith(isLoading: false, error: 'Invalid email or password.');
+            return false;
+          }
+
+          // Credentials match legacy database! Migration required.
+          final legacyUserId = legacyUser['id'] as String;
+          
+          // Check if already completed migration
+          final existingProfile = await client.from('profiles').select().eq('legacy_user_id', legacyUserId).maybeSingle();
+          if (existingProfile != null && existingProfile['migration_completed'] == true) {
+            state = state.copyWith(
+              isLoading: false,
+              error: 'Your account was already migrated. Please use your updated Supabase Auth password.',
+            );
+            return false;
+          }
+
+          // Trigger migration flow
+          state = AuthState(
+            isLoading: false,
+            userId: legacyUserId,
+            email: legacyUser['email'] as String,
+            displayName: legacyUser['display_name'] as String,
+            isMigrationPending: true,
+            legacyUserId: legacyUserId,
+            pendingPassword: password,
+          );
+          return true;
+        } else if (msg.contains('email not confirmed')) {
+          state = AuthState(
+            isLoading: false,
+            email: email.toLowerCase().trim(),
+            isMigrationPending: false,
+            error: 'Please verify your email address before logging in.',
+          );
+          return false;
+        } else {
+          state = state.copyWith(isLoading: false, error: supabaseError.message);
+          return false;
+        }
       }
-      state = state.copyWith(isLoading: false, error: 'Sign in failed');
       return false;
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
@@ -105,20 +228,19 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<bool> signUp(String email, String password, String displayName) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      final userId = await _dbService.signUp(
-        email: email,
+      final client = Supabase.instance.client;
+      final response = await client.auth.signUp(
+        email: email.toLowerCase().trim(),
         password: password,
-        displayName: displayName,
+        data: {'display_name': displayName},
       );
-      if (userId != null) {
+      if (response.user != null) {
         state = AuthState(
           isLoading: false,
-          userId: userId,
-          email: email,
+          email: email.toLowerCase().trim(),
           displayName: displayName,
+          error: 'Registration successful! A verification email has been sent. Please confirm your email.',
         );
-        // Reset family to clear previous state
-        _ref.read(familyProvider.notifier).reset();
         return true;
       }
       state = state.copyWith(isLoading: false, error: 'Sign up failed');
@@ -142,6 +264,13 @@ class AuthNotifier extends StateNotifier<AuthState> {
     try {
       await _dbService.updateMemberDisplayName(newName);
       state = state.copyWith(displayName: newName);
+      
+      // Refresh native profile notifier
+      final user = _ref.read(currentUserProvider);
+      if (user != null) {
+        _ref.read(profileNotifierProvider(user.id).notifier).refresh();
+      }
+
       // Reload family members to update list UI
       _ref.read(familyProvider.notifier).loadMembers();
       // Reload expenses to update createdByName cache
@@ -154,13 +283,81 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<String?> forgotPassword(String email) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      final tempPassword = await _dbService.forgotPassword(email);
+      final client = Supabase.instance.client;
+      await client.auth.resetPasswordForEmail(
+        email.toLowerCase().trim(),
+        redirectTo: kIsWeb ? null : 'spendly://reset-password',
+      );
       state = state.copyWith(isLoading: false);
-      return tempPassword;
+      return 'SUCCESS';
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
       return null;
     }
+  }
+
+  Future<bool> startMigrationSignUp() async {
+    if (!state.isMigrationPending || state.email == null || state.pendingPassword == null) {
+      return false;
+    }
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      final client = Supabase.instance.client;
+      await client.auth.signUp(
+        email: state.email!,
+        password: state.pendingPassword!,
+        data: {'display_name': state.displayName ?? 'User'},
+      );
+      state = state.copyWith(isLoading: false);
+      return true;
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+      return false;
+    }
+  }
+
+  Future<bool> verifyAndCompleteMigration() async {
+    if (!state.isMigrationPending || state.email == null || state.pendingPassword == null || state.legacyUserId == null) {
+      return false;
+    }
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      final client = Supabase.instance.client;
+      
+      // 1. Confirm email is verified by attempting native sign-in
+      final response = await client.auth.signInWithPassword(
+        email: state.email!,
+        password: state.pendingPassword!,
+      );
+      
+      final newUser = response.user;
+      if (newUser == null) {
+        throw Exception('Failed to sign in. Please verify your email first.');
+      }
+      
+      // 2. Perform atomic database migration via RPC
+      await _dbService.completeUserMigration(state.legacyUserId!, newUser.id);
+      
+      // 3. Clear migration pending flag and complete login
+      state = AuthState(
+        isLoading: false,
+        userId: newUser.id,
+        email: newUser.email,
+        displayName: state.displayName,
+      );
+      
+      // Refresh profile and family
+      await _ref.read(profileNotifierProvider(newUser.id).notifier).refresh();
+      _ref.read(familyProvider.notifier).loadFamily();
+      return true;
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+      return false;
+    }
+  }
+
+  void cancelMigration() {
+    state = AuthState.initial();
   }
 }
 
