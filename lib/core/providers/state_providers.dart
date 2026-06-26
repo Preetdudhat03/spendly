@@ -131,22 +131,71 @@ class AuthNotifier extends StateNotifier<AuthState> {
     final profileAsync = _ref.read(profileProvider);
     profileAsync.when(
       data: (profile) {
-        state = AuthState(
-          isLoading: false,
-          userId: user.id,
-          email: user.email,
-          displayName: profile?.displayName ?? user.userMetadata?['display_name'] as String? ?? 'User',
-        );
-        // Load family data for native user
-        _ref.read(familyProvider.notifier).loadFamily();
+        if (profile != null) {
+          // If the profile exists but migration is not completed, auto-trigger the transactional migration
+          final legacyId = profile.legacyUserId ?? state.legacyUserId;
+          if (!profile.migrationCompleted && legacyId != null) {
+            _autoCompleteMigration(legacyId, profile.id);
+            return;
+          }
+
+          state = AuthState(
+            isLoading: false,
+            userId: profile.id,
+            email: profile.email,
+            displayName: profile.displayName.isNotEmpty ? profile.displayName : (user.userMetadata?['display_name'] as String? ?? 'User'),
+            isMigrationPending: false,
+          );
+          _ref.read(familyProvider.notifier).loadFamily();
+        } else {
+          // Profile doesn't exist yet (e.g. email is not confirmed)
+          // Keep the migration pending view active during signup/migration check
+          if (state.isMigrationPending) {
+            return;
+          }
+          
+          state = AuthState(
+            isLoading: false,
+            userId: user.id,
+            email: user.email,
+            displayName: user.userMetadata?['display_name'] as String? ?? 'User',
+          );
+        }
       },
       loading: () {
-        state = state.copyWith(isLoading: true);
+        if (!state.isLoading) {
+          state = state.copyWith(isLoading: true);
+        }
       },
       error: (e, s) {
         state = state.copyWith(isLoading: false, error: e.toString());
       },
     );
+  }
+
+  Future<void> _autoCompleteMigration(String legacyUserId, String newUserId) async {
+    if (state.isLoading) return;
+    state = state.copyWith(isLoading: true);
+    try {
+      debugPrint('Supabase Auth: auto-completing migration for legacy user $legacyUserId to new native user $newUserId');
+      await _dbService.completeUserMigration(legacyUserId, newUserId);
+      
+      // Refresh profile to trigger state reload with completed = true
+      await _ref.read(profileNotifierProvider(newUserId).notifier).refresh();
+      
+      state = AuthState(
+        isLoading: false,
+        userId: newUserId,
+        email: _ref.read(currentUserProvider)?.email,
+        displayName: state.displayName,
+        isMigrationPending: false,
+      );
+      
+      _ref.read(familyProvider.notifier).loadFamily();
+    } catch (e) {
+      debugPrint('Supabase Auth: auto-complete migration failed: $e');
+      state = state.copyWith(isLoading: false, error: e.toString());
+    }
   }
 
   Future<bool> signIn(String email, String password) async {
