@@ -144,6 +144,7 @@ class _FamilySetupScreenState extends ConsumerState<FamilySetupScreen> {
                             const SizedBox(height: 16),
                             TextFormField(
                               controller: _joinController,
+                              textCapitalization: TextCapitalization.characters,
                               decoration: const InputDecoration(
                                 labelText: 'Family Code (e.g. FAMILY-1234)',
                                 prefixIcon: Icon(Icons.vpn_key),

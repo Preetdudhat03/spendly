@@ -11,15 +11,14 @@ import 'package:spendly/features/navigation/views/main_layout.dart';
 import 'package:spendly/features/expenses/views/all_expenses_screen.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
-  // Watch auth and family states to trigger router refresh on changes
-  final auth = ref.watch(authProvider);
-  final family = ref.watch(familyProvider);
-
   return GoRouter(
     initialLocation: '/home',
     // Listen to changes to run redirect
     refreshListenable: _ProviderListenable(ref),
     redirect: (context, state) {
+      final auth = ref.read(authProvider);
+      final family = ref.read(familyProvider);
+
       final isLoggedIn = auth.userId != null;
       final isPendingMigration = auth.isMigrationPending;
       

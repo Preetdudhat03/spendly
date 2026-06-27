@@ -7,6 +7,16 @@ import 'package:spendly/core/services/db_provider.dart';
 import 'package:spendly/core/services/router_service.dart';
 import 'package:spendly/core/theme/app_theme.dart';
 import 'package:spendly/core/providers/state_providers.dart';
+import 'package:spendly/core/services/hive_service.dart';
+import 'package:spendly/core/services/migration_service.dart';
+import 'package:spendly/core/services/sync_service.dart';
+
+final syncServiceProvider = Provider<SyncService>((ref) {
+  final service = SyncService();
+  service.initialize();
+  ref.onDispose(() => service.dispose());
+  return service;
+});
 
 class LoggerObserver extends ProviderObserver {
   @override
@@ -32,6 +42,12 @@ void main() async {
 
   // Initialize SharedPreferences
   final sharedPreferences = await SharedPreferences.getInstance();
+
+  // Initialize Hive
+  await HiveService.init();
+
+  // Run Migration
+  await MigrationService.runMigration(sharedPreferences);
 
   // Initialize Supabase only if it is configured
   if (AppConfig.isSupabaseConfigured) {
@@ -85,6 +101,9 @@ class ConnectionListenerWidget extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Force SyncService to initialize and stay alive
+    ref.watch(syncServiceProvider);
+
     // Listen to connection changes to show Toast Messages globally
     ref.listen<ConnectionStatus>(connectionProvider, (previous, next) {
       if (next == ConnectionStatus.offline) {

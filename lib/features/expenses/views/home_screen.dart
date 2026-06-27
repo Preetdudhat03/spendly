@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:spendly/core/providers/state_providers.dart';
+import 'package:spendly/main.dart';
 import 'package:spendly/core/services/suggestions_service.dart';
 import 'package:spendly/features/expenses/views/add_expense_screen.dart';
 import 'package:spendly/models/expense.dart';
@@ -88,7 +89,7 @@ class HomeScreen extends ConsumerWidget {
           : RefreshIndicator(
               onRefresh: () async {
                 ref.read(connectionProvider.notifier).checkConnection();
-                await ref.read(familyProvider.notifier).loadFamily();
+                await ref.read(syncServiceProvider).syncNow();
               },
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),

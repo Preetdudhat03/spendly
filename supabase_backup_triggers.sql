@@ -31,7 +31,7 @@ BEGIN
     END IF;
     RETURN NULL;
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- families
 CREATE OR REPLACE FUNCTION sync_families_backup() RETURNS trigger AS $$
@@ -44,7 +44,7 @@ BEGIN
     END IF;
     RETURN NULL;
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- family_members
 CREATE OR REPLACE FUNCTION sync_family_members_backup() RETURNS trigger AS $$
@@ -57,7 +57,7 @@ BEGIN
     END IF;
     RETURN NULL;
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- expenses
 CREATE OR REPLACE FUNCTION sync_expenses_backup() RETURNS trigger AS $$
@@ -70,7 +70,7 @@ BEGIN
     END IF;
     RETURN NULL;
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- budgets
 CREATE OR REPLACE FUNCTION sync_budgets_backup() RETURNS trigger AS $$
@@ -83,7 +83,7 @@ BEGIN
     END IF;
     RETURN NULL;
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- profiles
 CREATE OR REPLACE FUNCTION sync_profiles_backup() RETURNS trigger AS $$
@@ -96,7 +96,7 @@ BEGIN
     END IF;
     RETURN NULL;
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- 3. Attach Triggers to original tables (Notice we removed "OR DELETE")
 DROP TRIGGER IF EXISTS trg_users_backup ON public.users;

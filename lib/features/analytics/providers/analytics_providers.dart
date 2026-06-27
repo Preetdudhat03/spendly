@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spendly/core/providers/state_providers.dart';
 import 'package:spendly/models/expense.dart';
-import 'package:spendly/models/budget.dart';
 
 enum AnalyticsFilterType {
   today,

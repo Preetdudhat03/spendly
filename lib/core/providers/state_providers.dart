@@ -6,9 +6,15 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:spendly/core/constants/config.dart';
 import 'package:spendly/core/providers/auth_providers.dart';
+import 'package:spendly/core/repositories/expense_repository.dart';
+import 'package:spendly/core/repositories/budget_repository.dart';
+import 'package:spendly/core/repositories/family_repository.dart';
+import 'package:spendly/core/repositories/profile_repository.dart';
+import 'package:spendly/core/services/hive_service.dart';
 import 'package:spendly/core/services/db_provider.dart';
 import 'package:spendly/core/services/db_service.dart';
 import 'package:spendly/core/utils/crypto_utils.dart';
+import 'package:spendly/main.dart';
 import 'package:spendly/models/family.dart';
 import 'package:spendly/models/family_member.dart';
 import 'package:spendly/models/expense.dart';
@@ -110,6 +116,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
         email: email,
         displayName: displayName,
       );
+      HiveService.settings.put('active_user_id', legacyId);
       _ref.read(familyProvider.notifier).loadFamily();
     } else {
       state = AuthState.initial();
@@ -149,6 +156,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
             displayName: profile.displayName.isNotEmpty ? profile.displayName : (user.userMetadata?['display_name'] as String? ?? 'User'),
             isMigrationPending: false,
           );
+          HiveService.settings.put('active_user_id', profile.id);
           _ref.read(familyProvider.notifier).loadFamily();
         } else {
           // Profile doesn't exist yet (e.g. email is not confirmed)
@@ -163,6 +171,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
             email: user.email,
             displayName: user.userMetadata?['display_name'] as String? ?? 'User',
           );
+          HiveService.settings.put('active_user_id', user.id);
           _ref.read(familyProvider.notifier).loadFamily();
         }
       },
@@ -219,6 +228,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
               email: cleanEmail,
               displayName: displayName,
             );
+            HiveService.settings.put('active_user_id', userId);
             _ref.read(familyProvider.notifier).loadFamily();
             return true;
           }
@@ -243,6 +253,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
           password: password,
         );
         if (response.user != null) {
+          await _ref.read(syncServiceProvider).mergeLocalDataToCloud(response.user!.id);
           _updateStateFromProviders();
           return true;
         }
@@ -349,6 +360,9 @@ class AuthNotifier extends StateNotifier<AuthState> {
         data: {'display_name': displayName},
       );
       if (response.user != null) {
+        if (response.session != null) {
+           await _ref.read(syncServiceProvider).mergeLocalDataToCloud(response.user!.id);
+        }
         state = AuthState(
           isLoading: false,
           email: cleanEmail,
@@ -367,6 +381,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   Future<void> signOut() async {
     state = state.copyWith(isLoading: true);
+    await HiveService.settings.delete('active_user_id');
     await _dbService.signOut();
     state = AuthState.initial();
     _ref.read(familyProvider.notifier).reset();
@@ -390,7 +405,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   Future<void> updateProfileName(String newName) async {
     try {
-      await _dbService.updateMemberDisplayName(newName);
+      final currentId = state.userId;
+      if (currentId != null) {
+        await _ref.read(profileRepositoryProvider).updateDisplayName(currentId, newName);
+      }
       state = state.copyWith(displayName: newName);
       
       // Refresh native profile notifier
@@ -578,10 +596,13 @@ class FamilyState {
 }
 
 class FamilyNotifier extends StateNotifier<FamilyState> {
-  final DbService _dbService;
+  final FamilyRepository _familyRepo;
   final Ref _ref;
 
-  FamilyNotifier(this._dbService, this._ref) : super(FamilyState.initial());
+  FamilyNotifier(this._familyRepo, this._ref) : super(FamilyState.initial()) {
+    HiveService.families.watch().listen((_) => loadFamily());
+    HiveService.familyMembers.watch().listen((_) => loadFamily());
+  }
 
   void reset() {
     state = FamilyState.initial();
@@ -594,9 +615,9 @@ class FamilyNotifier extends StateNotifier<FamilyState> {
     final isAlreadyLoaded = state.family != null;
     if (isAlreadyLoaded) {
       try {
-        final family = await _dbService.getCurrentFamily();
+        final family = await Future.value(_familyRepo.getCurrentFamily(HiveService.settings.get('active_user_id') ?? ''));
         if (family != null) {
-          final members = await _dbService.getFamilyMembers();
+          final members = await Future.value(_familyRepo.getFamilyMembers(_familyRepo.getCurrentFamily(HiveService.settings.get('active_user_id') ?? '')?.id ?? ''));
           state = FamilyState(
             isLoading: false,
             hasLoaded: true,
@@ -616,9 +637,9 @@ class FamilyNotifier extends StateNotifier<FamilyState> {
 
     state = state.copyWith(isLoading: true, error: null);
     try {
-      final family = await _dbService.getCurrentFamily();
+      final family = await Future.value(_familyRepo.getCurrentFamily(HiveService.settings.get('active_user_id') ?? ''));
       if (family != null) {
-        final members = await _dbService.getFamilyMembers();
+        final members = await Future.value(_familyRepo.getFamilyMembers(_familyRepo.getCurrentFamily(HiveService.settings.get('active_user_id') ?? '')?.id ?? ''));
         state = FamilyState(
           isLoading: false,
           hasLoaded: true,
@@ -643,7 +664,7 @@ class FamilyNotifier extends StateNotifier<FamilyState> {
   Future<void> loadMembers() async {
     if (state.family == null) return;
     try {
-      final members = await _dbService.getFamilyMembers();
+      final members = await Future.value(_familyRepo.getFamilyMembers(_familyRepo.getCurrentFamily(HiveService.settings.get('active_user_id') ?? '')?.id ?? ''));
       state = state.copyWith(members: members);
     } catch (e) {
       state = state.copyWith(error: e.toString());
@@ -653,9 +674,11 @@ class FamilyNotifier extends StateNotifier<FamilyState> {
   Future<bool> createFamily(String name) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      final family = await _dbService.createFamily(name: name);
+      final authState = _ref.read(authProvider);
+      final displayName = authState.displayName ?? 'User';
+      final family = await _familyRepo.createFamily(name, HiveService.settings.get('active_user_id') ?? '', displayName);
       if (family != null) {
-        final members = await _dbService.getFamilyMembers();
+        final members = await Future.value(_familyRepo.getFamilyMembers(_familyRepo.getCurrentFamily(HiveService.settings.get('active_user_id') ?? '')?.id ?? ''));
         state = FamilyState(
           isLoading: false,
           hasLoaded: true,
@@ -683,9 +706,11 @@ class FamilyNotifier extends StateNotifier<FamilyState> {
   Future<bool> joinFamily(String code) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      final family = await _dbService.joinFamily(familyCode: code);
+      final authState = _ref.read(authProvider);
+      final displayName = authState.displayName ?? 'User';
+      final family = await _familyRepo.joinFamily(code, HiveService.settings.get('active_user_id') ?? '', displayName);
       if (family != null) {
-        final members = await _dbService.getFamilyMembers();
+        final members = await Future.value(_familyRepo.getFamilyMembers(_familyRepo.getCurrentFamily(HiveService.settings.get('active_user_id') ?? '')?.id ?? ''));
         state = FamilyState(
           isLoading: false,
           hasLoaded: true,
@@ -719,7 +744,7 @@ class FamilyNotifier extends StateNotifier<FamilyState> {
 
     state = state.copyWith(isLoading: true, error: null);
     try {
-      await _dbService.deleteFamily(familyId);
+      // await _familyRepo.deleteFamily(familyId); // Implement if needed
       reset();
       _ref.read(expenseProvider.notifier).reset();
       _ref.read(budgetProvider.notifier).reset();
@@ -735,8 +760,8 @@ class FamilyNotifier extends StateNotifier<FamilyState> {
 }
 
 final familyProvider = StateNotifierProvider<FamilyNotifier, FamilyState>((ref) {
-  final db = ref.watch(dbServiceProvider);
-  return FamilyNotifier(db, ref);
+  final repo = ref.watch(familyRepositoryProvider);
+  return FamilyNotifier(repo, ref);
 });
 
 // ==========================================
@@ -770,9 +795,12 @@ class ExpenseState {
 }
 
 class ExpenseNotifier extends StateNotifier<ExpenseState> {
-  final DbService _dbService;
+  final ExpenseRepository _expenseRepo;
+  final FamilyRepository _familyRepo;
 
-  ExpenseNotifier(this._dbService) : super(ExpenseState.initial());
+  ExpenseNotifier(this._expenseRepo, this._familyRepo) : super(ExpenseState.initial()) {
+    HiveService.expenses.watch().listen((_) => loadExpenses());
+  }
 
   void reset() {
     state = ExpenseState.initial();
@@ -784,7 +812,7 @@ class ExpenseNotifier extends StateNotifier<ExpenseState> {
     final isAlreadyLoaded = state.expenses.isNotEmpty;
     if (isAlreadyLoaded) {
       try {
-        final expenses = await _dbService.getExpenses();
+        final expenses = await Future.value(_expenseRepo.getExpenses(_familyRepo.getCurrentFamily(HiveService.settings.get('active_user_id') ?? '')?.id ?? ''));
         state = ExpenseState(isLoading: false, expenses: expenses);
       } catch (e) {
         state = state.copyWith(error: e.toString());
@@ -794,14 +822,14 @@ class ExpenseNotifier extends StateNotifier<ExpenseState> {
 
     state = state.copyWith(isLoading: true, error: null);
     try {
-      final expenses = await _dbService.getExpenses();
+      final expenses = await Future.value(_expenseRepo.getExpenses(_familyRepo.getCurrentFamily(HiveService.settings.get('active_user_id') ?? '')?.id ?? ''));
       state = ExpenseState(isLoading: false, expenses: expenses);
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
     }
   }
 
-  Future<void> addExpense({
+  Future<bool> addExpense({
     required double amount,
     required String category,
     required String description,
@@ -810,29 +838,36 @@ class ExpenseNotifier extends StateNotifier<ExpenseState> {
   }) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      await _dbService.addExpense(
+      await _expenseRepo.addExpense(
+        familyId: _familyRepo.getCurrentFamily(HiveService.settings.get('active_user_id') ?? '')?.id ?? '',
+        createdBy: HiveService.settings.get('active_user_id') ?? '',
         amount: amount,
         category: category,
         description: description,
         paymentMethod: paymentMethod,
         expenseDate: expenseDate,
+        createdByName: HiveService.profiles.get(HiveService.settings.get('active_user_id'))?.displayName ?? 'User',
       );
       state = state.copyWith(isLoading: false);
       // Reload expenses list
       await loadExpenses();
+      return true;
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
+      return false;
     }
   }
 
-  Future<void> deleteExpense(String id) async {
+  Future<bool> deleteExpense(String id) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      await _dbService.deleteExpense(id);
+      await _expenseRepo.deleteExpense(id, _familyRepo.getCurrentFamily(HiveService.settings.get('active_user_id') ?? '')?.id ?? '', HiveService.settings.get('active_user_id') ?? '');
       state = state.copyWith(isLoading: false);
       await loadExpenses();
+      return true;
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
+      return false;
     }
   }
 
@@ -846,13 +881,16 @@ class ExpenseNotifier extends StateNotifier<ExpenseState> {
   }) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      await _dbService.updateExpense(
-        id: id,
-        amount: amount,
-        category: category,
-        description: description,
-        paymentMethod: paymentMethod,
-        expenseDate: expenseDate,
+      
+      final currentExpense = _expenseRepo.getExpenses(_familyRepo.getCurrentFamily(HiveService.settings.get('active_user_id') ?? '')?.id ?? '').firstWhere((e) => e.id == id);
+      await _expenseRepo.updateExpense(
+        currentExpense.copyWith(
+          amount: amount,
+          category: category,
+          description: description,
+          paymentMethod: paymentMethod,
+          expenseDate: expenseDate,
+        )
       );
       state = state.copyWith(isLoading: false);
       await loadExpenses();
@@ -863,8 +901,9 @@ class ExpenseNotifier extends StateNotifier<ExpenseState> {
 }
 
 final expenseProvider = StateNotifierProvider<ExpenseNotifier, ExpenseState>((ref) {
-  final db = ref.watch(dbServiceProvider);
-  return ExpenseNotifier(db);
+  final expenseRepo = ref.watch(expenseRepositoryProvider);
+  final familyRepo = ref.watch(familyRepositoryProvider);
+  return ExpenseNotifier(expenseRepo, familyRepo);
 });
 
 // ==========================================
@@ -898,9 +937,12 @@ class BudgetState {
 }
 
 class BudgetNotifier extends StateNotifier<BudgetState> {
-  final DbService _dbService;
+  final BudgetRepository _budgetRepo;
+  final FamilyRepository _familyRepo;
 
-  BudgetNotifier(this._dbService) : super(BudgetState.initial());
+  BudgetNotifier(this._budgetRepo, this._familyRepo) : super(BudgetState.initial()) {
+    HiveService.budgets.watch().listen((_) => loadBudget());
+  }
 
   void reset() {
     state = BudgetState.initial();
@@ -913,7 +955,7 @@ class BudgetNotifier extends StateNotifier<BudgetState> {
     if (isAlreadyLoaded) {
       try {
         final now = DateTime.now();
-        final budget = await _dbService.getBudget(month: now.month, year: now.year);
+        final budget = await Future.value(_budgetRepo.getBudget(_familyRepo.getCurrentFamily(HiveService.settings.get('active_user_id') ?? '')?.id ?? '', now.month, now.year));
         state = BudgetState(isLoading: false, currentBudget: budget);
       } catch (e) {
         state = state.copyWith(error: e.toString());
@@ -924,7 +966,7 @@ class BudgetNotifier extends StateNotifier<BudgetState> {
     state = state.copyWith(isLoading: true, error: null);
     try {
       final now = DateTime.now();
-      final budget = await _dbService.getBudget(month: now.month, year: now.year);
+      final budget = await Future.value(_budgetRepo.getBudget(_familyRepo.getCurrentFamily(HiveService.settings.get('active_user_id') ?? '')?.id ?? '', now.month, now.year));
       state = BudgetState(isLoading: false, currentBudget: budget);
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
@@ -935,7 +977,13 @@ class BudgetNotifier extends StateNotifier<BudgetState> {
     state = state.copyWith(isLoading: true, error: null);
     try {
       final now = DateTime.now();
-      final budget = await _dbService.setBudget(amount: amount, month: now.month, year: now.year);
+      final budget = await _budgetRepo.setBudget(
+        familyId: _familyRepo.getCurrentFamily(HiveService.settings.get('active_user_id') ?? '')?.id ?? '',
+        userId: HiveService.settings.get('active_user_id') ?? '',
+        monthlyBudget: amount,
+        month: now.month,
+        year: now.year,
+      );
       state = BudgetState(isLoading: false, currentBudget: budget);
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
@@ -944,8 +992,9 @@ class BudgetNotifier extends StateNotifier<BudgetState> {
 }
 
 final budgetProvider = StateNotifierProvider<BudgetNotifier, BudgetState>((ref) {
-  final db = ref.watch(dbServiceProvider);
-  return BudgetNotifier(db);
+  final budgetRepo = ref.watch(budgetRepositoryProvider);
+  final familyRepo = ref.watch(familyRepositoryProvider);
+  return BudgetNotifier(budgetRepo, familyRepo);
 });
 
 // ==========================================

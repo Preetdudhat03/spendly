@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:spendly/core/providers/state_providers.dart';
 
@@ -118,7 +117,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
 
     final desc = _descriptionController.text.trim();
 
-    await ref.read(expenseProvider.notifier).addExpense(
+    final success = await ref.read(expenseProvider.notifier).addExpense(
           amount: amount,
           category: _selectedCategory!,
           description: desc.isEmpty ? _selectedCategory! : desc,
@@ -127,6 +126,16 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
         );
 
     if (!mounted) return;
+
+    if (!success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(ref.read(expenseProvider).error ?? 'Failed to save expense'),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
+      return;
+    }
 
     // Show success & redirect
     ScaffoldMessenger.of(context).showSnackBar(
