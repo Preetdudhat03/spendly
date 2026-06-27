@@ -83,7 +83,7 @@ class HomeScreen extends ConsumerWidget {
           ],
         ),
       ),
-      body: expenseState.isLoading || familyState.isLoading
+      body: (expenseState.isLoading && expenseState.expenses.isEmpty) || (familyState.isLoading && !familyState.hasLoaded)
           ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator(
               onRefresh: () async {

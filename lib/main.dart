@@ -8,6 +8,25 @@ import 'package:spendly/core/services/router_service.dart';
 import 'package:spendly/core/theme/app_theme.dart';
 import 'package:spendly/core/providers/state_providers.dart';
 
+class LoggerObserver extends ProviderObserver {
+  @override
+  void didUpdateProvider(
+    ProviderBase<Object?> provider,
+    Object? previousValue,
+    Object? newValue,
+    ProviderContainer container,
+  ) {
+    final typeName = provider.runtimeType.toString();
+    if (typeName.contains('Auth') || 
+        typeName.contains('Family') || 
+        typeName.contains('Expense') || 
+        typeName.contains('Budget') ||
+        typeName.contains('Profile')) {
+      debugPrint('Riverpod Logger: [$typeName] updated to: $newValue');
+    }
+  }
+}
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -31,6 +50,7 @@ void main() async {
 
   runApp(
     ProviderScope(
+      observers: [LoggerObserver()],
       overrides: [
         sharedPreferencesProvider.overrideWithValue(sharedPreferences),
       ],

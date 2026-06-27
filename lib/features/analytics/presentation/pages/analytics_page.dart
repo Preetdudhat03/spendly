@@ -54,7 +54,7 @@ class AnalyticsPage extends ConsumerWidget {
       body: RefreshIndicator(
         onRefresh: () => _handleRefresh(ref),
         color: Theme.of(context).primaryColor,
-        child: expenseState.isLoading || state.isLoading
+        child: (expenseState.isLoading && expenseState.expenses.isEmpty) || (state.isLoading && state.filteredExpenses.isEmpty)
             ? _buildLoadingState(context, isWide)
             : expenseState.expenses.isEmpty
                 ? _buildEmptyState(context)

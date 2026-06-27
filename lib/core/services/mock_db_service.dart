@@ -57,8 +57,12 @@ class MockDbService implements DbService {
     final Map<String, dynamic> users = json.decode(usersRaw);
 
     final normalizedEmail = email.toLowerCase();
+    if (!users.containsKey(normalizedEmail)) {
+      throw Exception('USER_NOT_FOUND');
+    }
+    
     final hashedPassword = CryptoUtils.hashPassword(password);
-    if (!users.containsKey(normalizedEmail) || users[normalizedEmail]['password'] != hashedPassword) {
+    if (users[normalizedEmail]['password'] != hashedPassword) {
       throw Exception('Invalid email or password.');
     }
 
@@ -305,6 +309,34 @@ class MockDbService implements DbService {
     await _prefs.setStringList(_keyExpenses, updatedExpenses);
   }
 
+  @override
+  Future<void> updateEmail(String newEmail) async {
+    final userId = getCurrentUserId();
+    if (userId == null) return;
+
+    final cleanEmail = newEmail.toLowerCase().trim();
+
+    final usersRaw = _prefs.getString(_keyUsers) ?? '{}';
+    final Map<String, dynamic> users = json.decode(usersRaw);
+    
+    // Find old email
+    String? oldEmail;
+    for (var email in users.keys) {
+      if (users[email]['id'] == userId) {
+        oldEmail = email;
+        break;
+      }
+    }
+    
+    if (oldEmail != null) {
+      // Move user data to new email key
+      final userData = users[oldEmail];
+      users.remove(oldEmail);
+      users[cleanEmail] = userData;
+      await _prefs.setString(_keyUsers, json.encode(users));
+    }
+  }
+
   // --- Expenses ---
 
   @override
@@ -469,5 +501,83 @@ class MockDbService implements DbService {
     updated.add(json.encode(existing.toJson()));
     await _prefs.setStringList(_keyBudgets, updated);
     return existing;
+  }
+
+  @override
+  Future<void> deleteUserAccount(String userId) async {
+    // 1. Remove user from mock_users Map
+    final usersRaw = _prefs.getString(_keyUsers) ?? '{}';
+    final Map<String, dynamic> users = json.decode(usersRaw);
+    String? emailToRemove;
+    users.forEach((email, uMap) {
+      if (uMap['id'] == userId) {
+        emailToRemove = email;
+      }
+    });
+    if (emailToRemove != null) {
+      users.remove(emailToRemove);
+      await _prefs.setString(_keyUsers, json.encode(users));
+    }
+
+    // 2. Remove user from mock_members List
+    final membersRaw = _prefs.getStringList(_keyMembers) ?? [];
+    final List<String> updatedMembers = [];
+    for (var mStr in membersRaw) {
+      final m = FamilyMember.fromJson(json.decode(mStr));
+      if (m.userId != userId) {
+        updatedMembers.add(mStr);
+      }
+    }
+    await _prefs.setStringList(_keyMembers, updatedMembers);
+
+    // 3. Sign out (remove session)
+    await signOut();
+  }
+
+  @override
+  Future<void> deleteFamily(String familyId) async {
+    // 1. Delete family from families list
+    final familiesRaw = _prefs.getStringList(_keyFamilies) ?? [];
+    final List<String> updatedFamilies = [];
+    for (var fStr in familiesRaw) {
+      final f = Family.fromJson(json.decode(fStr));
+      if (f.id != familyId) {
+        updatedFamilies.add(fStr);
+      }
+    }
+    await _prefs.setStringList(_keyFamilies, updatedFamilies);
+
+    // 2. Cascade delete family members
+    final membersRaw = _prefs.getStringList(_keyMembers) ?? [];
+    final List<String> updatedMembers = [];
+    for (var mStr in membersRaw) {
+      final m = FamilyMember.fromJson(json.decode(mStr));
+      if (m.familyId != familyId) {
+        updatedMembers.add(mStr);
+      }
+    }
+    await _prefs.setStringList(_keyMembers, updatedMembers);
+
+    // 3. Cascade delete expenses
+    final expensesRaw = _prefs.getStringList(_keyExpenses) ?? [];
+    final List<String> updatedExpenses = [];
+    for (var eStr in expensesRaw) {
+      final e = Expense.fromJson(json.decode(eStr));
+      if (e.familyId != familyId) {
+        updatedExpenses.add(eStr);
+      }
+    }
+    await _prefs.setStringList(_keyExpenses, updatedExpenses);
+
+    // 4. Cascade delete budgets
+    final budgetsRaw = _prefs.getStringList(_keyBudgets) ?? [];
+    final List<String> updatedBudgets = [];
+    for (var bStr in budgetsRaw) {
+      final b = Budget.fromJson(json.decode(bStr));
+      if (b.familyId != familyId) {
+        updatedBudgets.add(bStr);
+      }
+    }
+    await _prefs.setStringList(_keyBudgets, updatedBudgets);
   }
 }

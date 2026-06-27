@@ -20,6 +20,7 @@ abstract class DbService {
   Future<Family?> getCurrentFamily();
   Future<List<FamilyMember>> getFamilyMembers();
   Future<void> updateMemberDisplayName(String name);
+  Future<void> updateEmail(String newEmail);
 
   // Expenses
   Future<List<Expense>> getExpenses();
@@ -43,4 +44,8 @@ abstract class DbService {
   // Budget
   Future<Budget?> getBudget({required int month, required int year});
   Future<Budget> setBudget({required double amount, required int month, required int year});
+
+  // Account & Family Deletion
+  Future<void> deleteUserAccount(String userId);
+  Future<void> deleteFamily(String familyId);
 }

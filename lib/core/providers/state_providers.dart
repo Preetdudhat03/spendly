@@ -86,6 +86,9 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   Future<void> _checkCurrentSession() async {
+    // Postpone to next microtask to avoid Riverpod modify-while-building errors
+    await Future.microtask(() {});
+    
     state = state.copyWith(isLoading: true);
     
     // Check native user first
@@ -160,6 +163,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
             email: user.email,
             displayName: user.userMetadata?['display_name'] as String? ?? 'User',
           );
+          _ref.read(familyProvider.notifier).loadFamily();
         }
       },
       loading: () {
@@ -201,11 +205,41 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<bool> signIn(String email, String password) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
+      final cleanEmail = email.toLowerCase().trim();
+
+      // Fallback to local DB Service if Supabase is not configured or initialized
+      if (!AppConfig.isSupabaseConfigured || !AppConfig.isSupabaseInitialized) {
+        try {
+          final userId = await _dbService.signIn(email: cleanEmail, password: password);
+          if (userId != null) {
+            final displayName = await _dbService.getCurrentUserDisplayName();
+            state = AuthState(
+              isLoading: false,
+              userId: userId,
+              email: cleanEmail,
+              displayName: displayName,
+            );
+            _ref.read(familyProvider.notifier).loadFamily();
+            return true;
+          }
+        } catch (e) {
+          final errorMsg = e.toString();
+          if (errorMsg.contains('USER_NOT_FOUND')) {
+            state = state.copyWith(isLoading: false, error: 'USER_NOT_FOUND');
+          } else {
+            state = state.copyWith(isLoading: false, error: errorMsg.replaceAll('Exception: ', ''));
+          }
+          return false;
+        }
+        state = state.copyWith(isLoading: false, error: 'Authentication failed');
+        return false;
+      }
+
       // 1. Try native Supabase Auth sign-in
       try {
         final client = Supabase.instance.client;
         final response = await client.auth.signInWithPassword(
-          email: email.toLowerCase().trim(),
+          email: cleanEmail,
           password: password,
         );
         if (response.user != null) {
@@ -217,47 +251,56 @@ class AuthNotifier extends StateNotifier<AuthState> {
         // If it's invalid credentials, check legacy database
         if (msg.contains('invalid login credentials') || msg.contains('invalid_credentials')) {
           final client = Supabase.instance.client;
-          final legacyUser = await client.from('users').select().eq('email', email.toLowerCase().trim()).maybeSingle();
-          if (legacyUser == null) {
-            state = state.copyWith(isLoading: false, error: 'Invalid email or password.');
-            return false;
-          }
-
-          // Check legacy password
-          final hashedInput = CryptoUtils.hashPassword(password);
-          if (legacyUser['password'] != hashedInput) {
-            state = state.copyWith(isLoading: false, error: 'Invalid email or password.');
-            return false;
-          }
-
-          // Credentials match legacy database! Migration required.
-          final legacyUserId = legacyUser['id'] as String;
           
-          // Check if already completed migration
-          final existingProfile = await client.from('profiles').select().eq('legacy_user_id', legacyUserId).maybeSingle();
-          if (existingProfile != null && existingProfile['migration_completed'] == true) {
-            state = state.copyWith(
-              isLoading: false,
-              error: 'Your account was already migrated. Please use your updated Supabase Auth password.',
-            );
+          final legacyUser = await client.from('users').select().eq('email', cleanEmail).maybeSingle();
+          final nativeProfile = await client.from('profiles').select().eq('email', cleanEmail).maybeSingle();
+          
+          if (legacyUser == null && nativeProfile == null) {
+            state = state.copyWith(isLoading: false, error: 'USER_NOT_FOUND');
             return false;
           }
 
-          // Trigger migration flow
-          state = AuthState(
-            isLoading: false,
-            userId: legacyUserId,
-            email: legacyUser['email'] as String,
-            displayName: legacyUser['display_name'] as String,
-            isMigrationPending: true,
-            legacyUserId: legacyUserId,
-            pendingPassword: password,
-          );
-          return true;
+          if (legacyUser != null) {
+            // Check legacy password
+            final hashedInput = CryptoUtils.hashPassword(password);
+            if (legacyUser['password'] != hashedInput) {
+              state = state.copyWith(isLoading: false, error: 'Invalid email or password.');
+              return false;
+            }
+
+            // Credentials match legacy database! Migration required.
+            final legacyUserId = legacyUser['id'] as String;
+            
+            // Check if already completed migration
+            final existingProfile = await client.from('profiles').select().eq('legacy_user_id', legacyUserId).maybeSingle();
+            if (existingProfile != null && existingProfile['migration_completed'] == true) {
+              state = state.copyWith(
+                isLoading: false,
+                error: 'Your account was already migrated. Please use your updated Supabase Auth password.',
+              );
+              return false;
+            }
+
+            // Trigger migration flow
+            state = AuthState(
+              isLoading: false,
+              userId: legacyUserId,
+              email: legacyUser['email'] as String,
+              displayName: legacyUser['display_name'] as String,
+              isMigrationPending: true,
+              legacyUserId: legacyUserId,
+              pendingPassword: password,
+            );
+            return true;
+          } else {
+            // Native profile exists, but password was wrong
+            state = state.copyWith(isLoading: false, error: 'Invalid email or password.');
+            return false;
+          }
         } else if (msg.contains('email not confirmed')) {
           state = AuthState(
             isLoading: false,
-            email: email.toLowerCase().trim(),
+            email: cleanEmail,
             isMigrationPending: false,
             error: 'Please verify your email address before logging in.',
           );
@@ -277,16 +320,38 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<bool> signUp(String email, String password, String displayName) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
+      final cleanEmail = email.toLowerCase().trim();
+
+      // Fallback to local DB Service if Supabase is not configured or initialized
+      if (!AppConfig.isSupabaseConfigured || !AppConfig.isSupabaseInitialized) {
+        final userId = await _dbService.signUp(
+          email: cleanEmail,
+          password: password,
+          displayName: displayName,
+        );
+        if (userId != null) {
+          state = AuthState(
+            isLoading: false,
+            email: cleanEmail,
+            displayName: displayName,
+            error: 'Registration successful! You can now log in.',
+          );
+          return true;
+        }
+        state = state.copyWith(isLoading: false, error: 'Registration failed');
+        return false;
+      }
+
       final client = Supabase.instance.client;
       final response = await client.auth.signUp(
-        email: email.toLowerCase().trim(),
+        email: cleanEmail,
         password: password,
         data: {'display_name': displayName},
       );
       if (response.user != null) {
         state = AuthState(
           isLoading: false,
-          email: email.toLowerCase().trim(),
+          email: cleanEmail,
           displayName: displayName,
           error: 'Registration successful! A verification email has been sent. Please confirm your email.',
         );
@@ -309,6 +374,20 @@ class AuthNotifier extends StateNotifier<AuthState> {
     _ref.read(budgetProvider.notifier).reset();
   }
 
+  Future<void> deleteAccount() async {
+    final currentId = state.userId;
+    if (currentId == null) return;
+    
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      await _dbService.deleteUserAccount(currentId);
+      await signOut();
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+      rethrow;
+    }
+  }
+
   Future<void> updateProfileName(String newName) async {
     try {
       await _dbService.updateMemberDisplayName(newName);
@@ -324,6 +403,21 @@ class AuthNotifier extends StateNotifier<AuthState> {
       _ref.read(familyProvider.notifier).loadMembers();
       // Reload expenses to update createdByName cache
       _ref.read(expenseProvider.notifier).loadExpenses();
+    } catch (e) {
+      state = state.copyWith(error: e.toString());
+    }
+  }
+
+  Future<void> updateEmail(String newEmail) async {
+    try {
+      await _dbService.updateEmail(newEmail);
+      state = state.copyWith(email: newEmail.toLowerCase().trim());
+      
+      // Refresh native profile notifier
+      final user = _ref.read(currentUserProvider);
+      if (user != null) {
+        _ref.read(profileNotifierProvider(user.id).notifier).refresh();
+      }
     } catch (e) {
       state = state.copyWith(error: e.toString());
     }
@@ -346,13 +440,16 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   Future<bool> startMigrationSignUp() async {
+    debugPrint('Supabase Auth: startMigrationSignUp called. isMigrationPending: ${state.isMigrationPending}, email: ${state.email}, pendingPassword length: ${state.pendingPassword?.length ?? 0}, legacyUserId: ${state.legacyUserId}');
     if (!state.isMigrationPending || state.email == null || state.pendingPassword == null) {
+      debugPrint('Supabase Auth: startMigrationSignUp early exit. Conditions not met.');
       return false;
     }
     state = state.copyWith(isLoading: true, error: null);
     try {
       final client = Supabase.instance.client;
-      await client.auth.signUp(
+      debugPrint('Supabase Auth: calling signUp for ${state.email}');
+      final response = await client.auth.signUp(
         email: state.email!,
         password: state.pendingPassword!,
         data: {
@@ -360,29 +457,37 @@ class AuthNotifier extends StateNotifier<AuthState> {
           'legacy_user_id': state.legacyUserId,
         },
       );
+      debugPrint('Supabase Auth: signUp success. User ID: ${response.user?.id}');
       state = state.copyWith(isLoading: false);
       return true;
     } on AuthException catch (e) {
+      debugPrint('Supabase Auth: signUp AuthException: ${e.message}');
       final msg = e.message.toLowerCase();
-      if (msg.contains('already exists') || msg.contains('already registered')) {
+      if (msg.contains('already exists') || 
+          msg.contains('already registered') || 
+          msg.contains('rate limit')) {
         state = state.copyWith(isLoading: false);
         return true;
       }
       state = state.copyWith(isLoading: false, error: e.message);
       return false;
     } catch (e) {
+      debugPrint('Supabase Auth: signUp generic error: $e');
       state = state.copyWith(isLoading: false, error: e.toString());
       return false;
     }
   }
 
   Future<bool> verifyAndCompleteMigration() async {
+    debugPrint('Supabase Auth: verifyAndCompleteMigration called. isMigrationPending: ${state.isMigrationPending}, email: ${state.email}, legacyUserId: ${state.legacyUserId}');
     if (!state.isMigrationPending || state.email == null || state.pendingPassword == null || state.legacyUserId == null) {
+      debugPrint('Supabase Auth: verifyAndCompleteMigration early exit. Conditions not met.');
       return false;
     }
     state = state.copyWith(isLoading: true, error: null);
     try {
       final client = Supabase.instance.client;
+      debugPrint('Supabase Auth: attempting signInWithPassword for ${state.email}');
       
       // 1. Confirm email is verified by attempting native sign-in
       final response = await client.auth.signInWithPassword(
@@ -391,12 +496,15 @@ class AuthNotifier extends StateNotifier<AuthState> {
       );
       
       final newUser = response.user;
+      debugPrint('Supabase Auth: signInWithPassword success. User ID: ${newUser?.id}');
       if (newUser == null) {
         throw Exception('Failed to sign in. Please verify your email first.');
       }
       
       // 2. Perform atomic database migration via RPC
+      debugPrint('Supabase Auth: calling completeUserMigration RPC for legacy user ${state.legacyUserId} to ${newUser.id}');
       await _dbService.completeUserMigration(state.legacyUserId!, newUser.id);
+      debugPrint('Supabase Auth: completeUserMigration RPC success!');
       
       // 3. Clear migration pending flag and complete login
       state = AuthState(
@@ -411,6 +519,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       _ref.read(familyProvider.notifier).loadFamily();
       return true;
     } catch (e) {
+      debugPrint('Supabase Auth: verifyAndCompleteMigration failed: $e');
       state = state.copyWith(isLoading: false, error: e.toString());
       return false;
     }
@@ -432,27 +541,35 @@ final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
 
 class FamilyState {
   final bool isLoading;
+  final bool hasLoaded;
   final Family? family;
   final List<FamilyMember> members;
   final String? error;
 
   FamilyState({
     required this.isLoading,
+    this.hasLoaded = false,
     this.family,
     required this.members,
     this.error,
   });
 
-  factory FamilyState.initial() => FamilyState(isLoading: false, members: []);
+  factory FamilyState.initial() => FamilyState(
+        isLoading: false,
+        hasLoaded: false,
+        members: [],
+      );
 
   FamilyState copyWith({
     bool? isLoading,
+    bool? hasLoaded,
     Family? family,
     List<FamilyMember>? members,
     String? error,
   }) {
     return FamilyState(
       isLoading: isLoading ?? this.isLoading,
+      hasLoaded: hasLoaded ?? this.hasLoaded,
       family: family ?? this.family,
       members: members ?? this.members,
       error: error,
@@ -471,20 +588,55 @@ class FamilyNotifier extends StateNotifier<FamilyState> {
   }
 
   Future<void> loadFamily() async {
+    if (state.isLoading) return;
+
+    // Background refresh if already loaded
+    final isAlreadyLoaded = state.family != null;
+    if (isAlreadyLoaded) {
+      try {
+        final family = await _dbService.getCurrentFamily();
+        if (family != null) {
+          final members = await _dbService.getFamilyMembers();
+          state = FamilyState(
+            isLoading: false,
+            hasLoaded: true,
+            family: family,
+            members: members,
+          );
+          _ref.read(expenseProvider.notifier).loadExpenses();
+          _ref.read(budgetProvider.notifier).loadBudget();
+        } else {
+          state = FamilyState.initial().copyWith(hasLoaded: true);
+        }
+      } catch (e) {
+        state = state.copyWith(error: e.toString());
+      }
+      return;
+    }
+
     state = state.copyWith(isLoading: true, error: null);
     try {
       final family = await _dbService.getCurrentFamily();
       if (family != null) {
         final members = await _dbService.getFamilyMembers();
-        state = FamilyState(isLoading: false, family: family, members: members);
+        state = FamilyState(
+          isLoading: false,
+          hasLoaded: true,
+          family: family,
+          members: members,
+        );
         // Automatically load expenses and budgets
         _ref.read(expenseProvider.notifier).loadExpenses();
         _ref.read(budgetProvider.notifier).loadBudget();
       } else {
-        state = FamilyState.initial();
+        state = FamilyState.initial().copyWith(hasLoaded: true);
       }
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(
+        isLoading: false,
+        hasLoaded: true,
+        error: e.toString(),
+      );
     }
   }
 
@@ -504,15 +656,26 @@ class FamilyNotifier extends StateNotifier<FamilyState> {
       final family = await _dbService.createFamily(name: name);
       if (family != null) {
         final members = await _dbService.getFamilyMembers();
-        state = FamilyState(isLoading: false, family: family, members: members);
+        state = FamilyState(
+          isLoading: false,
+          hasLoaded: true,
+          family: family,
+          members: members,
+        );
         _ref.read(expenseProvider.notifier).loadExpenses();
         _ref.read(budgetProvider.notifier).loadBudget();
         return true;
       }
-      state = state.copyWith(isLoading: false, error: 'Could not create family');
+      state = state.copyWith(
+        isLoading: false,
+        error: 'Could not create family',
+      );
       return false;
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(
+        isLoading: false,
+        error: e.toString(),
+      );
       return false;
     }
   }
@@ -523,15 +686,49 @@ class FamilyNotifier extends StateNotifier<FamilyState> {
       final family = await _dbService.joinFamily(familyCode: code);
       if (family != null) {
         final members = await _dbService.getFamilyMembers();
-        state = FamilyState(isLoading: false, family: family, members: members);
+        state = FamilyState(
+          isLoading: false,
+          hasLoaded: true,
+          family: family,
+          members: members,
+        );
         _ref.read(expenseProvider.notifier).loadExpenses();
         _ref.read(budgetProvider.notifier).loadBudget();
         return true;
       }
-      state = state.copyWith(isLoading: false, error: 'Could not join family');
+      state = state.copyWith(
+        isLoading: false,
+        error: 'Could not join family',
+      );
       return false;
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(
+        isLoading: false,
+        error: e.toString(),
+      );
+      return false;
+    }
+  }
+
+  Future<bool> deleteFamily() async {
+    final familyId = state.family?.id;
+    if (familyId == null) {
+      state = state.copyWith(error: 'No active family found');
+      return false;
+    }
+
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      await _dbService.deleteFamily(familyId);
+      reset();
+      _ref.read(expenseProvider.notifier).reset();
+      _ref.read(budgetProvider.notifier).reset();
+      return true;
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: e.toString(),
+      );
       return false;
     }
   }
@@ -582,6 +779,19 @@ class ExpenseNotifier extends StateNotifier<ExpenseState> {
   }
 
   Future<void> loadExpenses() async {
+    if (state.isLoading) return;
+
+    final isAlreadyLoaded = state.expenses.isNotEmpty;
+    if (isAlreadyLoaded) {
+      try {
+        final expenses = await _dbService.getExpenses();
+        state = ExpenseState(isLoading: false, expenses: expenses);
+      } catch (e) {
+        state = state.copyWith(error: e.toString());
+      }
+      return;
+    }
+
     state = state.copyWith(isLoading: true, error: null);
     try {
       final expenses = await _dbService.getExpenses();
@@ -607,6 +817,7 @@ class ExpenseNotifier extends StateNotifier<ExpenseState> {
         paymentMethod: paymentMethod,
         expenseDate: expenseDate,
       );
+      state = state.copyWith(isLoading: false);
       // Reload expenses list
       await loadExpenses();
     } catch (e) {
@@ -618,6 +829,7 @@ class ExpenseNotifier extends StateNotifier<ExpenseState> {
     state = state.copyWith(isLoading: true, error: null);
     try {
       await _dbService.deleteExpense(id);
+      state = state.copyWith(isLoading: false);
       await loadExpenses();
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
@@ -642,6 +854,7 @@ class ExpenseNotifier extends StateNotifier<ExpenseState> {
         paymentMethod: paymentMethod,
         expenseDate: expenseDate,
       );
+      state = state.copyWith(isLoading: false);
       await loadExpenses();
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
@@ -694,6 +907,20 @@ class BudgetNotifier extends StateNotifier<BudgetState> {
   }
 
   Future<void> loadBudget() async {
+    if (state.isLoading) return;
+
+    final isAlreadyLoaded = state.currentBudget != null;
+    if (isAlreadyLoaded) {
+      try {
+        final now = DateTime.now();
+        final budget = await _dbService.getBudget(month: now.month, year: now.year);
+        state = BudgetState(isLoading: false, currentBudget: budget);
+      } catch (e) {
+        state = state.copyWith(error: e.toString());
+      }
+      return;
+    }
+
     state = state.copyWith(isLoading: true, error: null);
     try {
       final now = DateTime.now();

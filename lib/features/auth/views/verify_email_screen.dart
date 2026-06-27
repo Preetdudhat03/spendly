@@ -11,19 +11,21 @@ class VerifyEmailScreen extends ConsumerStatefulWidget {
 }
 
 class _VerifyEmailScreenState extends ConsumerState<VerifyEmailScreen> {
+  bool _showInstructions = false;
+
   Future<void> _initiateMigration() async {
+    debugPrint('VerifyEmailScreen: _initiateMigration called.');
     final success = await ref.read(authProvider.notifier).startMigrationSignUp();
+    debugPrint('VerifyEmailScreen: startMigrationSignUp success = $success');
     if (!mounted) return;
     if (success) {
-      // Push the instructions screen as a premium full-screen modal dialog
-      Navigator.of(context).push(
-        MaterialPageRoute<void>(
-          builder: (context) => const MigrationInstructionsScreen(),
-          fullscreenDialog: true,
-        ),
-      );
+      debugPrint('VerifyEmailScreen: setting _showInstructions = true');
+      setState(() {
+        _showInstructions = true;
+      });
     } else {
       final error = ref.read(authProvider).error ?? 'Failed to initiate migration';
+      debugPrint('VerifyEmailScreen: initiate failed, error = $error');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(error),
@@ -38,6 +40,53 @@ class _VerifyEmailScreenState extends ConsumerState<VerifyEmailScreen> {
     context.go('/login');
   }
 
+  Future<void> _checkVerificationAndComplete() async {
+    debugPrint('VerifyEmailScreen: _checkVerificationAndComplete called.');
+    final success = await ref.read(authProvider.notifier).verifyAndCompleteMigration();
+    debugPrint('VerifyEmailScreen: verifyAndCompleteMigration success = $success');
+    if (!mounted) return;
+
+    if (success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Migration successful! Welcome to the new secure Spendly.'),
+          backgroundColor: Colors.green,
+        ),
+      );
+      context.go('/home');
+    } else {
+      final error = ref.read(authProvider).error ?? 'Verification check failed. Make sure you clicked the link in your email.';
+      debugPrint('VerifyEmailScreen: verification failed, error = $error');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(error),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
+    }
+  }
+
+  Future<void> _resendEmail() async {
+    final success = await ref.read(authProvider.notifier).startMigrationSignUp();
+    if (!mounted) return;
+    if (success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Verification email resent! Please check your inbox.'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } else {
+      final error = ref.read(authProvider).error ?? 'Failed to resend email';
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(error),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
@@ -45,6 +94,13 @@ class _VerifyEmailScreenState extends ConsumerState<VerifyEmailScreen> {
     
     // Safety check: if no migration is pending, redirect back
     if (!authState.isMigrationPending) {
+      if (authState.userId != null) {
+        return const Scaffold(
+          body: Center(
+            child: CircularProgressIndicator(),
+          ),
+        );
+      }
       return Scaffold(
         body: Center(
           child: Column(
@@ -62,6 +118,116 @@ class _VerifyEmailScreenState extends ConsumerState<VerifyEmailScreen> {
       );
     }
 
+    if (_showInstructions) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Verify Your Email'),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () {
+              setState(() {
+                _showInstructions = false;
+              });
+            },
+          ),
+        ),
+        body: Center(
+          child: Container(
+            constraints: BoxConstraints(maxWidth: isWide ? 500 : double.infinity),
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(28.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Icon(
+                    Icons.mark_email_read_outlined,
+                    size: 80,
+                    color: Theme.of(context).primaryColor,
+                  ),
+                  const SizedBox(height: 24),
+                  Text(
+                    'Confirm Email',
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.headlineMedium,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'We have registered your account on native Supabase Auth. A verification email has been sent to:\n${authState.email}',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 24),
+                  Card(
+                    color: Colors.white,
+                    child: Padding(
+                      padding: const EdgeInsets.all(20.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Verification Instructions:', style: Theme.of(context).textTheme.titleMedium),
+                          const SizedBox(height: 12),
+                          const Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              CircleAvatar(radius: 10, child: Text('1', style: TextStyle(fontSize: 11))),
+                              SizedBox(width: 12),
+                              Expanded(
+                                child: Text('Open your email client and check your inbox (or spam folder).'),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          const Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              CircleAvatar(radius: 10, child: Text('2', style: TextStyle(fontSize: 11))),
+                              SizedBox(width: 12),
+                              Expanded(
+                                child: Text('Click the confirmation link inside the email to verify your email address.'),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          const Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              CircleAvatar(radius: 10, child: Text('3', style: TextStyle(fontSize: 11))),
+                              SizedBox(width: 12),
+                              Expanded(
+                                child: Text('Return to this page and click the button below to complete your migration.'),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+                  if (authState.isLoading)
+                    const Center(child: CircularProgressIndicator())
+                  else ...[
+                    ElevatedButton.icon(
+                      onPressed: _checkVerificationAndComplete,
+                      icon: const Icon(Icons.check_circle),
+                      label: const Text('I HAVE VERIFIED MY EMAIL'),
+                    ),
+                    const SizedBox(height: 12),
+                    OutlinedButton.icon(
+                      onPressed: _resendEmail,
+                      icon: const Icon(Icons.refresh),
+                      label: const Text('RESEND VERIFICATION EMAIL'),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    // Default migration initiation screen
     return Scaffold(
       appBar: AppBar(
         title: const Text('Security Upgrade'),
@@ -129,190 +295,6 @@ class _VerifyEmailScreenState extends ConsumerState<VerifyEmailScreen> {
                   OutlinedButton(
                     onPressed: _cancelMigration,
                     child: const Text('CANCEL & LOGOUT'),
-                  ),
-                ],
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// -------------------------------------------------------------
-// New Pop-up Screen for confirmation instructions
-// -------------------------------------------------------------
-class MigrationInstructionsScreen extends ConsumerStatefulWidget {
-  const MigrationInstructionsScreen({super.key});
-
-  @override
-  ConsumerState<MigrationInstructionsScreen> createState() => _MigrationInstructionsScreenState();
-}
-
-class _MigrationInstructionsScreenState extends ConsumerState<MigrationInstructionsScreen> {
-  bool _isLoading = false;
-
-  Future<void> _checkVerificationAndComplete() async {
-    setState(() {
-      _isLoading = true;
-    });
-    
-    final success = await ref.read(authProvider.notifier).verifyAndCompleteMigration();
-    
-    if (!mounted) return;
-    setState(() {
-      _isLoading = false;
-    });
-
-    if (success) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Migration successful! Welcome to the new secure Spendly.'),
-          backgroundColor: Colors.green,
-        ),
-      );
-      // Close this instructions screen dialog
-      Navigator.pop(context);
-      // Route home
-      context.go('/home');
-    } else {
-      final error = ref.read(authProvider).error ?? 'Verification check failed. Make sure you clicked the link in your email.';
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(error),
-          backgroundColor: Theme.of(context).colorScheme.error,
-        ),
-      );
-    }
-  }
-
-  Future<void> _resendEmail() async {
-    setState(() {
-      _isLoading = true;
-    });
-    final success = await ref.read(authProvider.notifier).startMigrationSignUp();
-    if (!mounted) return;
-    setState(() {
-      _isLoading = false;
-    });
-    if (success) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Verification email resent! Please check your inbox.'),
-          backgroundColor: Colors.green,
-        ),
-      );
-    } else {
-      final error = ref.read(authProvider).error ?? 'Failed to resend email';
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(error),
-          backgroundColor: Theme.of(context).colorScheme.error,
-        ),
-      );
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final authState = ref.watch(authProvider);
-    final isWide = MediaQuery.of(context).size.width > 720;
-
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Verify Your Email'),
-        leading: IconButton(
-          icon: const Icon(Icons.close),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
-      body: Center(
-        child: Container(
-          constraints: BoxConstraints(maxWidth: isWide ? 500 : double.infinity),
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(28.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Icon(
-                  Icons.mark_email_read_outlined,
-                  size: 80,
-                  color: Theme.of(context).primaryColor,
-                ),
-                const SizedBox(height: 24),
-                Text(
-                  'Confirm Email',
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.headlineMedium,
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'We have registered your account on native Supabase Auth. A verification email has been sent to:\n${authState.email}',
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 24),
-                Card(
-                  color: Colors.white,
-                  child: Padding(
-                    padding: const EdgeInsets.all(20.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Verification Instructions:', style: Theme.of(context).textTheme.titleMedium),
-                        const SizedBox(height: 12),
-                        const Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            CircleAvatar(radius: 10, child: Text('1', style: TextStyle(fontSize: 11))),
-                            SizedBox(width: 12),
-                            Expanded(
-                              child: Text('Open your email client and check your inbox (or spam folder).'),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-                        const Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            CircleAvatar(radius: 10, child: Text('2', style: TextStyle(fontSize: 11))),
-                            SizedBox(width: 12),
-                            Expanded(
-                              child: Text('Click the confirmation link inside the email to verify your email address.'),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-                        const Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            CircleAvatar(radius: 10, child: Text('3', style: TextStyle(fontSize: 11))),
-                            SizedBox(width: 12),
-                            Expanded(
-                              child: Text('Return to this page and click the button below to complete your migration.'),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 32),
-                if (_isLoading)
-                  const Center(child: CircularProgressIndicator())
-                else ...[
-                  ElevatedButton.icon(
-                    onPressed: _checkVerificationAndComplete,
-                    icon: const Icon(Icons.check_circle),
-                    label: const Text('I HAVE VERIFIED MY EMAIL'),
-                  ),
-                  const SizedBox(height: 12),
-                  OutlinedButton.icon(
-                    onPressed: _resendEmail,
-                    icon: const Icon(Icons.refresh),
-                    label: const Text('RESEND VERIFICATION EMAIL'),
                   ),
                 ],
               ],

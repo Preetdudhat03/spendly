@@ -251,19 +251,33 @@ class SupabaseDbService implements DbService {
     final userId = getCurrentUserId();
     if (userId == null) return null;
 
-    // Get family members join
-    final memberData = await _client
-        .from('family_members')
-        .select('family_id, families(*)')
-        .eq('user_id', userId)
-        .maybeSingle();
+    try {
+      // Get family ID for the user
+      final memberData = await _client
+          .from('family_members')
+          .select('family_id')
+          .eq('user_id', userId)
+          .maybeSingle();
 
-    if (memberData == null) return null;
+      if (memberData == null) return null;
 
-    final familyRaw = memberData['families'];
-    if (familyRaw == null) return null;
+      final familyId = memberData['family_id'] as String?;
+      if (familyId == null) return null;
 
-    return Family.fromJson(familyRaw as Map<String, dynamic>);
+      // Get family details using the family ID
+      final familyData = await _client
+          .from('families')
+          .select()
+          .eq('id', familyId)
+          .maybeSingle();
+
+      if (familyData == null) return null;
+
+      return Family.fromJson(familyData);
+    } catch (e) {
+      debugPrint('Supabase Auth: error fetching current family: $e');
+      return null;
+    }
   }
 
   @override
@@ -273,17 +287,55 @@ class SupabaseDbService implements DbService {
 
     final list = await _client
         .from('family_members')
-        .select('*, users(display_name), profiles(display_name)')
+        .select('*')
         .eq('family_id', family.id);
         
+    if (list.isEmpty) return [];
+
+    final List<String> userIds = list.map((data) => data['user_id'] as String).toList();
+
+    // Query users (legacy) in bulk
+    final Map<String, String> legacyNames = {};
+    try {
+      final legacyUsers = await _client
+          .from('users')
+          .select('id, display_name')
+          .inFilter('id', userIds);
+      for (var user in legacyUsers) {
+        final id = user['id'] as String?;
+        final name = user['display_name'] as String?;
+        if (id != null && name != null) {
+          legacyNames[id] = name;
+        }
+      }
+    } catch (e) {
+      debugPrint('Supabase Auth: error fetching legacy user names: $e');
+    }
+
+    // Query profiles (migrated) in bulk
+    final Map<String, String> profileNames = {};
+    try {
+      final profiles = await _client
+          .from('profiles')
+          .select('id, display_name')
+          .inFilter('id', userIds);
+      for (var profile in profiles) {
+        final id = profile['id'] as String?;
+        final name = profile['display_name'] as String?;
+        if (id != null && name != null) {
+          profileNames[id] = name;
+        }
+      }
+    } catch (e) {
+      debugPrint('Supabase Auth: error fetching profile names: $e');
+    }
+
     final List<FamilyMember> members = [];
 
     for (var data in list) {
       final userId = data['user_id'] as String;
-      final usersMap = data['users'] as Map<String, dynamic>?;
-      final profilesMap = data['profiles'] as Map<String, dynamic>?;
-      final displayName = profilesMap?['display_name'] as String? ?? 
-          usersMap?['display_name'] as String? ?? 
+      final displayName = profileNames[userId] ?? 
+          legacyNames[userId] ?? 
           (data['role'] == 'admin' ? 'Family Admin' : 'Family Member');
 
       final member = FamilyMember(
@@ -327,6 +379,27 @@ class SupabaseDbService implements DbService {
   }
 
   // --- Expenses ---
+
+  @override
+  Future<void> updateEmail(String newEmail) async {
+    final userId = getCurrentUserId();
+    if (userId == null) return;
+    
+    final cleanEmail = newEmail.toLowerCase().trim();
+
+    final nativeUser = _client.auth.currentUser;
+    if (nativeUser != null) {
+      // Update email in auth.users (which syncs to profiles via trigger)
+      await _client.auth.updateUser(UserAttributes(email: cleanEmail));
+    } else {
+      // Fallback for legacy user
+      await _client
+          .from('users')
+          .update({'email': cleanEmail})
+          .eq('id', userId);
+      await _prefs.setString(_keySupaUserEmail, cleanEmail);
+    }
+  }
 
   @override
   Future<List<Expense>> getExpenses() async {
@@ -470,5 +543,29 @@ class SupabaseDbService implements DbService {
     }, onConflict: 'family_id, month, year').select().single();
 
     return Budget.fromJson(data);
+  }
+
+  @override
+  Future<void> deleteUserAccount(String userId) async {
+    debugPrint('Supabase DB: deleteUserAccount requested for user $userId');
+    final nativeUser = _client.auth.currentUser;
+    if (nativeUser != null && nativeUser.id == userId) {
+      debugPrint('Supabase DB: Native user deleting account via RPC');
+      await _client.rpc('delete_user_account', params: {'target_user_id': userId});
+      await signOut();
+    } else {
+      debugPrint('Supabase DB: Legacy user deleting account directly');
+      // Delete from family members and users directly
+      await _client.from('family_members').delete().eq('user_id', userId);
+      await _client.from('users').delete().eq('id', userId);
+      await signOut();
+    }
+  }
+
+  @override
+  Future<void> deleteFamily(String familyId) async {
+    debugPrint('Supabase DB: deleteFamily requested for family $familyId');
+    // Delete family record, database cascades will handle expenses, budgets, members
+    await _client.from('families').delete().eq('id', familyId);
   }
 }

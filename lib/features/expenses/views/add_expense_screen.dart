@@ -144,9 +144,6 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
       _paymentMethod = 'UPI';
       _selectedDate = DateTime.now();
     });
-
-    // Go back to Home
-    context.go('/home');
   }
 
   @override
@@ -165,9 +162,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
       appBar: AppBar(
         title: const Text('Add Expense'),
       ),
-      body: expenseState.isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : Center(
+      body: Center(
               child: Container(
                 constraints: BoxConstraints(maxWidth: isWide ? 600 : double.infinity),
                 child: SingleChildScrollView(
@@ -384,11 +379,17 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
 
                     // Giant SAVE EXPENSE button
                     ElevatedButton(
-                      onPressed: _saveExpense,
+                      onPressed: expenseState.isLoading ? null : _saveExpense,
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 20),
                       ),
-                      child: const Text('SAVE EXPENSE'),
+                      child: expenseState.isLoading
+                          ? const SizedBox(
+                              height: 24,
+                              width: 24,
+                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                            )
+                          : const Text('SAVE EXPENSE'),
                     ),
                     const SizedBox(height: 20),
                   ],

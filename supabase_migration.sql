@@ -61,11 +61,26 @@ create trigger on_auth_user_created
 -- 4. Transactional RPC function to complete legacy user relationship migration atomically
 create or replace function public.complete_user_migration(old_user_id uuid, new_user_id uuid)
 returns void as $$
+declare
+  legacy_name text;
+  legacy_email text;
 begin
+  -- Get legacy user name and email
+  select display_name, email into legacy_name, legacy_email
+  from public.users
+  where id = old_user_id;
+
   -- Update families table
   update public.families
   set created_by = new_user_id
   where created_by = old_user_id;
+
+  -- Clean up any duplicate family member records created by new_user_id during stuck phases
+  -- only if we actually have a legacy member row to migrate.
+  if exists (select 1 from public.family_members where user_id = old_user_id) then
+    delete from public.family_members
+    where user_id = new_user_id;
+  end if;
 
   -- Update family_members table
   update public.family_members
@@ -77,10 +92,54 @@ begin
   set created_by = new_user_id
   where created_by = old_user_id;
 
-  -- Update profile record to link legacy_user_id and mark completed
-  update public.profiles
-  set legacy_user_id = old_user_id,
-      migration_completed = true
-  where id = new_user_id;
+  -- Upsert profile record to link legacy_user_id, set display name and email, and mark completed
+  insert into public.profiles (id, email, display_name, legacy_user_id, migration_completed)
+  values (
+    new_user_id,
+    coalesce(legacy_email, ''),
+    coalesce(legacy_name, 'Family Member'),
+    old_user_id,
+    true
+  )
+  on conflict (id) do update set
+    legacy_user_id = excluded.legacy_user_id,
+    migration_completed = true,
+    display_name = coalesce(profiles.display_name, excluded.display_name),
+    email = coalesce(profiles.email, excluded.email);
 end;
 $$ language plpgsql security definer;
+
+-- 5. RPC function to delete a user account (supports both legacy and native auth)
+create or replace function public.delete_user_account(target_user_id uuid)
+returns void as $$
+declare
+  associated_legacy_id uuid;
+begin
+  -- Security check: if the request is authenticated via native Supabase Auth,
+  -- ensure users can only delete their own account.
+  if auth.uid() is not null and auth.uid() != target_user_id then
+    raise exception 'Unauthorized: You can only delete your own account.';
+  end if;
+
+  -- Find any associated legacy user ID from profiles
+  select legacy_user_id into associated_legacy_id
+  from public.profiles
+  where id = target_user_id;
+
+  -- Delete user from family memberships
+  delete from public.family_members where user_id = target_user_id;
+  if associated_legacy_id is not null then
+    delete from public.family_members where user_id = associated_legacy_id;
+  end if;
+
+  -- Delete user from public.users (legacy credentials table)
+  delete from public.users where id = target_user_id;
+  if associated_legacy_id is not null then
+    delete from public.users where id = associated_legacy_id;
+  end if;
+
+  -- Delete user from auth.users (this will cascade delete profiles)
+  delete from auth.users where id = target_user_id;
+end;
+$$ language plpgsql security definer;
+

@@ -82,3 +82,38 @@ alter table public.families disable row level security;
 alter table public.family_members disable row level security;
 alter table public.expenses disable row level security;
 alter table public.budgets disable row level security;
+
+-- 8. RPC function to delete a user account (supports both legacy and native auth)
+create or replace function public.delete_user_account(target_user_id uuid)
+returns void as $$
+declare
+  associated_legacy_id uuid;
+begin
+  -- Security check: if the request is authenticated via native Supabase Auth,
+  -- ensure users can only delete their own account.
+  if auth.uid() is not null and auth.uid() != target_user_id then
+    raise exception 'Unauthorized: You can only delete your own account.';
+  end if;
+
+  -- Find any associated legacy user ID from profiles
+  select legacy_user_id into associated_legacy_id
+  from public.profiles
+  where id = target_user_id;
+
+  -- Delete user from family memberships
+  delete from public.family_members where user_id = target_user_id;
+  if associated_legacy_id is not null then
+    delete from public.family_members where user_id = associated_legacy_id;
+  end if;
+
+  -- Delete user from public.users (legacy credentials table)
+  delete from public.users where id = target_user_id;
+  if associated_legacy_id is not null then
+    delete from public.users where id = associated_legacy_id;
+  end if;
+
+  -- Delete user from auth.users (this will cascade delete profiles)
+  delete from auth.users where id = target_user_id;
+end;
+$$ language plpgsql security definer;
+

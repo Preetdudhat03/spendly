@@ -33,19 +33,20 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       // User is logged in (either legacy user or native Supabase user)
       if (isPendingMigration) {
-        // If they are in the middle of a migration, they MUST go to /verify-email
+        // If they are in the middle of a migration, they MUST stay on verify-email
         return state.matchedLocation == '/verify-email' ? null : '/verify-email';
       }
 
       // If they are logged in and verified, prevent accessing public authentication routes
       if (state.matchedLocation == '/login' || 
           state.matchedLocation == '/register' || 
-          state.matchedLocation == '/forgot-password') {
+          state.matchedLocation == '/forgot-password' ||
+          state.matchedLocation == '/verify-email') {
         return '/home';
       }
 
       // Wait for states to load before making family routing decisions
-      if (auth.isLoading || family.isLoading) {
+      if (auth.isLoading || family.isLoading || !family.hasLoaded) {
         return null;
       }
 
@@ -69,7 +70,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/register',
-        builder: (context, state) => const RegisterScreen(),
+        builder: (context, state) {
+          final email = state.uri.queryParameters['email'];
+          return RegisterScreen(initialEmail: email);
+        },
       ),
       GoRoute(
         path: '/forgot-password',

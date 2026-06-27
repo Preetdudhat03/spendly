@@ -15,6 +15,7 @@ class ProfileScreen extends ConsumerStatefulWidget {
 class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   final _budgetController = TextEditingController();
   final _nameController = TextEditingController();
+  final _emailController = TextEditingController();
 
   void _copyFamilyCode(String code) {
     Clipboard.setData(ClipboardData(text: code));
@@ -98,10 +99,147 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     );
   }
 
+  void _showEditEmailDialog(String currentEmail) {
+    _emailController.text = currentEmail;
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Change Email Address'),
+        content: TextField(
+          controller: _emailController,
+          keyboardType: TextInputType.emailAddress,
+          decoration: const InputDecoration(
+            labelText: 'New Email Address',
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('CANCEL'),
+          ),
+          TextButton(
+            onPressed: () async {
+              final newEmail = _emailController.text.trim();
+              if (newEmail.isNotEmpty && newEmail.contains('@')) {
+                final messenger = ScaffoldMessenger.of(this.context);
+                final nav = Navigator.of(this.context);
+                nav.pop(); // Close dialog first
+                
+                try {
+                  await ref.read(authProvider.notifier).updateEmail(newEmail);
+                  messenger.showSnackBar(
+                    SnackBar(content: Text('Email updated to "$newEmail"')),
+                  );
+                } catch (e) {
+                  messenger.showSnackBar(
+                    SnackBar(content: Text('Failed to update email: $e'), backgroundColor: Colors.red),
+                  );
+                }
+              } else {
+                ScaffoldMessenger.of(this.context).showSnackBar(
+                  const SnackBar(content: Text('Please enter a valid email address'), backgroundColor: Colors.orange),
+                );
+              }
+            },
+            child: const Text('SAVE'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showDeleteAccountDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Account?', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+        content: const Text(
+          'Are you sure you want to delete your account? All your personal profile settings will be permanently erased. This action cannot be undone.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('CANCEL', style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(context); // Close confirmation dialog
+              
+              final messenger = ScaffoldMessenger.of(this.context);
+              try {
+                await ref.read(authProvider.notifier).deleteAccount();
+                messenger.showSnackBar(
+                  const SnackBar(content: Text('Your account has been deleted successfully.')),
+                );
+              } catch (e) {
+                messenger.showSnackBar(
+                  SnackBar(content: Text('Error deleting account: $e'), backgroundColor: Colors.red),
+                );
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('DELETE ACCOUNT'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showDeleteFamilyDialog(String familyName) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Family & Data?', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+        content: Text(
+          'Are you sure you want to delete "$familyName" and ALL associated expenses, budgets, and member links? This action is permanent and cannot be undone.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('CANCEL', style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(context); // Close confirmation dialog
+              
+              final messenger = ScaffoldMessenger.of(this.context);
+              try {
+                final success = await ref.read(familyProvider.notifier).deleteFamily();
+                if (success) {
+                  messenger.showSnackBar(
+                    const SnackBar(content: Text('Family and all its data deleted successfully.')),
+                  );
+                } else {
+                  final errorMsg = ref.read(familyProvider).error ?? 'Unknown error';
+                  messenger.showSnackBar(
+                    SnackBar(content: Text('Error deleting family: $errorMsg'), backgroundColor: Colors.red),
+                  );
+                }
+              } catch (e) {
+                messenger.showSnackBar(
+                  SnackBar(content: Text('Error deleting family: $e'), backgroundColor: Colors.red),
+                );
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('DELETE FAMILY'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   void dispose() {
     _budgetController.dispose();
     _nameController.dispose();
+    _emailController.dispose();
     super.dispose();
   }
 
@@ -151,14 +289,29 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                             style: const TextStyle(color: Colors.grey, fontSize: 14),
                           ),
                           const SizedBox(height: 12),
-                          OutlinedButton.icon(
-                            onPressed: () => _showEditNameDialog(authState.displayName ?? ''),
-                            icon: const Icon(Icons.edit, size: 18),
-                            label: const Text('EDIT NICKNAME'),
-                            style: OutlinedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                              textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-                            ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              OutlinedButton.icon(
+                                onPressed: () => _showEditNameDialog(authState.displayName ?? ''),
+                                icon: const Icon(Icons.edit, size: 16),
+                                label: const Text('NICKNAME'),
+                                style: OutlinedButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                                  textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              OutlinedButton.icon(
+                                onPressed: () => _showEditEmailDialog(authState.email ?? ''),
+                                icon: const Icon(Icons.email, size: 16),
+                                label: const Text('EMAIL'),
+                                style: OutlinedButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                                  textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                            ],
                           )
                         ],
                       ),
@@ -347,16 +500,108 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     ),
                   );
 
-                  Widget logoutButton = ElevatedButton(
-                    onPressed: () {
-                      ref.read(authProvider.notifier).signOut();
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.redAccent,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 18),
+                  bool isCurrentUserAdmin = false;
+                  for (final m in familyState.members) {
+                    if (m.userId == authState.userId && m.role == 'admin') {
+                      isCurrentUserAdmin = true;
+                      break;
+                    }
+                  }
+
+                  Widget dangerZoneCard = Card(
+                    color: const Color(0xFFFFF5F5),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      side: const BorderSide(color: Colors.redAccent, width: 0.5),
                     ),
-                    child: const Text('LOGOUT FROM APP'),
+                    child: Padding(
+                      padding: const EdgeInsets.all(20.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          const Row(
+                            children: [
+                              Icon(Icons.warning_amber_rounded, color: Colors.red),
+                              SizedBox(width: 8),
+                              Text(
+                                'Danger Zone',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.red,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const Divider(color: Colors.redAccent, height: 24, thickness: 0.5),
+                          
+                          // Logout button
+                          ElevatedButton.icon(
+                            onPressed: () {
+                              ref.read(authProvider.notifier).signOut();
+                            },
+                            icon: const Icon(Icons.logout),
+                            label: const Text('LOGOUT FROM APP'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.white,
+                              foregroundColor: Colors.grey[800],
+                              side: BorderSide(color: Colors.grey[300]!),
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              textStyle: const TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+
+                          // Delete Account button
+                          OutlinedButton.icon(
+                            onPressed: isCurrentUserAdmin
+                                ? () {
+                                    showDialog(
+                                      context: context,
+                                      builder: (context) => AlertDialog(
+                                        title: const Text('Admin Restriction', style: TextStyle(fontWeight: FontWeight.bold)),
+                                        content: const Text(
+                                          'As the family admin, you cannot delete your account while the family group still exists.\n\n'
+                                          'Please use the "DELETE FAMILY & ALL DATA" button first to clean up the group before deleting your personal account.',
+                                        ),
+                                        actions: [
+                                          TextButton(
+                                            onPressed: () => Navigator.pop(context),
+                                            child: const Text('UNDERSTOOD'),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  }
+                                : _showDeleteAccountDialog,
+                            icon: const Icon(Icons.person_remove),
+                            label: const Text('DELETE MY ACCOUNT'),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: Colors.red,
+                              side: const BorderSide(color: Colors.red),
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              textStyle: const TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                          
+                          if (isCurrentUserAdmin) ...[
+                            const SizedBox(height: 12),
+                            // Delete Family button
+                            ElevatedButton.icon(
+                              onPressed: () => _showDeleteFamilyDialog(familyName),
+                              icon: const Icon(Icons.delete_forever),
+                              label: const Text('DELETE FAMILY & ALL DATA'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.red,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(vertical: 14),
+                                textStyle: const TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
                   );
 
                   final packageInfoAsync = ref.watch(packageInfoProvider);
@@ -407,7 +652,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                   const SizedBox(height: 16),
                                   familyCodeCard,
                                   const SizedBox(height: 24),
-                                  logoutButton,
+                                  dangerZoneCard,
                                 ],
                               ),
                             ),
@@ -444,7 +689,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         const SizedBox(height: 16),
                         reportsCard,
                         const SizedBox(height: 32),
-                        logoutButton,
+                        dangerZoneCard,
                         versionFooter,
                       ],
                     );
