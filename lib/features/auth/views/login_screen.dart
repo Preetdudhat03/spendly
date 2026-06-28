@@ -84,10 +84,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Icon(
-                        Icons.account_balance_wallet,
-                        size: 72,
-                        color: Theme.of(context).primaryColor,
+                      Image.asset(
+                        'assets/images/logo.png',
+                        height: 72,
+                        width: 72,
                       ),
                       const SizedBox(height: 16),
                       Text(
