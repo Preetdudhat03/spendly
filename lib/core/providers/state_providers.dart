@@ -797,8 +797,9 @@ class ExpenseState {
 class ExpenseNotifier extends StateNotifier<ExpenseState> {
   final ExpenseRepository _expenseRepo;
   final FamilyRepository _familyRepo;
+  final Ref _ref;
 
-  ExpenseNotifier(this._expenseRepo, this._familyRepo) : super(ExpenseState.initial()) {
+  ExpenseNotifier(this._expenseRepo, this._familyRepo, this._ref) : super(ExpenseState.initial()) {
     HiveService.expenses.watch().listen((_) => loadExpenses());
   }
 
@@ -851,6 +852,8 @@ class ExpenseNotifier extends StateNotifier<ExpenseState> {
       state = state.copyWith(isLoading: false);
       // Reload expenses list
       await loadExpenses();
+      // Trigger background sync
+      _ref.read(syncServiceProvider).syncNow();
       return true;
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
@@ -864,6 +867,8 @@ class ExpenseNotifier extends StateNotifier<ExpenseState> {
       await _expenseRepo.deleteExpense(id, _familyRepo.getCurrentFamily(HiveService.settings.get('active_user_id') ?? '')?.id ?? '', HiveService.settings.get('active_user_id') ?? '');
       state = state.copyWith(isLoading: false);
       await loadExpenses();
+      // Trigger background sync
+      _ref.read(syncServiceProvider).syncNow();
       return true;
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
@@ -894,6 +899,8 @@ class ExpenseNotifier extends StateNotifier<ExpenseState> {
       );
       state = state.copyWith(isLoading: false);
       await loadExpenses();
+      // Trigger background sync
+      _ref.read(syncServiceProvider).syncNow();
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
     }
@@ -903,7 +910,7 @@ class ExpenseNotifier extends StateNotifier<ExpenseState> {
 final expenseProvider = StateNotifierProvider<ExpenseNotifier, ExpenseState>((ref) {
   final expenseRepo = ref.watch(expenseRepositoryProvider);
   final familyRepo = ref.watch(familyRepositoryProvider);
-  return ExpenseNotifier(expenseRepo, familyRepo);
+  return ExpenseNotifier(expenseRepo, familyRepo, ref);
 });
 
 // ==========================================

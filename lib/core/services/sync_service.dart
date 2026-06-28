@@ -137,23 +137,46 @@ class SyncService {
           await HiveService.expenses.delete(tempId);
           await HiveService.expenses.put(newId, updatedExpense);
         }
+
+        // Propagate the new ID to any pending update/delete operations
+        final pendingOps = HiveService.pendingOperations.values
+            .where((p) => p.payload != null && p.payload['id'] == tempId);
+        for (final p in pendingOps) {
+          p.payload['id'] = newId;
+          await p.save();
+        }
         break;
       
       case 'UPDATE_EXPENSE':
         final payload = op.payload;
-        await _client.from('expenses').update({
+        final updateResponse = await _client.from('expenses').update({
           'amount': payload['amount'],
           'category': payload['category'],
           'description': payload['description'],
           'payment_method': payload['payment_method'],
           'expense_date': payload['expense_date'],
-        }).eq('id', payload['id']);
+        }).eq('id', payload['id']).select();
+        
+        if (updateResponse.isEmpty) {
+          debugPrint('SyncService: UPDATE_EXPENSE failed (0 rows) for id ${payload['id']} - Check RLS or if ID exists.');
+          // Don't throw if it doesn't exist, just drop it so we don't get stuck in a loop forever
+        }
         break;
 
       case 'DELETE_EXPENSE':
         final id = op.payload['id'];
         if (!(id as String).startsWith('local_')) {
-          await _client.from('expenses').delete().eq('id', id);
+          final deleteResponse = await _client.from('expenses').delete().eq('id', id).select();
+          if (deleteResponse.isEmpty) {
+             debugPrint('SyncService: DELETE_EXPENSE failed (0 rows) for id $id - Check RLS or if ID exists.');
+          }
+        } else {
+          // If it's a local_ ID, it means the ADD_EXPENSE might still be pending. We should remove the ADD_EXPENSE.
+          final addOps = HiveService.pendingOperations.values
+              .where((p) => p.type == 'ADD_EXPENSE' && p.payload['id'] == id);
+          for (final p in addOps) {
+             await p.delete();
+          }
         }
         break;
 
@@ -254,6 +277,7 @@ class SyncService {
       }
     }
 
+    final remoteMemberIds = membersList.map((m) => m['id'] as String).toSet();
     for (var m in membersList) {
       final mUserId = m['user_id'];
       await HiveService.familyMembers.put(m['id'], FamilyMemberModel(
@@ -265,9 +289,18 @@ class SyncService {
         displayName: nameCache[mUserId] ?? 'Family Member',
       ));
     }
+    // Reconcile: delete local members that were removed on server
+    final localMemberIds = HiveService.familyMembers.keys.cast<String>().toList();
+    for (final id in localMemberIds) {
+      final m = HiveService.familyMembers.get(id);
+      if (m != null && m.familyId == familyId && !remoteMemberIds.contains(id) && !id.startsWith('local_')) {
+        await HiveService.familyMembers.delete(id);
+      }
+    }
 
     // Pull Budgets
     final budgetsList = await _client.from('budgets').select().eq('family_id', familyId);
+    final remoteBudgetIds = budgetsList.map((b) => b['id'] as String).toSet();
     for (var b in budgetsList) {
       await HiveService.budgets.put(b['id'], BudgetModel(
         id: b['id'],
@@ -277,9 +310,18 @@ class SyncService {
         year: b['year'],
       ));
     }
+    // Reconcile: delete local budgets that were removed on server
+    final localBudgetIds = HiveService.budgets.keys.cast<String>().toList();
+    for (final id in localBudgetIds) {
+      final b = HiveService.budgets.get(id);
+      if (b != null && b.familyId == familyId && !remoteBudgetIds.contains(id) && !id.startsWith('local_')) {
+        await HiveService.budgets.delete(id);
+      }
+    }
 
     // Pull Expenses
     final expensesList = await _client.from('expenses').select().eq('family_id', familyId);
+    final remoteExpenseIds = expensesList.map((e) => e['id'] as String).toSet();
     for (var e in expensesList) {
       // Check if we shouldn't overwrite if there's a pending operation for this
       final hasPendingOps = HiveService.pendingOperations.values.any((op) {
@@ -300,6 +342,14 @@ class SyncService {
           createdAt: DateTime.parse(e['created_at']),
           createdByName: nameCache[createdBy] ?? 'Family Member',
         ));
+      }
+    }
+    // Reconcile: delete local expenses that were removed on server
+    final localExpenseIds = HiveService.expenses.keys.cast<String>().toList();
+    for (final id in localExpenseIds) {
+      final e = HiveService.expenses.get(id);
+      if (e != null && e.familyId == familyId && !remoteExpenseIds.contains(id) && !id.startsWith('local_')) {
+        await HiveService.expenses.delete(id);
       }
     }
 
