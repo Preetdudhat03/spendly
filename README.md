@@ -70,4 +70,4 @@ lib/
 Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## 📄 License
-This project is licensed under
+This project is licensed
