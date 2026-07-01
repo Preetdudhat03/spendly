@@ -140,6 +140,11 @@ class FamilyMemberLeaderboard extends StatelessWidget {
                               '${member.count} Expenses • Avg ${currencyFmt.format(member.average)} • Max ${currencyFmt.format(member.largest)}',
                               style: TextStyle(fontSize: 11, color: Colors.grey[500]),
                             ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Top Category: ${member.favoriteCategory} • Prefers ${member.preferredPaymentMethod}',
+                              style: TextStyle(fontSize: 11, color: Colors.grey[500], fontStyle: FontStyle.italic),
+                            ),
                             const SizedBox(height: 8),
                             // Progress bar
                             ClipRRect(
