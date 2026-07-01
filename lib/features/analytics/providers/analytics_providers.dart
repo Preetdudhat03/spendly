@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'package:flutter/foundation.dart'; // for compute
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spendly/core/providers/state_providers.dart';
@@ -40,6 +41,9 @@ class MemberShare {
   final int count;
   final double average;
   final double largest;
+  final String favoriteCategory;
+  final String preferredPaymentMethod;
+  final double monthlyTrend;
 
   MemberShare({
     required this.memberId,
@@ -48,6 +52,9 @@ class MemberShare {
     required this.count,
     required this.average,
     required this.largest,
+    required this.favoriteCategory,
+    required this.preferredPaymentMethod,
+    required this.monthlyTrend,
   });
 }
 
@@ -93,6 +100,22 @@ class RecurringExpenseInfo {
   });
 }
 
+class FinancialHealthMetrics {
+  final int budgetControl;
+  final int savingPotential;
+  final int categoryDiversity;
+  final int weekendDiscipline;
+  final int totalScore;
+
+  FinancialHealthMetrics({
+    required this.budgetControl,
+    required this.savingPotential,
+    required this.categoryDiversity,
+    required this.weekendDiscipline,
+    required this.totalScore,
+  });
+}
+
 class AnalyticsState {
   final AnalyticsFilterType filterType;
   final DateTimeRange dateRange;
@@ -114,6 +137,10 @@ class AnalyticsState {
   final double budgetRemaining;
   final double budgetProgressPercent; // 0.0 to 1.0
   final double budgetLimit;
+  
+  // Forecasting
+  final double projectedMonthEnd;
+  final double expectedOverspend;
 
   // Breakdowns & Graphs
   final List<CategoryShare> categoryShares;
@@ -131,7 +158,8 @@ class AnalyticsState {
   final double weekendOverspendPercent;
   final List<RecurringExpenseInfo> recurringExpenses;
   final List<String> savingsOpportunities;
-  final int financialHealthScore;
+  
+  final FinancialHealthMetrics healthMetrics;
   final String healthScoreLabel;
   final List<String> aiInsights;
   final List<String> aiRecommendations;
@@ -157,6 +185,8 @@ class AnalyticsState {
     required this.budgetRemaining,
     required this.budgetProgressPercent,
     required this.budgetLimit,
+    required this.projectedMonthEnd,
+    required this.expectedOverspend,
     required this.categoryShares,
     required this.memberShares,
     required this.paymentMethodShares,
@@ -170,7 +200,7 @@ class AnalyticsState {
     required this.weekendOverspendPercent,
     required this.recurringExpenses,
     required this.savingsOpportunities,
-    required this.financialHealthScore,
+    required this.healthMetrics,
     required this.healthScoreLabel,
     required this.aiInsights,
     required this.aiRecommendations,
@@ -198,6 +228,8 @@ class AnalyticsState {
       budgetRemaining: 0,
       budgetProgressPercent: 0,
       budgetLimit: 0,
+      projectedMonthEnd: 0,
+      expectedOverspend: 0,
       categoryShares: [],
       memberShares: [],
       paymentMethodShares: [],
@@ -211,7 +243,7 @@ class AnalyticsState {
       weekendOverspendPercent: 0,
       recurringExpenses: [],
       savingsOpportunities: [],
-      financialHealthScore: 100,
+      healthMetrics: FinancialHealthMetrics(budgetControl: 100, savingPotential: 100, categoryDiversity: 100, weekendDiscipline: 100, totalScore: 100),
       healthScoreLabel: 'Excellent',
       aiInsights: [],
       aiRecommendations: [],
@@ -239,6 +271,8 @@ class AnalyticsState {
     double? budgetRemaining,
     double? budgetProgressPercent,
     double? budgetLimit,
+    double? projectedMonthEnd,
+    double? expectedOverspend,
     List<CategoryShare>? categoryShares,
     List<MemberShare>? memberShares,
     List<PaymentMethodShare>? paymentMethodShares,
@@ -252,7 +286,7 @@ class AnalyticsState {
     double? weekendOverspendPercent,
     List<RecurringExpenseInfo>? recurringExpenses,
     List<String>? savingsOpportunities,
-    int? financialHealthScore,
+    FinancialHealthMetrics? healthMetrics,
     String? healthScoreLabel,
     List<String>? aiInsights,
     List<String>? aiRecommendations,
@@ -278,6 +312,8 @@ class AnalyticsState {
       budgetRemaining: budgetRemaining ?? this.budgetRemaining,
       budgetProgressPercent: budgetProgressPercent ?? this.budgetProgressPercent,
       budgetLimit: budgetLimit ?? this.budgetLimit,
+      projectedMonthEnd: projectedMonthEnd ?? this.projectedMonthEnd,
+      expectedOverspend: expectedOverspend ?? this.expectedOverspend,
       categoryShares: categoryShares ?? this.categoryShares,
       memberShares: memberShares ?? this.memberShares,
       paymentMethodShares: paymentMethodShares ?? this.paymentMethodShares,
@@ -291,7 +327,7 @@ class AnalyticsState {
       weekendOverspendPercent: weekendOverspendPercent ?? this.weekendOverspendPercent,
       recurringExpenses: recurringExpenses ?? this.recurringExpenses,
       savingsOpportunities: savingsOpportunities ?? this.savingsOpportunities,
-      financialHealthScore: financialHealthScore ?? this.financialHealthScore,
+      healthMetrics: healthMetrics ?? this.healthMetrics,
       healthScoreLabel: healthScoreLabel ?? this.healthScoreLabel,
       aiInsights: aiInsights ?? this.aiInsights,
       aiRecommendations: aiRecommendations ?? this.aiRecommendations,
@@ -311,6 +347,34 @@ final analyticsCustomDateRangeProvider = StateProvider<DateTimeRange?>((ref) {
   return null;
 });
 
+// Active Member Filter State Provider
+final analyticsMemberFilterProvider = StateProvider<String?>((ref) {
+  return null; // null means 'All Members'
+});
+
+// Params for the isolate computation
+class AnalyticsComputeParams {
+  final List<Expense> expenses;
+  final double budgetLimit;
+  final int activeMembersCount;
+  final AnalyticsFilterType filterType;
+  final DateTimeRange? customRange;
+  final Map<String, String> memberIdToName;
+  final String? selectedMemberId;
+  final DateTime now;
+
+  AnalyticsComputeParams({
+    required this.expenses,
+    required this.budgetLimit,
+    required this.activeMembersCount,
+    required this.filterType,
+    required this.customRange,
+    required this.memberIdToName,
+    required this.selectedMemberId,
+    required this.now,
+  });
+}
+
 // Primary Analytics Calculations Provider
 final analyticsProvider = StateNotifierProvider<AnalyticsNotifier, AnalyticsState>((ref) {
   final expenseState = ref.watch(expenseProvider);
@@ -318,6 +382,7 @@ final analyticsProvider = StateNotifierProvider<AnalyticsNotifier, AnalyticsStat
   final familyState = ref.watch(familyProvider);
   final filterType = ref.watch(analyticsFilterTypeProvider);
   final customRange = ref.watch(analyticsCustomDateRangeProvider);
+  final selectedMemberId = ref.watch(analyticsMemberFilterProvider);
 
   return AnalyticsNotifier(
     expenseState: expenseState,
@@ -325,6 +390,7 @@ final analyticsProvider = StateNotifierProvider<AnalyticsNotifier, AnalyticsStat
     familyState: familyState,
     filterType: filterType,
     customRange: customRange,
+    selectedMemberId: selectedMemberId,
   );
 });
 
@@ -335,17 +401,17 @@ class AnalyticsNotifier extends StateNotifier<AnalyticsState> {
     required FamilyState familyState,
     required AnalyticsFilterType filterType,
     required DateTimeRange? customRange,
+    required String? selectedMemberId,
   }) : super(AnalyticsNotifier._createInitialState(filterType, customRange)) {
-    _calculate(expenseState, budgetState, familyState, filterType, customRange);
+    _triggerCalculation(expenseState, budgetState, familyState, filterType, customRange, selectedMemberId);
   }
 
   static AnalyticsState _createInitialState(AnalyticsFilterType filterType, DateTimeRange? customRange) {
-    final ranges = _calculateDateRanges(filterType, customRange);
+    final ranges = _calculateDateRanges(filterType, customRange, DateTime.now());
     return AnalyticsState.initial(ranges[0], ranges[1]);
   }
 
-  static List<DateTimeRange> _calculateDateRanges(AnalyticsFilterType filterType, DateTimeRange? customRange) {
-    final now = DateTime.now();
+  static List<DateTimeRange> _calculateDateRanges(AnalyticsFilterType filterType, DateTimeRange? customRange, DateTime now) {
     DateTime start;
     DateTime end;
     DateTime prevStart;
@@ -421,24 +487,48 @@ class AnalyticsNotifier extends StateNotifier<AnalyticsState> {
     ];
   }
 
-  void _calculate(
+  Future<void> _triggerCalculation(
     ExpenseState expenseState,
     BudgetState budgetState,
     FamilyState familyState,
     AnalyticsFilterType filterType,
     DateTimeRange? customRange,
-  ) {
+    String? selectedMemberId,
+  ) async {
     if (expenseState.isLoading) {
       state = state.copyWith(isLoading: true);
       return;
     }
 
-    final now = DateTime.now();
-    final ranges = _calculateDateRanges(filterType, customRange);
+    final params = AnalyticsComputeParams(
+      expenses: expenseState.expenses,
+      budgetLimit: budgetState.currentBudget?.monthlyBudget ?? 20000.0,
+      activeMembersCount: familyState.members.isEmpty ? 1 : familyState.members.length,
+      filterType: filterType,
+      customRange: customRange,
+      memberIdToName: { for (var m in familyState.members) m.userId: m.displayName },
+      selectedMemberId: selectedMemberId,
+      now: DateTime.now(),
+    );
+
+    // Compute in background isolate to prevent UI freezing
+    final newState = await compute(_runCalculations, params);
+    if (mounted) {
+      state = newState;
+    }
+  }
+
+  // Top-level static function for Isolate processing
+  static AnalyticsState _runCalculations(AnalyticsComputeParams params) {
+    final ranges = _calculateDateRanges(params.filterType, params.customRange, params.now);
     final currentRange = ranges[0];
     final prevRange = ranges[1];
 
-    final allExpenses = expenseState.expenses;
+    // Core Filtering by Member
+    var allExpenses = params.expenses;
+    if (params.selectedMemberId != null) {
+      allExpenses = allExpenses.where((e) => e.createdBy == params.selectedMemberId).toList();
+    }
 
     // Filter current expenses
     final filteredExpenses = allExpenses.where((e) {
@@ -468,8 +558,8 @@ class AnalyticsNotifier extends StateNotifier<AnalyticsState> {
     final prevDays = max(1, prevRange.end.difference(prevRange.start).inDays + 1);
     
     double dailyAverage = 0.0;
-    if (filterType == AnalyticsFilterType.thisMonth && currentRange.start.month == DateTime.now().month && currentRange.start.year == DateTime.now().year) {
-      final daysElapsed = max(1, DateTime.now().day);
+    if (params.filterType == AnalyticsFilterType.thisMonth && currentRange.start.month == params.now.month && currentRange.start.year == params.now.year) {
+      final daysElapsed = max(1, params.now.day);
       dailyAverage = totalSpent / daysElapsed;
     } else {
       dailyAverage = totalSpent / currentDays;
@@ -488,13 +578,20 @@ class AnalyticsNotifier extends StateNotifier<AnalyticsState> {
     final prevTotalTransactions = previousExpenses.length;
 
     // 4. Budget progress
-    final budgetLimit = budgetState.currentBudget?.monthlyBudget ?? 20000.0;
-    final budgetRemaining = max(0.0, budgetLimit - totalSpent);
-    double budgetProgressPercent = budgetLimit > 0 ? (totalSpent / budgetLimit) : 0.0;
+    final budgetRemaining = max(0.0, params.budgetLimit - totalSpent);
+    double budgetProgressPercent = params.budgetLimit > 0 ? (totalSpent / params.budgetLimit) : 0.0;
     if (budgetProgressPercent > 1.0) budgetProgressPercent = 1.0;
 
-    // 5. Active Members
-    final activeMembersCount = familyState.members.isEmpty ? 1 : familyState.members.length;
+    // Forecasting (Only really useful if looking at "This Month" and the month isn't over)
+    double projectedMonthEnd = 0.0;
+    double expectedOverspend = 0.0;
+    if (params.filterType == AnalyticsFilterType.thisMonth && currentRange.start.month == params.now.month && currentRange.start.year == params.now.year) {
+      final daysInMonth = DateUtils.getDaysInMonth(params.now.year, params.now.month);
+      final elapsedDays = max(1, params.now.day);
+      final remainingDays = daysInMonth - elapsedDays;
+      projectedMonthEnd = totalSpent + (dailyAverage * remainingDays);
+      expectedOverspend = max(0.0, projectedMonthEnd - params.budgetLimit);
+    }
 
     // 6. Category breakdown
     final Map<String, double> currentCatTotals = {};
@@ -534,18 +631,35 @@ class AnalyticsNotifier extends StateNotifier<AnalyticsState> {
     for (var e in filteredExpenses) {
       currentMemberExpenses.putIfAbsent(e.createdBy, () => []).add(e);
     }
-    final Map<String, String> memberIdToName = {
-      for (var m in familyState.members) m.userId: m.displayName
-    };
 
     final memberShares = currentMemberExpenses.entries.map((entry) {
       final memberId = entry.key;
       final list = entry.value;
-      final name = memberIdToName[memberId] ?? list.first.createdByName;
+      final name = params.memberIdToName[memberId] ?? list.first.createdByName;
       final mTotal = list.fold<double>(0, (sum, e) => sum + e.amount);
       final mCount = list.length;
       final mAverage = mTotal / mCount;
       final mLargest = list.fold<double>(0, (maxVal, e) => max(maxVal, e.amount));
+
+      // Favorite Category
+      final Map<String, double> mCatTotals = {};
+      for (var e in list) { mCatTotals[e.category] = (mCatTotals[e.category] ?? 0) + e.amount; }
+      final favCat = mCatTotals.isEmpty ? 'None' : mCatTotals.entries.reduce((a, b) => a.value > b.value ? a : b).key;
+
+      // Preferred Payment Method
+      final Map<String, int> mPayTotals = {};
+      for (var e in list) { mPayTotals[e.paymentMethod] = (mPayTotals[e.paymentMethod] ?? 0) + 1; }
+      final prefPay = mPayTotals.isEmpty ? 'None' : mPayTotals.entries.reduce((a, b) => a.value > b.value ? a : b).key;
+
+      // Monthly Trend
+      final mPrevList = previousExpenses.where((e) => e.createdBy == memberId).toList();
+      final mPrevTotal = mPrevList.fold<double>(0, (sum, e) => sum + e.amount);
+      double mTrend = 0.0;
+      if (mPrevTotal > 0) {
+        mTrend = ((mTotal - mPrevTotal) / mPrevTotal) * 100;
+      } else if (mTotal > 0) {
+        mTrend = 100.0;
+      }
 
       return MemberShare(
         memberId: memberId,
@@ -554,6 +668,9 @@ class AnalyticsNotifier extends StateNotifier<AnalyticsState> {
         count: mCount,
         average: mAverage,
         largest: mLargest,
+        favoriteCategory: favCat,
+        preferredPaymentMethod: prefPay,
+        monthlyTrend: mTrend,
       );
     }).toList()..sort((a, b) => b.totalSpent.compareTo(a.totalSpent));
 
@@ -585,7 +702,7 @@ class AnalyticsNotifier extends StateNotifier<AnalyticsState> {
 
     // 10. Heatmap Data (Rolling 12 weeks of daily totals)
     final heatmapData = <DateTime, double>{};
-    final todayOnly = DateUtils.dateOnly(DateTime.now());
+    final todayOnly = DateUtils.dateOnly(params.now);
     final startOfHeatmap = todayOnly.subtract(Duration(days: 84 - (todayOnly.weekday - 1)));
     for (int i = 0; i < 84; i++) {
       final day = startOfHeatmap.add(Duration(days: i));
@@ -600,13 +717,13 @@ class AnalyticsNotifier extends StateNotifier<AnalyticsState> {
 
     // 11. Calendar Data (For monthly view)
     final calendarData = <DateTime, double>{};
-    final calMonthEnd = DateTime(now.year, now.month, DateUtils.getDaysInMonth(now.year, now.month));
+    final calMonthEnd = DateTime(params.now.year, params.now.month, DateUtils.getDaysInMonth(params.now.year, params.now.month));
     for (int d = 1; d <= calMonthEnd.day; d++) {
-      calendarData[DateTime(now.year, now.month, d)] = 0.0;
+      calendarData[DateTime(params.now.year, params.now.month, d)] = 0.0;
     }
     for (var e in allExpenses) {
       final dateOnly = DateUtils.dateOnly(e.expenseDate);
-      if (dateOnly.year == now.year && dateOnly.month == now.month) {
+      if (dateOnly.year == params.now.year && dateOnly.month == params.now.month) {
         calendarData[dateOnly] = (calendarData[dateOnly] ?? 0.0) + e.amount;
       }
     }
@@ -767,45 +884,53 @@ class AnalyticsNotifier extends StateNotifier<AnalyticsState> {
       }
     });
 
-    // 15. Financial Health Score
-    int score = 100;
-    
-    if (totalSpent > budgetLimit) {
-      final overBy = totalSpent - budgetLimit;
-      final overRatio = overBy / budgetLimit;
-      score -= (overRatio * 50).toInt();
+    // 15. Better Financial Health Score
+    int budgetControlScore = 100;
+    if (totalSpent > params.budgetLimit) {
+      budgetControlScore -= min(100, ((totalSpent - params.budgetLimit) / params.budgetLimit * 100).toInt());
     } else {
-      final dayOfMonth = now.day;
-      final daysInM = DateUtils.getDaysInMonth(now.year, now.month);
+      final dayOfMonth = params.now.day;
+      final daysInM = DateUtils.getDaysInMonth(params.now.year, params.now.month);
       final elapsedRatio = dayOfMonth / daysInM;
-      final spentRatio = totalSpent / budgetLimit;
-      if (spentRatio > elapsedRatio + 0.15) {
-        score -= 15;
-      }
+      final spentRatio = totalSpent / params.budgetLimit;
+      if (spentRatio > elapsedRatio + 0.15) budgetControlScore -= 30;
     }
 
-    if (weekendOverspendPercent > 40) {
-      score -= 10;
-    }
+    int weekendDisciplineScore = 100;
+    if (weekendOverspendPercent > 40) weekendDisciplineScore -= 40;
+    else if (weekendOverspendPercent > 20) weekendDisciplineScore -= 20;
 
+    int diversityScore = 100;
+    if (filteredExpenses.length >= 6 && categoryShares.length <= 2) diversityScore -= 40;
+    
+    int savingPotentialScore = 100;
     for (var cat in categoryShares) {
       if ((cat.category.toLowerCase() == 'shopping' || cat.category.toLowerCase() == 'entertainment') && cat.percentage > 45.0) {
-        score -= 12;
+        savingPotentialScore -= 50;
       }
     }
 
-    if (filteredExpenses.length >= 6 && categoryShares.length <= 2) {
-      score -= 10;
-    }
+    budgetControlScore = max(0, min(100, budgetControlScore));
+    weekendDisciplineScore = max(0, min(100, weekendDisciplineScore));
+    diversityScore = max(0, min(100, diversityScore));
+    savingPotentialScore = max(0, min(100, savingPotentialScore));
 
-    score = max(0, min(100, score));
+    final totalScore = ((budgetControlScore + weekendDisciplineScore + diversityScore + savingPotentialScore) / 4).toInt();
+    
+    final healthMetrics = FinancialHealthMetrics(
+      budgetControl: budgetControlScore,
+      savingPotential: savingPotentialScore,
+      categoryDiversity: diversityScore,
+      weekendDiscipline: weekendDisciplineScore,
+      totalScore: totalScore,
+    );
 
     String scoreLabel = 'Excellent';
-    if (score < 50) {
+    if (totalScore < 50) {
       scoreLabel = 'Needs Improvement';
-    } else if (score < 75) {
+    } else if (totalScore < 75) {
       scoreLabel = 'Average';
-    } else if (score < 90) {
+    } else if (totalScore < 90) {
       scoreLabel = 'Good';
     }
 
@@ -814,7 +939,12 @@ class AnalyticsNotifier extends StateNotifier<AnalyticsState> {
     final List<String> aiRecommendations = [];
 
     if (filteredExpenses.isNotEmpty) {
-      aiInsights.add('You completed $totalTransactions expense entries this period.');
+      if (params.selectedMemberId != null) {
+        final memberName = params.memberIdToName[params.selectedMemberId] ?? 'This member';
+        aiInsights.add('$memberName completed $totalTransactions expense entries this period.');
+      } else {
+        aiInsights.add('You completed $totalTransactions expense entries this period.');
+      }
       
       final maxDaySpot = trendSpots.isNotEmpty 
           ? trendSpots.reduce((a, b) => a.amount > b.amount ? a : b) 
@@ -822,13 +952,32 @@ class AnalyticsNotifier extends StateNotifier<AnalyticsState> {
       if (maxDaySpot != null && maxDaySpot.amount > 0) {
         final weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
         final dayName = weekdays[maxDaySpot.date.weekday - 1];
-        aiInsights.add('Highest spending day was $dayName (₹${maxDaySpot.amount.toStringAsFixed(0)}).');
+        
+        // Find what they spent it on
+        final dayExps = filteredExpenses.where((e) => DateUtils.dateOnly(e.expenseDate) == maxDaySpot.date).toList();
+        String dayContext = '';
+        if (dayExps.isNotEmpty) {
+          final topExp = dayExps.reduce((a, b) => a.amount > b.amount ? a : b);
+          dayContext = ' mostly driven by a ${topExp.category} expense.';
+        }
+        
+        aiInsights.add('Highest spending day was $dayName (₹${maxDaySpot.amount.toStringAsFixed(0)})$dayContext');
       }
 
       for (var cat in categoryShares) {
-        if (cat.prevAmount > 0) {
+        if (cat.prevAmount > 0 && cat.diffPercent > 10) {
           final changeStr = cat.isIncrease ? 'increased' : 'decreased';
-          aiInsights.add('${cat.category} spending $changeStr by ${cat.diffPercent.toStringAsFixed(0)}% compared to last period.');
+          // Find most common day for this category
+          final catExp = filteredExpenses.where((e)=>e.category == cat.category).toList();
+          if(catExp.isNotEmpty) {
+            final Map<int, int> dayCounts = {};
+            for(var e in catExp) { dayCounts[e.expenseDate.weekday] = (dayCounts[e.expenseDate.weekday] ?? 0) + 1; }
+            final topDay = dayCounts.entries.reduce((a, b) => a.value > b.value ? a : b).key;
+            final weekdays = ['Mondays', 'Tuesdays', 'Wednesdays', 'Thursdays', 'Fridays', 'Saturdays', 'Sundays'];
+            aiInsights.add('${cat.category} spending $changeStr by ${cat.diffPercent.toStringAsFixed(0)}% compared to last period. Most of these occurred on ${weekdays[topDay-1]}.');
+          } else {
+            aiInsights.add('${cat.category} spending $changeStr by ${cat.diffPercent.toStringAsFixed(0)}% compared to last period.');
+          }
         }
       }
 
@@ -850,10 +999,10 @@ class AnalyticsNotifier extends StateNotifier<AnalyticsState> {
       aiInsights.add('No spending data logged yet for this filter range.');
     }
 
-    if (totalSpent > budgetLimit) {
+    if (totalSpent > params.budgetLimit) {
       aiRecommendations.add('Current trend has exceeded your monthly budget. We suggest immediately locking down non-essential categories.');
-    } else if (totalSpent > budgetLimit * 0.8) {
-      aiRecommendations.add('You have used ${((totalSpent/budgetLimit)*100).toStringAsFixed(0)}% of your budget. Keep non-essential purchases low.');
+    } else if (totalSpent > params.budgetLimit * 0.8) {
+      aiRecommendations.add('You have used ${((totalSpent/params.budgetLimit)*100).toStringAsFixed(0)}% of your budget. Keep non-essential purchases low.');
     } else {
       aiRecommendations.add('You are on track to stay within your budget. Keep it up!');
     }
@@ -901,8 +1050,8 @@ class AnalyticsNotifier extends StateNotifier<AnalyticsState> {
       savingsOpportunities.add('No immediate overspending detected. Keep checking as you log more items!');
     }
 
-    state = AnalyticsState(
-      filterType: filterType,
+    return AnalyticsState(
+      filterType: params.filterType,
       dateRange: currentRange,
       previousDateRange: prevRange,
       filteredExpenses: filteredExpenses,
@@ -916,10 +1065,12 @@ class AnalyticsNotifier extends StateNotifier<AnalyticsState> {
       dailyAverageDiffPercent: dailyAverageDiffPercent,
       totalTransactions: totalTransactions,
       prevTotalTransactions: prevTotalTransactions,
-      activeMembersCount: activeMembersCount,
+      activeMembersCount: params.activeMembersCount,
       budgetRemaining: budgetRemaining,
       budgetProgressPercent: budgetProgressPercent,
-      budgetLimit: budgetLimit,
+      budgetLimit: params.budgetLimit,
+      projectedMonthEnd: projectedMonthEnd,
+      expectedOverspend: expectedOverspend,
       categoryShares: categoryShares,
       memberShares: memberShares,
       paymentMethodShares: paymentMethodShares,
@@ -933,7 +1084,7 @@ class AnalyticsNotifier extends StateNotifier<AnalyticsState> {
       weekendOverspendPercent: weekendOverspendPercent,
       recurringExpenses: recurringExpenses,
       savingsOpportunities: savingsOpportunities,
-      financialHealthScore: score,
+      healthMetrics: healthMetrics,
       healthScoreLabel: scoreLabel,
       aiInsights: aiInsights,
       aiRecommendations: aiRecommendations,
