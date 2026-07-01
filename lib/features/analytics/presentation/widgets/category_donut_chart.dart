@@ -3,6 +3,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
 import 'package:spendly/features/analytics/providers/analytics_providers.dart';
 import 'package:spendly/models/expense.dart';
+import 'drill_down_sheet.dart';
 
 class CategoryMetadata {
   final String name;
@@ -64,8 +65,6 @@ class _CategoryDonutChartState extends State<CategoryDonutChart> {
 
   void _showCategoryDetails(BuildContext context, CategoryShare share) {
     final meta = getCategoryMetadata(share.category);
-    final currencyFmt = NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 0);
-    final dateFmt = DateFormat('MMM d, h:mm a');
 
     // Filter transactions for this category in current range
     final categoryExpenses = widget.state.filteredExpenses
@@ -73,133 +72,15 @@ class _CategoryDonutChartState extends State<CategoryDonutChart> {
         .toList()
       ..sort((a, b) => b.expenseDate.compareTo(a.expenseDate));
 
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-      ),
-      builder: (context) {
-        return DraggableScrollableSheet(
-          initialChildSize: 0.6,
-          maxChildSize: 0.9,
-          minChildSize: 0.4,
-          expand: false,
-          builder: (context, scrollController) {
-            return Column(
-              children: [
-                const SizedBox(height: 12),
-                Container(
-                  width: 36,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: Colors.grey[300],
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                
-                // Header with icon/emoji
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 54,
-                        height: 54,
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          color: meta.color.withOpacity(0.1),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Text(meta.emoji, style: const TextStyle(fontSize: 28)),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              meta.name,
-                              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              '${share.percentage.toStringAsFixed(0)}% of total spending',
-                              style: TextStyle(fontSize: 13, color: Colors.grey[500]),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Text(
-                        currencyFmt.format(share.amount),
-                        style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          color: meta.color,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 20),
-                const Divider(),
-                
-                // Transactions List
-                Expanded(
-                  child: categoryExpenses.isEmpty
-                      ? const Center(child: Text('No recent expenses in this category.'))
-                      : ListView.builder(
-                          controller: scrollController,
-                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                          itemCount: categoryExpenses.length,
-                          itemBuilder: (context, idx) {
-                            final exp = categoryExpenses[idx];
-                            return Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 8.0),
-                              child: Row(
-                                children: [
-                                  // Initial card
-                                  CircleAvatar(
-                                    backgroundColor: Colors.grey[100],
-                                    radius: 20,
-                                    child: Text(
-                                      exp.createdByName.substring(0, 1).toUpperCase(),
-                                      style: TextStyle(fontWeight: FontWeight.bold, color: Theme.of(context).primaryColor),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          exp.description.isEmpty ? meta.name : exp.description,
-                                          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
-                                        ),
-                                        const SizedBox(height: 2),
-                                        Text(
-                                          'Logged by ${exp.createdByName} • ${dateFmt.format(exp.expenseDate)}',
-                                          style: TextStyle(fontSize: 11, color: Colors.grey[500]),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  Text(
-                                    currencyFmt.format(exp.amount),
-                                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
-                        ),
-                ),
-              ],
-            );
-          },
-        );
-      },
+    DrillDownSheet.show(
+      context,
+      title: meta.name,
+      subtitle: '${share.percentage.toStringAsFixed(0)}% of total spending',
+      icon: Icons.category, // You could use a specific icon or just use the emoji text in a custom way. We'll use a generic icon for now.
+      color: meta.color,
+      totalAmount: share.amount,
+      expenses: categoryExpenses,
+      aiSummary: 'This category makes up ${share.percentage.toStringAsFixed(0)}% of your expenses. Consider looking for bulk discounts if applicable.',
     );
   }
 
