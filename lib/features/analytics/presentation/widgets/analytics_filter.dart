@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:spendly/features/analytics/providers/analytics_providers.dart';
+import 'package:spendly/core/providers/state_providers.dart';
 
 class AnalyticsFilterHeader extends ConsumerWidget {
   const AnalyticsFilterHeader({super.key});
@@ -135,54 +136,93 @@ class AnalyticsFilterHeader extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(analyticsProvider);
+    final familyState = ref.watch(familyProvider);
+    final selectedMemberId = ref.watch(analyticsMemberFilterProvider);
 
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Left: Header & Subtitle
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Analytics',
-                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: -0.5,
-                      ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              // Left: Header & Subtitle
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Analytics',
+                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: -0.5,
+                          ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      "Understand where your family's money is going.",
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: Colors.grey[600],
+                            fontSize: 13,
+                          ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  "Understand where your family's money is going.",
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Colors.grey[600],
-                        fontSize: 13,
-                      ),
+              ),
+              const SizedBox(width: 16),
+              // Right: Filter Button
+              TextButton.icon(
+                style: TextButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  backgroundColor: Theme.of(context).primaryColor.withOpacity(0.08),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
                 ),
-              ],
-            ),
+                onPressed: () => _showFilterSelector(context, ref, state.filterType),
+                icon: Icon(Icons.calendar_today, size: 16, color: Theme.of(context).primaryColor),
+                label: Text(
+                  _getFilterLabel(state.filterType, state.dateRange),
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                    color: Theme.of(context).primaryColor,
+                  ),
+                ),
+              ),
+            ],
           ),
-          const SizedBox(width: 16),
-          // Right: Filter Button
-          TextButton.icon(
-            style: TextButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              backgroundColor: Theme.of(context).primaryColor.withOpacity(0.08),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-            ),
-            onPressed: () => _showFilterSelector(context, ref, state.filterType),
-            icon: Icon(Icons.calendar_today, size: 16, color: Theme.of(context).primaryColor),
-            label: Text(
-              _getFilterLabel(state.filterType, state.dateRange),
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 13,
-                color: Theme.of(context).primaryColor,
-              ),
+          const SizedBox(height: 16),
+          // Member Filter Chips
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            clipBehavior: Clip.none,
+            child: Row(
+              children: [
+                ChoiceChip(
+                  label: const Text('All Members'),
+                  selected: selectedMemberId == null,
+                  onSelected: (selected) {
+                    if (selected) {
+                      ref.read(analyticsMemberFilterProvider.notifier).state = null;
+                    }
+                  },
+                ),
+                const SizedBox(width: 8),
+                ...familyState.members.map((member) {
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 8.0),
+                    child: ChoiceChip(
+                      label: Text(member.displayName),
+                      selected: selectedMemberId == member.userId,
+                      onSelected: (selected) {
+                        ref.read(analyticsMemberFilterProvider.notifier).state = selected ? member.userId : null;
+                      },
+                    ),
+                  );
+                }),
+              ],
             ),
           ),
         ],
