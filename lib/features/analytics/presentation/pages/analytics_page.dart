@@ -56,14 +56,29 @@ class AnalyticsPage extends ConsumerWidget {
         color: Theme.of(context).primaryColor,
         child: (expenseState.isLoading && expenseState.expenses.isEmpty) || (state.isLoading && state.filteredExpenses.isEmpty)
             ? _buildLoadingState(context, isWide)
-            : expenseState.expenses.isEmpty
-                ? _buildEmptyState(context)
+            : expenseState.expenses.isEmpty || (state.filteredExpenses.isEmpty && ref.read(analyticsMemberFilterProvider) != null)
+                ? _buildEmptyState(context, ref)
                 : _buildDashboardContent(context, state, isWide),
       ),
     );
   }
 
-  Widget _buildEmptyState(BuildContext context) {
+  Widget _buildEmptyState(BuildContext context, WidgetRef ref) {
+    final selectedMemberId = ref.watch(analyticsMemberFilterProvider);
+    final familyState = ref.watch(familyProvider);
+    
+    String messageTitle = 'No expenses recorded yet';
+    String messageBody = 'Log your first family transaction to activate real-time financial intelligence dashboard metrics.';
+    
+    if (selectedMemberId != null) {
+      final memberName = familyState.members.firstWhere(
+        (m) => m.userId == selectedMemberId, 
+        orElse: () => familyState.members.first
+      ).displayName;
+      messageTitle = '$memberName has no expenses';
+      messageBody = 'No expenses were found for $memberName during this period.';
+    }
+
     return SingleChildScrollView(
       physics: const AlwaysScrollableScrollPhysics(),
       child: Container(
@@ -82,26 +97,37 @@ class AnalyticsPage extends ConsumerWidget {
               child: Icon(Icons.bar_chart_outlined, size: 64, color: Theme.of(context).primaryColor),
             ),
             const SizedBox(height: 24),
-            const Text(
-              'No expenses recorded yet',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, letterSpacing: -0.5),
+            Text(
+              messageTitle,
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900, letterSpacing: -0.5),
             ),
             const SizedBox(height: 8),
             Text(
-              'Log your first family transaction to activate real-time financial intelligence dashboard metrics.',
+              messageBody,
               textAlign: TextAlign.center,
               style: TextStyle(color: Colors.grey[500], fontSize: 13, height: 1.4),
             ),
             const SizedBox(height: 24),
-            ElevatedButton.icon(
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            if (selectedMemberId != null)
+              OutlinedButton.icon(
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                ),
+                onPressed: () => ref.read(analyticsMemberFilterProvider.notifier).state = null,
+                icon: const Icon(Icons.clear),
+                label: const Text('Clear Filter', style: TextStyle(fontWeight: FontWeight.bold)),
+              )
+            else
+              ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                ),
+                onPressed: () => context.go('/add'),
+                icon: const Icon(Icons.add_circle_outline),
+                label: const Text('Add First Expense', style: TextStyle(fontWeight: FontWeight.bold)),
               ),
-              onPressed: () => context.go('/add'),
-              icon: const Icon(Icons.add_circle_outline),
-              label: const Text('Add First Expense', style: TextStyle(fontWeight: FontWeight.bold)),
-            ),
           ],
         ),
       ),
