@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:spendly/features/analytics/providers/analytics_providers.dart';
+import 'drill_down_sheet.dart';
 
 class FamilyMemberLeaderboard extends StatelessWidget {
   final AnalyticsState state;
@@ -81,85 +82,108 @@ class FamilyMemberLeaderboard extends StatelessWidget {
                 final initial = member.name.isNotEmpty ? member.name.substring(0, 1).toUpperCase() : 'M';
 
                 return Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 10.0),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Avatar with index badge
-                      Stack(
-                        clipBehavior: Clip.none,
+                  padding: const EdgeInsets.symmetric(vertical: 4.0),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(16),
+                    onTap: () {
+                      final memberExpenses = state.filteredExpenses
+                          .where((e) => e.createdByName == member.name)
+                          .toList()
+                        ..sort((a, b) => b.expenseDate.compareTo(a.expenseDate));
+
+                      DrillDownSheet.show(
+                        context,
+                        title: member.name,
+                        subtitle: 'Member spending details',
+                        icon: Icons.person,
+                        color: color,
+                        totalAmount: member.totalSpent,
+                        expenses: memberExpenses,
+                        aiSummary: '${member.name} has logged ${member.count} expenses with an average of ${currencyFmt.format(member.average)}. Their top category is ${member.favoriteCategory}.',
+                      );
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          CircleAvatar(
-                            radius: 20,
-                            backgroundColor: color.withOpacity(0.12),
-                            child: Text(
-                              initial,
-                              style: TextStyle(fontWeight: FontWeight.bold, color: color, fontSize: 16),
-                            ),
-                          ),
-                          Positioned(
-                            right: -2,
-                            bottom: -2,
-                            child: CircleAvatar(
-                              radius: 8,
-                              backgroundColor: Colors.white,
-                              child: CircleAvatar(
-                                radius: 7,
-                                backgroundColor: idx == 0 ? Colors.amber : Colors.grey[300],
+                          // Avatar with index badge
+                          Stack(
+                            clipBehavior: Clip.none,
+                            children: [
+                              CircleAvatar(
+                                radius: 20,
+                                backgroundColor: color.withOpacity(0.12),
                                 child: Text(
-                                  '${idx + 1}',
-                                  style: const TextStyle(fontSize: 8, fontWeight: FontWeight.bold, color: Colors.black),
+                                  initial,
+                                  style: TextStyle(fontWeight: FontWeight.bold, color: color, fontSize: 16),
                                 ),
                               ),
+                              Positioned(
+                                right: -2,
+                                bottom: -2,
+                                child: CircleAvatar(
+                                  radius: 8,
+                                  backgroundColor: Colors.white,
+                                  child: CircleAvatar(
+                                    radius: 7,
+                                    backgroundColor: idx == 0 ? Colors.amber : Colors.grey[300],
+                                    child: Text(
+                                      '${idx + 1}',
+                                      style: const TextStyle(fontSize: 8, fontWeight: FontWeight.bold, color: Colors.black),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(width: 14),
+
+                          // Member Details
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      member.name,
+                                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                                    ),
+                                    Text(
+                                      currencyFmt.format(member.totalSpent),
+                                      style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 14),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  '${member.count} Expenses • Avg ${currencyFmt.format(member.average)} • Max ${currencyFmt.format(member.largest)}',
+                                  style: TextStyle(fontSize: 11, color: Colors.grey[500]),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Top Category: ${member.favoriteCategory} • Prefers ${member.preferredPaymentMethod}',
+                                  style: TextStyle(fontSize: 11, color: Colors.grey[500], fontStyle: FontStyle.italic),
+                                ),
+                                const SizedBox(height: 8),
+                                // Progress bar
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(4),
+                                  child: LinearProgressIndicator(
+                                    value: progress,
+                                    minHeight: 4,
+                                    color: color,
+                                    backgroundColor: const Color(0xFFF1F5F9),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(width: 14),
-
-                      // Member Details
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  member.name,
-                                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                                ),
-                                Text(
-                                  currencyFmt.format(member.totalSpent),
-                                  style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 14),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              '${member.count} Expenses • Avg ${currencyFmt.format(member.average)} • Max ${currencyFmt.format(member.largest)}',
-                              style: TextStyle(fontSize: 11, color: Colors.grey[500]),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'Top Category: ${member.favoriteCategory} • Prefers ${member.preferredPaymentMethod}',
-                              style: TextStyle(fontSize: 11, color: Colors.grey[500], fontStyle: FontStyle.italic),
-                            ),
-                            const SizedBox(height: 8),
-                            // Progress bar
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(4),
-                              child: LinearProgressIndicator(
-                                value: progress,
-                                minHeight: 4,
-                                color: color,
-                                backgroundColor: const Color(0xFFF1F5F9),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                 );
               },
