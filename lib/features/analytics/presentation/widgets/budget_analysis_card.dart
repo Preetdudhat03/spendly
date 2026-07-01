@@ -18,14 +18,9 @@ class BudgetAnalysisCard extends StatelessWidget {
     final progress = state.budgetProgressPercent;
 
     // Forecast calculation
-    final now = DateTime.now();
-    final daysInMonth = DateUtils.getDaysInMonth(now.year, now.month);
-    final daysElapsed = max(1, now.day);
-    
-    // Project based on daily average
-    final projectedSpend = state.dailyAverage * daysInMonth;
+    final projectedSpend = state.projectedMonthEnd;
     final isExceededForecast = projectedSpend > budget;
-    final forecastExceedAmount = max(0.0, projectedSpend - budget);
+    final forecastExceedAmount = state.expectedOverspend;
 
     String forecastMessage = '';
     Color forecastBg = Colors.green.withOpacity(0.06);
