@@ -99,40 +99,41 @@ class FinancialHealthCard extends StatelessWidget {
 
             // Factors Breakdown list
             Text(
-              'Contributing Factors',
+              'Detailed Metrics',
               style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey[600]),
             ),
             const SizedBox(height: 10),
-            _buildFactorRow('Budget Adherence', state.totalSpent <= state.budgetLimit ? 'On Track' : 'Limit Exceeded', state.totalSpent <= state.budgetLimit ? Colors.green : Colors.red),
-            _buildFactorRow('Expense Consistency', state.totalTransactions > 0 ? 'Consistent logging' : 'Needs transactions', state.totalTransactions > 0 ? Colors.green : Colors.grey),
-            _buildFactorRow('Savings Potential', state.savingsOpportunities.isNotEmpty ? 'Optimization found' : 'Perfect alignment', Colors.blue),
-            _buildFactorRow('Category Diversity', state.categoryShares.length >= 3 ? 'Good distribution' : 'Highly concentrated', state.categoryShares.length >= 3 ? Colors.green : Colors.orange),
+            _buildScoreBar('Budget Control', state.healthMetrics.budgetControl, _getScoreColor(state.healthMetrics.budgetControl)),
+            _buildScoreBar('Saving Potential', state.healthMetrics.savingPotential, _getScoreColor(state.healthMetrics.savingPotential)),
+            _buildScoreBar('Category Diversity', state.healthMetrics.categoryDiversity, _getScoreColor(state.healthMetrics.categoryDiversity)),
+            _buildScoreBar('Weekend Discipline', state.healthMetrics.weekendDiscipline, _getScoreColor(state.healthMetrics.weekendDiscipline)),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildFactorRow(String name, String status, Color statusColor) {
+  Widget _buildScoreBar(String name, int score, Color color) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(name, style: const TextStyle(fontSize: 12, color: Colors.black87)),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-            decoration: BoxDecoration(
-              color: statusColor.withOpacity(0.08),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Text(
-              status,
-              style: TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.bold,
-                color: statusColor,
-              ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(name, style: const TextStyle(fontSize: 12, color: Colors.black87, fontWeight: FontWeight.w600)),
+              Text('$score', style: TextStyle(fontSize: 12, color: color, fontWeight: FontWeight.bold)),
+            ],
+          ),
+          const SizedBox(height: 6),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: LinearProgressIndicator(
+              value: score / 100,
+              backgroundColor: color.withOpacity(0.1),
+              color: color,
+              minHeight: 6,
             ),
           ),
         ],
