@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
 import 'package:spendly/features/analytics/providers/analytics_providers.dart';
+import 'drill_down_sheet.dart';
 
 class PaymentMethodMetadata {
   final String name;
@@ -45,6 +46,27 @@ class PaymentMethodChart extends StatefulWidget {
 
 class _PaymentMethodChartState extends State<PaymentMethodChart> {
   int touchedIndex = -1;
+
+  void _showPaymentDetails(BuildContext context, PaymentMethodShare share) {
+    final meta = getPaymentMethodMetadata(share.method);
+    
+    // Filter transactions for this method
+    final methodExpenses = widget.state.filteredExpenses
+        .where((e) => e.paymentMethod.toLowerCase() == share.method.toLowerCase())
+        .toList()
+      ..sort((a, b) => b.expenseDate.compareTo(a.expenseDate));
+
+    DrillDownSheet.show(
+      context,
+      title: meta.name,
+      subtitle: '${share.percentage.toStringAsFixed(0)}% of total volume',
+      icon: meta.icon,
+      color: meta.color,
+      totalAmount: share.amount,
+      expenses: methodExpenses,
+      aiSummary: 'You use ${meta.name} for ${share.percentage.toStringAsFixed(0)}% of your transactions. It was used ${share.count} times this period.',
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -132,6 +154,10 @@ class _PaymentMethodChartState extends State<PaymentMethodChart> {
                                 return;
                               }
                               touchedIndex = pieTouchResponse.touchedSection!.touchedSectionIndex;
+                              
+                              if (event is FlTapUpEvent && touchedIndex >= 0 && touchedIndex < widget.state.paymentMethodShares.length) {
+                                _showPaymentDetails(context, widget.state.paymentMethodShares[touchedIndex]);
+                              }
                             });
                           },
                         ),
@@ -177,49 +203,58 @@ class _PaymentMethodChartState extends State<PaymentMethodChart> {
                 final meta = getPaymentMethodMetadata(share.method);
 
                 return Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 4.0),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(6),
-                        decoration: BoxDecoration(
-                          color: meta.color.withOpacity(0.08),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(meta.icon, size: 16, color: meta.color),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              meta.name,
-                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              '${share.count} transaction${share.count == 1 ? '' : 's'}',
-                              style: TextStyle(fontSize: 11, color: Colors.grey[400]),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
+                  padding: const EdgeInsets.symmetric(vertical: 4.0),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(12),
+                    onTap: () => _showPaymentDetails(context, share),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
+                      child: Row(
                         children: [
-                          Text(
-                            currencyFmt.format(share.amount),
-                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                          Container(
+                            padding: const EdgeInsets.all(6),
+                            decoration: BoxDecoration(
+                              color: meta.color.withOpacity(0.08),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(meta.icon, size: 16, color: meta.color),
                           ),
-                          const SizedBox(height: 2),
-                          Text(
-                            '${share.percentage.toStringAsFixed(0)}%',
-                            style: TextStyle(fontSize: 11, color: Colors.grey[500], fontWeight: FontWeight.bold),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  meta.name,
+                                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  '${share.count} transaction${share.count == 1 ? '' : 's'}',
+                                  style: TextStyle(fontSize: 11, color: Colors.grey[400]),
+                                ),
+                              ],
+                            ),
                           ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Text(
+                                currencyFmt.format(share.amount),
+                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                '${share.percentage.toStringAsFixed(0)}%',
+                                style: TextStyle(fontSize: 11, color: Colors.grey[500], fontWeight: FontWeight.bold),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(width: 4),
+                          Icon(Icons.chevron_right, size: 16, color: Colors.grey[400]),
                         ],
                       ),
-                    ],
+                    ),
                   ),
                 );
               },
