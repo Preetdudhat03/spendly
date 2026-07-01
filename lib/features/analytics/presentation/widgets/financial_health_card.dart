@@ -16,7 +16,7 @@ class FinancialHealthCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final score = state.financialHealthScore;
+    final score = state.healthMetrics.totalScore;
     final color = _getScoreColor(score);
     final label = state.healthScoreLabel;
 

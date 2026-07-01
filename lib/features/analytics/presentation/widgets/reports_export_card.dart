@@ -131,7 +131,7 @@ class ReportsExportCard extends StatelessWidget {
         '• Daily Average: ${currencyFmt.format(state.dailyAverage)}/day\n'
         '• Transactions: ${state.totalTransactions} entries logged\n'
         '• Active Members: ${state.activeMembersCount}\n'
-        '• Financial Health Score: ${state.financialHealthScore}/100 (${state.healthScoreLabel})\n'
+        '• Financial Health Score: ${state.healthMetrics.totalScore}/100 (${state.healthScoreLabel})\n'
         '• Top Category: ${state.categoryShares.isNotEmpty ? state.categoryShares.first.category : "N/A"}\n'
         'Shared via Spendly App.';
     
