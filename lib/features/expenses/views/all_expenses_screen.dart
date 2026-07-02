@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:spendly/core/providers/state_providers.dart';
+import 'package:spendly/core/widgets/shimmer_loading.dart';
 import 'package:spendly/models/expense.dart';
 
 class AllExpensesScreen extends ConsumerStatefulWidget {
@@ -476,7 +477,13 @@ class _AllExpensesScreenState extends ConsumerState<AllExpensesScreen> {
           );
 
           Widget expensesListView = expenseState.isLoading
-              ? const Center(child: CircularProgressIndicator())
+              ? ShimmerLoading(
+                  isLoading: true,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: const ShimmerListPlaceholder(itemCount: 8),
+                  ),
+                )
               : filteredExpenses.isEmpty
                   ? Center(
                       child: Column(
