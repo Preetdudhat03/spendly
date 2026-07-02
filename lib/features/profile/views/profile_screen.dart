@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:spendly/core/providers/state_providers.dart';
-import 'package:spendly/core/services/report_service.dart';
+import 'package:spendly/core/widgets/shimmer_loading.dart';import 'package:spendly/core/services/report_service.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -261,7 +261,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         title: const Text('Profile & Settings'),
       ),
       body: authState.isLoading || familyState.isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? ShimmerLoading(
+              isLoading: true,
+              child: Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: const ShimmerProfilePlaceholder(),
+              ),
+            )
           : SingleChildScrollView(
               padding: const EdgeInsets.all(20.0),
               child: Builder(
