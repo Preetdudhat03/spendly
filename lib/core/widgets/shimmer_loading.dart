@@ -148,3 +148,96 @@ class ShimmerCardPlaceholder extends StatelessWidget {
     );
   }
 }
+
+class ShimmerListPlaceholder extends StatelessWidget {
+  final int itemCount;
+  const ShimmerListPlaceholder({super.key, this.itemCount = 5});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: itemCount,
+      itemBuilder: (context, index) {
+        return Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xFFF1F5F9)),
+          ),
+          child: const Row(
+            children: [
+              ShimmerPlaceholder(width: 40, height: 40, borderRadius: 20),
+              SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    ShimmerPlaceholder(width: 120, height: 16),
+                    SizedBox(height: 8),
+                    ShimmerPlaceholder(width: 80, height: 12),
+                  ],
+                ),
+              ),
+              ShimmerPlaceholder(width: 60, height: 20),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class ShimmerProfilePlaceholder extends StatelessWidget {
+  const ShimmerProfilePlaceholder({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        const SizedBox(height: 20),
+        const Center(
+          child: ShimmerPlaceholder(width: 100, height: 100, borderRadius: 50),
+        ),
+        const SizedBox(height: 16),
+        const Center(child: ShimmerPlaceholder(width: 150, height: 24)),
+        const SizedBox(height: 8),
+        const Center(child: ShimmerPlaceholder(width: 100, height: 14)),
+        const SizedBox(height: 32),
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: const Color(0xFFE2E8F0)),
+          ),
+          child: Column(
+            children: List.generate(4, (index) {
+              return const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                child: Row(
+                  children: [
+                    ShimmerPlaceholder(width: 40, height: 40, borderRadius: 12),
+                    SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          ShimmerPlaceholder(width: 100, height: 16),
+                          SizedBox(height: 6),
+                          ShimmerPlaceholder(width: 150, height: 12),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }),
+          ),
+        ),
+      ],
+    );
+  }
+}
