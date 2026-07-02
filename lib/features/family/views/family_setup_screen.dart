@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:spendly/core/providers/state_providers.dart';
+import 'package:spendly/core/widgets/shimmer_loading.dart';
+import 'package:spendly/core/widgets/shimmer_list_placeholder.dart';
 
 class FamilySetupScreen extends ConsumerStatefulWidget {
   const FamilySetupScreen({super.key});
@@ -66,7 +69,13 @@ class _FamilySetupScreenState extends ConsumerState<FamilySetupScreen> {
         ],
       ),
       body: familyState.isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? ShimmerLoading(
+              isLoading: true,
+              child: Padding(
+                padding: const EdgeInsets.all(28.0),
+                child: const ShimmerListPlaceholder(itemCount: 4),
+              ),
+            )
           : SingleChildScrollView(
               padding: const EdgeInsets.all(28.0),
               child: Builder(
