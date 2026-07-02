@@ -7,7 +7,7 @@ import 'package:spendly/main.dart';
 import 'package:spendly/core/services/suggestions_service.dart';
 import 'package:spendly/features/expenses/views/add_expense_screen.dart';
 import 'package:spendly/models/expense.dart';
-
+import 'package:spendly/core/widgets/shimmer_loading.dart';
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
@@ -85,7 +85,32 @@ class HomeScreen extends ConsumerWidget {
         ),
       ),
       body: (expenseState.isLoading && expenseState.expenses.isEmpty) || (familyState.isLoading && !familyState.hasLoaded)
-          ? const Center(child: CircularProgressIndicator())
+          ? ShimmerLoading(
+              isLoading: true,
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const ShimmerPlaceholder(width: 200, height: 28),
+                    const SizedBox(height: 18),
+                    const Row(
+                      children: [
+                        Expanded(child: ShimmerPlaceholder(height: 100, borderRadius: 20)),
+                        SizedBox(width: 16),
+                        Expanded(child: ShimmerPlaceholder(height: 100, borderRadius: 20)),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+                    const ShimmerPlaceholder(height: 160, borderRadius: 24),
+                    const SizedBox(height: 24),
+                    const ShimmerPlaceholder(width: 150, height: 24),
+                    const SizedBox(height: 12),
+                    const ShimmerListPlaceholder(itemCount: 3),
+                  ],
+                ),
+              ),
+            )
           : RefreshIndicator(
               onRefresh: () async {
                 ref.read(connectionProvider.notifier).checkConnection();
