@@ -24,7 +24,7 @@ import '../widgets/savings_opportunities_card.dart';
 import '../widgets/financial_health_card.dart';
 import '../widgets/ai_insight_card.dart';
 import '../widgets/reports_export_card.dart';
-import '../../../core/widgets/shimmer_loading.dart';
+import 'package:spendly/core/widgets/shimmer_loading.dart';
 
 class AnalyticsPage extends ConsumerWidget {
   const AnalyticsPage({super.key});
