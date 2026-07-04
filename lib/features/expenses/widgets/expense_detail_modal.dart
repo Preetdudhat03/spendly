@@ -1,0 +1,481 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
+import 'package:spendly/core/providers/state_providers.dart';
+import 'package:spendly/models/expense.dart';
+
+Color _getCategoryColor(String category) {
+  switch (category.toLowerCase()) {
+    case 'food':
+      return Colors.orange;
+    case 'groceries':
+      return Colors.green;
+    case 'petrol':
+    case 'gas':
+      return Colors.blue;
+    case 'recharges':
+    case 'electricity':
+      return Colors.yellow[700]!;
+    case 'travel':
+      return Colors.purple;
+    case 'medical':
+      return Colors.red;
+    case 'insurances':
+      return Colors.teal;
+    case 'rent':
+      return Colors.brown;
+    case 'shopping':
+      return Colors.pink;
+    case 'entertainment':
+      return Colors.deepPurple;
+    case 'education':
+    case 'college':
+      return Colors.indigo;
+    default:
+      return Colors.grey;
+  }
+}
+
+String _getCategoryEmoji(String category) {
+  switch (category.toLowerCase()) {
+    case 'food':
+      return '🍔';
+    case 'groceries':
+      return '🛒';
+    case 'petrol':
+      return '🚗';
+    case 'recharges':
+      return '📱';
+    case 'travel':
+      return '✈️';
+    case 'gas':
+      return '⛽';
+    case 'electricity':
+      return '⚡';
+    case 'medical':
+      return '💊';
+    case 'insurances':
+      return '🛡️';
+    case 'rent':
+      return '🏠';
+    case 'shopping':
+      return '🛍️';
+    case 'entertainment':
+      return '🎬';
+    case 'education':
+      return '📚';
+    case 'college':
+      return '🎓';
+    default:
+      return '💰';
+  }
+}
+
+void showExpenseDetail(BuildContext context, WidgetRef ref, Expense expense) {
+  showModalBottomSheet(
+    context: context,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+    ),
+    builder: (context) {
+      final dateStr = DateFormat('EEEE, MMMM dd, yyyy').format(expense.expenseDate);
+      final amtStr = NumberFormat.currency(locale: 'en_IN', decimalDigits: 2, symbol: '₹').format(expense.amount);
+
+      return SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(28.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Center(
+                child: Container(
+                  width: 50,
+                  height: 5,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Row(
+                children: [
+                  CircleAvatar(
+                    radius: 30,
+                    backgroundColor: _getCategoryColor(expense.category).withOpacity(0.15),
+                    child: Text(
+                      _getCategoryEmoji(expense.category),
+                      style: const TextStyle(fontSize: 28),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          expense.category,
+                          style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          expense.description.isNotEmpty ? expense.description : 'No description',
+                          style: const TextStyle(fontSize: 16, color: Colors.grey),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Text(
+                    amtStr,
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).primaryColor,
+                    ),
+                  ),
+                ],
+              ),
+              const Divider(height: 36),
+              _buildDetailRow(Icons.calendar_today_outlined, 'Logged Date', dateStr),
+              const SizedBox(height: 12),
+              _buildDetailRow(Icons.payment_outlined, 'Payment Method', expense.paymentMethod),
+              const SizedBox(height: 12),
+              _buildDetailRow(Icons.person_outline, 'Logged By', expense.createdByName),
+              const SizedBox(height: 32),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        _showEditExpenseSheet(context, ref, expense);
+                      },
+                      icon: const Icon(Icons.edit),
+                      label: const Text('EDIT'),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red[50],
+                        foregroundColor: Colors.red,
+                        elevation: 0,
+                      ),
+                      onPressed: () {
+                        Navigator.pop(context);
+                        _confirmDeleteExpense(context, ref, expense.id);
+                      },
+                      icon: const Icon(Icons.delete_outline),
+                      label: const Text('DELETE'),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      );
+    },
+  );
+}
+
+Widget _buildDetailRow(IconData icon, String label, String value) {
+  return Row(
+    children: [
+      Icon(icon, color: Colors.grey[600], size: 20),
+      const SizedBox(width: 12),
+      Text(
+        '$label:',
+        style: const TextStyle(fontWeight: FontWeight.w500, color: Colors.grey),
+      ),
+      const SizedBox(width: 8),
+      Expanded(
+        child: Text(
+          value,
+          style: const TextStyle(fontWeight: FontWeight.bold),
+          textAlign: TextAlign.right,
+        ),
+      ),
+    ],
+  );
+}
+
+void _confirmDeleteExpense(BuildContext context, WidgetRef ref, String id) {
+  showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: const Text('Delete Expense?'),
+      content: const Text('Are you sure you want to delete this expense? This action cannot be undone.'),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('CANCEL'),
+        ),
+        TextButton(
+          onPressed: () {
+            Navigator.pop(context);
+            ref.read(expenseProvider.notifier).deleteExpense(id);
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Expense deleted successfully!')),
+            );
+          },
+          child: const Text('DELETE', style: TextStyle(color: Colors.red)),
+        ),
+      ],
+    ),
+  );
+}
+
+void _showEditExpenseSheet(BuildContext context, WidgetRef ref, Expense expense) {
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+    ),
+    builder: (context) {
+      return _EditExpenseForm(
+        expense: expense,
+        onSave: (amt, cat, desc, pay, date) async {
+          await ref.read(expenseProvider.notifier).updateExpense(
+                id: expense.id,
+                amount: amt,
+                category: cat,
+                description: desc,
+                paymentMethod: pay,
+                expenseDate: date,
+              );
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Expense updated successfully!')),
+            );
+          }
+        },
+      );
+    },
+  );
+}
+
+class _EditExpenseForm extends StatefulWidget {
+  final Expense expense;
+  final Function(double, String, String, String, DateTime) onSave;
+
+  const _EditExpenseForm({required this.expense, required this.onSave});
+
+  @override
+  State<_EditExpenseForm> createState() => _EditExpenseFormState();
+}
+
+class _EditExpenseFormState extends State<_EditExpenseForm> {
+  final _formKey = GlobalKey<FormState>();
+  late TextEditingController _amountController;
+  late TextEditingController _descriptionController;
+  late String _selectedCategory;
+  late String _paymentMethod;
+  late DateTime _selectedDate;
+
+  final List<Map<String, String>> _categories = [
+    {'name': 'Food', 'emoji': '🍔'},
+    {'name': 'Groceries', 'emoji': '🛒'},
+    {'name': 'Petrol', 'emoji': '🚗'},
+    {'name': 'Recharges', 'emoji': '📱'},
+    {'name': 'Travel', 'emoji': '✈️'},
+    {'name': 'Gas', 'emoji': '⛽'},
+    {'name': 'Electricity', 'emoji': '⚡'},
+    {'name': 'Medical', 'emoji': '💊'},
+    {'name': 'Insurances', 'emoji': '🛡️'},
+    {'name': 'Rent', 'emoji': '🏠'},
+    {'name': 'Shopping', 'emoji': '🛍️'},
+    {'name': 'Entertainment', 'emoji': '🎬'},
+    {'name': 'Education', 'emoji': '📚'},
+    {'name': 'College', 'emoji': '🎓'},
+    {'name': 'Others', 'emoji': '💰'},
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _amountController = TextEditingController(text: widget.expense.amount.toStringAsFixed(0));
+    _descriptionController = TextEditingController(text: widget.expense.description);
+    _selectedCategory = widget.expense.category;
+    _paymentMethod = widget.expense.paymentMethod;
+    _selectedDate = widget.expense.expenseDate;
+  }
+
+  @override
+  void dispose() {
+    _amountController.dispose();
+    _descriptionController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _selectDate() async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedDate,
+      firstDate: DateTime(2020),
+      lastDate: DateTime(2030),
+    );
+    if (picked != null && picked != _selectedDate) {
+      setState(() {
+        _selectedDate = picked;
+      });
+    }
+  }
+
+  void _submit() {
+    if (!_formKey.currentState!.validate()) return;
+    final amt = double.tryParse(_amountController.text) ?? 0.0;
+    if (amt <= 0) return;
+
+    widget.onSave(
+      amt,
+      _selectedCategory,
+      _descriptionController.text.trim(),
+      _paymentMethod,
+      _selectedDate,
+    );
+    Navigator.pop(context);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final dateStr = DateFormat('MMMM dd, yyyy').format(_selectedDate);
+    final isWide = MediaQuery.of(context).size.width > 720;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Edit Expense'),
+        leading: IconButton(
+          icon: const Icon(Icons.close),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
+      body: Center(
+        child: Container(
+          constraints: BoxConstraints(maxWidth: isWide ? 600 : double.infinity),
+          child: SingleChildScrollView(
+            padding: EdgeInsets.only(
+              left: 28.0,
+              right: 28.0,
+              top: 20.0,
+              bottom: MediaQuery.of(context).viewInsets.bottom + 28.0,
+            ),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  TextFormField(
+                    controller: _amountController,
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+                    textAlign: TextAlign.center,
+                    decoration: const InputDecoration(
+                      prefixText: '₹ ',
+                      labelText: 'Amount spent',
+                      alignLabelWithHint: true,
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) return 'Enter amount';
+                      if (double.tryParse(value) == null || double.parse(value) <= 0) {
+                        return 'Enter valid amount';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 24),
+                  TextFormField(
+                    controller: _descriptionController,
+                    decoration: const InputDecoration(
+                      labelText: 'Description (e.g. Milk, Petrol, Vegetables)',
+                      prefixIcon: Icon(Icons.description_outlined),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  const Text(
+                    'Select Category',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: _categories.map((cat) {
+                      final isSelected = _selectedCategory.toLowerCase() == cat['name']!.toLowerCase();
+                      return ChoiceChip(
+                        avatar: Text(cat['emoji']!),
+                        label: Text(cat['name']!),
+                        selected: isSelected,
+                        onSelected: (selected) {
+                          if (selected) {
+                            setState(() {
+                              _selectedCategory = cat['name']!;
+                            });
+                          }
+                        },
+                        selectedColor: Theme.of(context).primaryColor.withOpacity(0.2),
+                        checkmarkColor: Theme.of(context).primaryColor,
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 24),
+                  const Text(
+                    'Payment Method',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                  const SizedBox(height: 12),
+                  SegmentedButton<String>(
+                    segments: const [
+                      ButtonSegment(value: 'UPI', label: Text('UPI'), icon: Icon(Icons.mobile_friendly)),
+                      ButtonSegment(value: 'Cash', label: Text('Cash'), icon: Icon(Icons.money)),
+                      ButtonSegment(value: 'Card', label: Text('Card'), icon: Icon(Icons.credit_card)),
+                    ],
+                    selected: {_paymentMethod},
+                    onSelectionChanged: (selection) {
+                      setState(() {
+                        _paymentMethod = selection.first;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 24),
+                  InkWell(
+                    onTap: _selectDate,
+                    borderRadius: BorderRadius.circular(12),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey[400]!),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.calendar_today, color: Colors.grey),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              'Expense Date: $dateStr',
+                              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                            ),
+                          ),
+                          const Icon(Icons.arrow_drop_down, color: Colors.grey),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 40),
+                  ElevatedButton(
+                    onPressed: _submit,
+                    child: const Text('SAVE CHANGES'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
