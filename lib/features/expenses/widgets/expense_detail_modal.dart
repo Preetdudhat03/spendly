@@ -4,38 +4,6 @@ import 'package:intl/intl.dart';
 import 'package:spendly/core/providers/state_providers.dart';
 import 'package:spendly/models/expense.dart';
 
-Color getCategoryColor(String category) {
-  switch (category.toLowerCase()) {
-    case 'food':
-      return Colors.orange;
-    case 'groceries':
-      return Colors.green;
-    case 'petrol':
-    case 'gas':
-      return Colors.blue;
-    case 'recharges':
-    case 'electricity':
-      return Colors.yellow[700]!;
-    case 'travel':
-      return Colors.purple;
-    case 'medical':
-      return Colors.red;
-    case 'insurances':
-      return Colors.teal;
-    case 'rent':
-      return Colors.brown;
-    case 'shopping':
-      return Colors.pink;
-    case 'entertainment':
-      return Colors.deepPurple;
-    case 'education':
-    case 'college':
-      return Colors.indigo;
-    default:
-      return Colors.grey;
-  }
-}
-
 String getCategoryEmoji(String category) {
   switch (category.toLowerCase()) {
     case 'food':
@@ -43,6 +11,7 @@ String getCategoryEmoji(String category) {
     case 'groceries':
       return '🛒';
     case 'petrol':
+    case 'fuel':
       return '🚗';
     case 'recharges':
       return '📱';
@@ -51,23 +20,63 @@ String getCategoryEmoji(String category) {
     case 'gas':
       return '⛽';
     case 'electricity':
+    case 'utility':
       return '⚡';
     case 'medical':
       return '💊';
     case 'insurances':
       return '🛡️';
-    case 'rent':
-      return '🏠';
     case 'shopping':
       return '🛍️';
+    case 'rent':
+      return '🏠';
     case 'entertainment':
       return '🎬';
     case 'education':
       return '📚';
     case 'college':
+    case 'collage':
       return '🎓';
     default:
       return '💰';
+  }
+}
+
+Color getCategoryColor(String category) {
+  switch (category.toLowerCase()) {
+    case 'food':
+      return const Color(0xFFF59E0B);
+    case 'groceries':
+      return const Color(0xFF10B981);
+    case 'petrol':
+    case 'fuel':
+      return const Color(0xFF3B82F6);
+    case 'recharges':
+      return const Color(0xFF06B6D4);
+    case 'travel':
+      return const Color(0xFF14B8A6);
+    case 'gas':
+      return const Color(0xFFF97316);
+    case 'electricity':
+    case 'utility':
+      return const Color(0xFF8B5CF6);
+    case 'medical':
+      return const Color(0xFFEF4444);
+    case 'insurances':
+      return const Color(0xFF4F46E5);
+    case 'shopping':
+      return const Color(0xFFEC4899);
+    case 'rent':
+      return const Color(0xFF78350F);
+    case 'entertainment':
+      return const Color(0xFFF43F5E);
+    case 'education':
+      return const Color(0xFF636AE8);
+    case 'college':
+    case 'collage':
+      return const Color(0xFF312E81);
+    default:
+      return const Color(0xFF64748B);
   }
 }
 
