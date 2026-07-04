@@ -164,7 +164,7 @@ class HomeScreen extends ConsumerWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Frequently Logged',
+                              'Frequently used Expenses',
                               style: Theme.of(context).textTheme.titleLarge,
                             ),
                             const SizedBox(height: 8),
@@ -222,7 +222,7 @@ class HomeScreen extends ConsumerWidget {
                                                         children: [
                                                           Icon(Icons.delete_outline, size: 18, color: Colors.red),
                                                           SizedBox(width: 8),
-                                                          Text('Hide card', style: TextStyle(color: Colors.red)),
+                                                          Text('Delete card', style: TextStyle(color: Colors.red)),
                                                         ],
                                                       ),
                                                     ),
@@ -239,7 +239,7 @@ class HomeScreen extends ConsumerWidget {
                                                       if (context.mounted) {
                                                         ScaffoldMessenger.of(context).showSnackBar(
                                                           const SnackBar(
-                                                            content: Text('Suggestion dismissed.'),
+                                                            content: Text('Suggestion deleted.'),
                                                             duration: Duration(seconds: 2),
                                                           ),
                                                         );
