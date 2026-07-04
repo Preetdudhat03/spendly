@@ -4,7 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:spendly/core/providers/state_providers.dart';
 import 'package:spendly/models/expense.dart';
 
-Color _getCategoryColor(String category) {
+Color getCategoryColor(String category) {
   switch (category.toLowerCase()) {
     case 'food':
       return Colors.orange;
@@ -36,7 +36,7 @@ Color _getCategoryColor(String category) {
   }
 }
 
-String _getCategoryEmoji(String category) {
+String getCategoryEmoji(String category) {
   switch (category.toLowerCase()) {
     case 'food':
       return '🍔';
@@ -103,9 +103,9 @@ void showExpenseDetail(BuildContext context, WidgetRef ref, Expense expense) {
                 children: [
                   CircleAvatar(
                     radius: 30,
-                    backgroundColor: _getCategoryColor(expense.category).withOpacity(0.15),
+                    backgroundColor: getCategoryColor(expense.category).withOpacity(0.15),
                     child: Text(
-                      _getCategoryEmoji(expense.category),
+                      getCategoryEmoji(expense.category),
                       style: const TextStyle(fontSize: 28),
                     ),
                   ),
