@@ -7,7 +7,7 @@ import 'package:spendly/main.dart';
 import 'package:spendly/core/services/suggestions_service.dart';
 import 'package:spendly/features/expenses/views/add_expense_screen.dart';
 import 'package:spendly/models/expense.dart';
-import 'package:spendly/core/widgets/shimmer_loading.dart';
+import 'package:spendly/features/expenses/widgets/expense_detail_modal.dart';
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
@@ -583,6 +583,7 @@ class HomeScreen extends ConsumerWidget {
             'by ${exp.createdByName} • $dayStr',
             style: const TextStyle(fontSize: 12, color: Colors.grey),
           ),
+          onTap: () => showExpenseDetail(context, ref, exp),
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
