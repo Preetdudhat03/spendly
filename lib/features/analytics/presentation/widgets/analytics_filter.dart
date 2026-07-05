@@ -32,12 +32,15 @@ class AnalyticsFilterHeader extends ConsumerWidget {
   void _showFilterSelector(BuildContext context, WidgetRef ref, AnalyticsFilterType currentType) {
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
       builder: (context) {
         return SafeArea(
-          child: Column(
+          child: SingleChildScrollView(
+            child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               const SizedBox(height: 12),
@@ -106,6 +109,7 @@ class AnalyticsFilterHeader extends ConsumerWidget {
                 ),
               ),
             ],
+          ),
           ),
         );
       },

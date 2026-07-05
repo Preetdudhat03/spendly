@@ -35,6 +35,7 @@ class DrillDownSheet extends StatelessWidget {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
       backgroundColor: Colors.transparent,
       builder: (context) => DrillDownSheet(
         title: title,

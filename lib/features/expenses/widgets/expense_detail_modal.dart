@@ -83,6 +83,8 @@ Color getCategoryColor(String category) {
 void showExpenseDetail(BuildContext context, WidgetRef ref, Expense expense) {
   showModalBottomSheet(
     context: context,
+    isScrollControlled: true,
+    useSafeArea: true,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
     ),
@@ -93,9 +95,10 @@ void showExpenseDetail(BuildContext context, WidgetRef ref, Expense expense) {
       return SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(28.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Center(
                 child: Container(
@@ -161,7 +164,7 @@ void showExpenseDetail(BuildContext context, WidgetRef ref, Expense expense) {
                         _showEditExpenseSheet(context, ref, expense);
                       },
                       icon: const Icon(Icons.edit),
-                      label: const Text('EDIT'),
+                      label: const FittedBox(fit: BoxFit.scaleDown, child: Text('EDIT')),
                     ),
                   ),
                   const SizedBox(width: 16),
@@ -177,12 +180,13 @@ void showExpenseDetail(BuildContext context, WidgetRef ref, Expense expense) {
                         _confirmDeleteExpense(context, ref, expense.id);
                       },
                       icon: const Icon(Icons.delete_outline),
-                      label: const Text('DELETE'),
+                      label: const FittedBox(fit: BoxFit.scaleDown, child: Text('DELETE')),
                     ),
                   ),
                 ],
               ),
             ],
+          ),
           ),
         ),
       );
@@ -240,6 +244,8 @@ void _confirmDeleteExpense(BuildContext context, WidgetRef ref, String id) {
 void _showEditExpenseSheet(BuildContext context, WidgetRef ref, Expense expense) {
   showModalBottomSheet(
     context: context,
+    isScrollControlled: true,
+    useSafeArea: true,
     isScrollControlled: true,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
