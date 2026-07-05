@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -149,94 +150,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     );
   }
 
-  void _showDeleteAccountDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Delete Account?', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
-        content: const Text(
-          'Are you sure you want to delete your account? All your personal profile settings will be permanently erased. This action cannot be undone.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('CANCEL', style: TextStyle(color: Colors.grey)),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              Navigator.pop(context); // Close confirmation dialog
-              
-              final messenger = ScaffoldMessenger.of(this.context);
-              try {
-                await ref.read(authProvider.notifier).deleteAccount();
-                messenger.showSnackBar(
-                  const SnackBar(content: Text('Your account has been deleted successfully.')),
-                );
-              } catch (e) {
-                messenger.showSnackBar(
-                  SnackBar(content: Text('Error deleting account: $e'), backgroundColor: Colors.red),
-                );
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
-            ),
-            child: const Text('DELETE ACCOUNT'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showDeleteFamilyDialog(String familyName) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Delete Family & Data?', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
-        content: Text(
-          'Are you sure you want to delete "$familyName" and ALL associated expenses, budgets, and member links? This action is permanent and cannot be undone.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('CANCEL', style: TextStyle(color: Colors.grey)),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              Navigator.pop(context); // Close confirmation dialog
-              
-              final messenger = ScaffoldMessenger.of(this.context);
-              try {
-                final success = await ref.read(familyProvider.notifier).deleteFamily();
-                if (success) {
-                  messenger.showSnackBar(
-                    const SnackBar(content: Text('Family and all its data deleted successfully.')),
-                  );
-                } else {
-                  final errorMsg = ref.read(familyProvider).error ?? 'Unknown error';
-                  messenger.showSnackBar(
-                    SnackBar(content: Text('Error deleting family: $errorMsg'), backgroundColor: Colors.red),
-                  );
-                }
-              } catch (e) {
-                messenger.showSnackBar(
-                  SnackBar(content: Text('Error deleting family: $e'), backgroundColor: Colors.red),
-                );
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
-            ),
-            child: const Text('DELETE FAMILY'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  @override
   void dispose() {
     _budgetController.dispose();
     _nameController.dispose();
@@ -507,45 +420,39 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     ),
                   );
 
-                  bool isCurrentUserAdmin = false;
-                  for (final m in familyState.members) {
-                    if (m.userId == authState.userId && m.role == 'admin') {
-                      isCurrentUserAdmin = true;
-                      break;
-                    }
-                  }
 
-                  Widget dangerZoneCard = Card(
-                    color: const Color(0xFFFFF5F5),
+                  Widget accountSecurityCard = Card(
+                    color: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
-                      side: const BorderSide(color: Colors.redAccent, width: 0.5),
+                      side: BorderSide(color: Colors.grey[200]!),
                     ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(20.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          const Row(
-                            children: [
-                              Icon(Icons.warning_amber_rounded, color: Colors.red),
-                              SizedBox(width: 8),
-                              Text(
-                                'Danger Zone',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.red,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const Divider(color: Colors.redAccent, height: 24, thickness: 0.5),
-                          
-                          // Logout button
-                          ElevatedButton.icon(
-                            onPressed: () {
-                              ref.read(authProvider.notifier).signOut();
+                    child: ListTile(
+                      leading: const Icon(Icons.security, color: Colors.indigo),
+                      title: const Text('Account Security & Deletion', style: TextStyle(fontWeight: FontWeight.bold)),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () {
+                        context.push('/account-security');
+                      },
+                    ),
+                  );
+
+                  Widget logoutButton = Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        ref.read(authProvider.notifier).signOut();
+                      },
+                      icon: const Icon(Icons.logout),
+                      label: const Text('LOGOUT FROM APP'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.grey[800],
+                        side: BorderSide(color: Colors.grey[300]!),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        textStyle: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  );
                             },
                             icon: const Icon(Icons.logout),
                             label: const Text('LOGOUT FROM APP'),
@@ -659,7 +566,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                   const SizedBox(height: 16),
                                   familyCodeCard,
                                   const SizedBox(height: 24),
-                                  dangerZoneCard,
+                                  accountSecurityCard,\n                                  const SizedBox(height: 24),\n                                  logoutButton,
                                 ],
                               ),
                             ),
@@ -696,7 +603,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         const SizedBox(height: 16),
                         reportsCard,
                         const SizedBox(height: 32),
-                        dangerZoneCard,
+                        accountSecurityCard,\n                        const SizedBox(height: 24),\n                        logoutButton,
                         versionFooter,
                       ],
                     );
