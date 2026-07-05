@@ -107,6 +107,10 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/profile',
         builder: (context, state) => const MainLayout(initialTab: 3),
       ),
+      GoRoute(
+        path: '/account-security',
+        builder: (context, state) => const AccountSecurityScreen(),
+      ),
     ],
   );
 });
