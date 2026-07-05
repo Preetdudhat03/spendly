@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:spendly/features/auth/providers/auth_provider.dart';
-import 'package:spendly/features/family/providers/family_provider.dart';
+import 'package:spendly/core/providers/state_providers.dart';
 
 class AccountSecurityScreen extends ConsumerStatefulWidget {
   const AccountSecurityScreen({super.key});
