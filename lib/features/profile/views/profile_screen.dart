@@ -454,70 +454,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       ),
                     ),
                   );
-                            },
-                            icon: const Icon(Icons.logout),
-                            label: const Text('LOGOUT FROM APP'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.white,
-                              foregroundColor: Colors.grey[800],
-                              side: BorderSide(color: Colors.grey[300]!),
-                              padding: const EdgeInsets.symmetric(vertical: 14),
-                              textStyle: const TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-
-                          // Delete Account button
-                          OutlinedButton.icon(
-                            onPressed: isCurrentUserAdmin
-                                ? () {
-                                    showDialog(
-                                      context: context,
-                                      builder: (context) => AlertDialog(
-                                        title: const Text('Admin Restriction', style: TextStyle(fontWeight: FontWeight.bold)),
-                                        content: const Text(
-                                          'As the family admin, you cannot delete your account while the family group still exists.\n\n'
-                                          'Please use the "DELETE FAMILY & ALL DATA" button first to clean up the group before deleting your personal account.',
-                                        ),
-                                        actions: [
-                                          TextButton(
-                                            onPressed: () => Navigator.pop(context),
-                                            child: const Text('UNDERSTOOD'),
-                                          ),
-                                        ],
-                                      ),
-                                    );
-                                  }
-                                : _showDeleteAccountDialog,
-                            icon: const Icon(Icons.person_remove),
-                            label: const Text('DELETE MY ACCOUNT'),
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: Colors.red,
-                              side: const BorderSide(color: Colors.red),
-                              padding: const EdgeInsets.symmetric(vertical: 14),
-                              textStyle: const TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                          
-                          if (isCurrentUserAdmin) ...[
-                            const SizedBox(height: 12),
-                            // Delete Family button
-                            ElevatedButton.icon(
-                              onPressed: () => _showDeleteFamilyDialog(familyName),
-                              icon: const Icon(Icons.delete_forever),
-                              label: const Text('DELETE FAMILY & ALL DATA'),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.red,
-                                foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(vertical: 14),
-                                textStyle: const TextStyle(fontWeight: FontWeight.bold),
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-                  );
 
                   final packageInfoAsync = ref.watch(packageInfoProvider);
                   final versionStr = packageInfoAsync.when(
@@ -567,7 +503,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                   const SizedBox(height: 16),
                                   familyCodeCard,
                                   const SizedBox(height: 24),
-                                  accountSecurityCard,\n                                  const SizedBox(height: 24),\n                                  logoutButton,
+                                  accountSecurityCard,
+                                  const SizedBox(height: 24),
+                                  logoutButton,
                                 ],
                               ),
                             ),
@@ -604,7 +542,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         const SizedBox(height: 16),
                         reportsCard,
                         const SizedBox(height: 32),
-                        accountSecurityCard,\n                        const SizedBox(height: 24),\n                        logoutButton,
+                        accountSecurityCard,
+                        const SizedBox(height: 24),
+                        logoutButton,
                         versionFooter,
                       ],
                     );
