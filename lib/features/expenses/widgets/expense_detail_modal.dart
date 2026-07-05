@@ -246,7 +246,6 @@ void _showEditExpenseSheet(BuildContext context, WidgetRef ref, Expense expense)
     context: context,
     isScrollControlled: true,
     useSafeArea: true,
-    isScrollControlled: true,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
     ),
