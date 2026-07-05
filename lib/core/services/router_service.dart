@@ -9,6 +9,7 @@ import 'package:spendly/features/auth/views/verify_email_screen.dart';
 import 'package:spendly/features/family/views/family_setup_screen.dart';
 import 'package:spendly/features/navigation/views/main_layout.dart';
 import 'package:spendly/features/expenses/views/all_expenses_screen.dart';
+import 'package:spendly/features/profile/views/account_security_screen.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
