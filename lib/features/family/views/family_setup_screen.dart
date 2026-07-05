@@ -36,7 +36,8 @@ class _FamilySetupScreenState extends ConsumerState<FamilySetupScreen> {
 
   Future<void> _joinFamily() async {
     if (!_joinFormKey.currentState!.validate()) return;
-    final code = _joinController.text.trim().toUpperCase();
+    final codeText = _joinController.text.trim().toUpperCase();
+    final code = codeText.startsWith('FAMILY-') ? codeText : 'FAMILY-$codeText';
     final success = await ref.read(familyProvider.notifier).joinFamily(code);
     if (!mounted) return;
     if (!success) {
@@ -154,7 +155,9 @@ class _FamilySetupScreenState extends ConsumerState<FamilySetupScreen> {
                               controller: _joinController,
                               textCapitalization: TextCapitalization.characters,
                               decoration: const InputDecoration(
-                                labelText: 'Family Code (e.g. FAMILY-1234)',
+                                labelText: 'Family Code (e.g. 1234)',
+                                prefixText: 'FAMILY-',
+                                prefixStyle: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                                 prefixIcon: Icon(Icons.vpn_key),
                               ),
                               validator: (value) =>
