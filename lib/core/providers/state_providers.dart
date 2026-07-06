@@ -412,6 +412,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     try {
       final currentId = state.userId;
       if (currentId != null) {
+        await _dbService.updateMemberDisplayName(newName);
         await _ref.read(profileRepositoryProvider).updateDisplayName(currentId, newName);
       }
       state = state.copyWith(displayName: newName);
