@@ -432,6 +432,20 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
+  Future<void> updateAvatarColor(String colorHex) async {
+    try {
+      await _dbService.updateMemberAvatarColor(colorHex);
+      
+      // Refresh native profile notifier
+      final user = _ref.read(currentUserProvider);
+      if (user != null) {
+        _ref.read(profileNotifierProvider(user.id).notifier).refresh();
+      }
+    } catch (e) {
+      state = state.copyWith(error: e.toString());
+    }
+  }
+
   Future<void> updateEmail(String newEmail) async {
     try {
       await _dbService.updateEmail(newEmail);
