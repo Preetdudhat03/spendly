@@ -13,41 +13,46 @@ class CategoryMetadata {
   CategoryMetadata(this.name, this.emoji, this.color);
 }
 
-CategoryMetadata getCategoryMetadata(String category) {
+CategoryMetadata getCategoryMetadata(BuildContext context, String category) {
+  final charts = context.spendly.charts;
+  final color = charts.getCategoryColor(category);
+  
   switch (category.toLowerCase()) {
     case 'food':
-      return CategoryMetadata('Food', '🍔', const Color(0xFFF59E0B));
+      return CategoryMetadata('Food', '🍔', color);
     case 'groceries':
-      return CategoryMetadata('Groceries', '🛒', const Color(0xFF10B981));
+      return CategoryMetadata('Groceries', '🛒', color);
     case 'petrol':
     case 'fuel':
-      return CategoryMetadata('Petrol/Fuel', '⛽', const Color(0xFF3B82F6));
+      return CategoryMetadata('Petrol/Fuel', '⛽', color);
     case 'recharges':
-      return CategoryMetadata('Recharges', '📱', const Color(0xFF06B6D4));
+      return CategoryMetadata('Recharges', '📱', color);
     case 'travel':
-      return CategoryMetadata('Travel', '✈️', const Color(0xFF14B8A6));
+      return CategoryMetadata('Travel', '✈️', color);
     case 'gas':
-      return CategoryMetadata('Gas', '⛽', const Color(0xFFF97316));
+      return CategoryMetadata('Gas', '⛽', color);
     case 'electricity':
     case 'utility':
-      return CategoryMetadata('Utilities', '⚡', const Color(0xFF8B5CF6));
+      return CategoryMetadata('Utilities', '⚡', color);
     case 'medical':
-      return CategoryMetadata('Medical', '🏥', const Color(0xFFEF4444));
+      return CategoryMetadata('Medical', '🏥', color);
     case 'insurances':
-      return CategoryMetadata('Insurances', '🛡️', const Color(0xFF4F46E5));
+      return CategoryMetadata('Insurances', '🛡️', color);
     case 'shopping':
-      return CategoryMetadata('Shopping', '🛍️', const Color(0xFFEC4899));
+      return CategoryMetadata('Shopping', '🛍️', color);
     case 'rent':
-      return CategoryMetadata('Rent', '🏠', const Color(0xFF78350F));
+      return CategoryMetadata('Rent', '🏠', color);
+    case 'bills':
+      return CategoryMetadata('Bills', '📄', color);
     case 'entertainment':
-      return CategoryMetadata('Entertainment', '🎬', const Color(0xFFF43F5E));
+      return CategoryMetadata('Entertainment', '🎬', color);
     case 'education':
-      return CategoryMetadata('Education', '📚', const Color(0xFF636AE8));
+      return CategoryMetadata('Education', '📚', color);
     case 'college':
     case 'collage':
-      return CategoryMetadata('College', '🎓', const Color(0xFF312E81));
+      return CategoryMetadata('College', '🎓', color);
     default:
-      return CategoryMetadata(category, '📦', const Color(0xFF64748B));
+      return CategoryMetadata(category, '📦', color);
   }
 }
 
