@@ -387,7 +387,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     ),
                   );
 
-                  final analyticsState = ref.watch(analyticsProviders);
+                  final analyticsState = ref.watch(analyticsProvider);
                   final totalSpent = analyticsState.currentMonthExpenses;
                   final budgetProgress = currentBudget > 0 ? (totalSpent / currentBudget).clamp(0.0, 1.0) : 0.0;
 
