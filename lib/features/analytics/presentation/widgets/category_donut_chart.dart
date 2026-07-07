@@ -3,6 +3,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
 import 'package:spendly/features/analytics/providers/analytics_providers.dart';
 import 'package:spendly/models/expense.dart';
+import 'package:spendly/core/theme/spendly_tokens.dart';
 import 'drill_down_sheet.dart';
 
 class CategoryMetadata {
@@ -69,7 +70,7 @@ class _CategoryDonutChartState extends State<CategoryDonutChart> {
   int touchedIndex = -1;
 
   void _showCategoryDetails(BuildContext context, CategoryShare share) {
-    final meta = getCategoryMetadata(share.category);
+    final meta = getCategoryMetadata(context, share.category);
 
     // Filter transactions for this category in current range
     final categoryExpenses = widget.state.filteredExpenses
@@ -104,7 +105,7 @@ class _CategoryDonutChartState extends State<CategoryDonutChart> {
       widget.state.categoryShares.length,
       (i) {
         final share = widget.state.categoryShares[i];
-        final meta = getCategoryMetadata(share.category);
+        final meta = getCategoryMetadata(context, share.category);
         final isTouched = i == touchedIndex;
         final radius = isTouched ? 48.0 : 40.0;
         final strokeWidth = isTouched ? 6.0 : 0.0;
@@ -225,7 +226,7 @@ class _CategoryDonutChartState extends State<CategoryDonutChart> {
               itemCount: widget.state.categoryShares.length,
               itemBuilder: (context, idx) {
                 final share = widget.state.categoryShares[idx];
-                final meta = getCategoryMetadata(share.category);
+                final meta = getCategoryMetadata(context, share.category);
                 
                 return Padding(
                   padding: const EdgeInsets.symmetric(vertical: 4.0),
