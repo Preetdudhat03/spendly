@@ -388,7 +388,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   );
 
                   final analyticsState = ref.watch(analyticsProvider);
-                  final totalSpent = analyticsState.currentMonthExpenses;
+                  final totalSpent = analyticsState.totalSpent;
                   final budgetProgress = currentBudget > 0 ? (totalSpent / currentBudget).clamp(0.0, 1.0) : 0.0;
 
                   Widget budgetCard = Card(
@@ -506,7 +506,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                             );
                                             if (confirmed == true) {
                                               ref.read(familyProvider.notifier).removeMember(member.userId);
-                                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${member.displayName} removed')));
+                                              if (context.mounted) {
+                                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${member.displayName} removed')));
+                                              }
                                             }
                                           }
                                         },
