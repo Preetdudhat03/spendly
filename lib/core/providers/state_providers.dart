@@ -777,6 +777,17 @@ class FamilyNotifier extends StateNotifier<FamilyState> {
       return false;
     }
   }
+
+  Future<bool> removeMember(String targetUserId) async {
+    try {
+      await _familyRepo.removeMember(targetUserId);
+      await loadMembers(); // Reload members after removing
+      return true;
+    } catch (e) {
+      state = state.copyWith(error: e.toString());
+      return false;
+    }
+  }
 }
 
 final familyProvider = StateNotifierProvider<FamilyNotifier, FamilyState>((ref) {
