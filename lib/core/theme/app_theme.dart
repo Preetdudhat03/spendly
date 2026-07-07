@@ -3,7 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'spendly_tokens.dart';
 
 class AppTheme {
-  static SpendlyThemeMode currentMode = SpendlyThemeMode.premium;
+  static SpendlyThemeMode currentMode = SpendlyThemeMode.legacy;
 
   // --- PREMIUM TOKENS ---
   static const _premiumColors = SpendlyColors(
@@ -64,13 +64,22 @@ class AppTheme {
     chartBackground: Colors.transparent,
     categories: {
       'food': Color(0xFF22C55E),
-      'transport': Color(0xFF3B82F6),
-      'shopping': Color(0xFFEC4899),
-      'medical': Color(0xFFEF4444),
-      'bills': Color(0xFFF59E0B),
-      'education': Color(0xFF8B5CF6),
-      'entertainment': Color(0xFF06B6D4),
+      'groceries': Color(0xFF10B981),
+      'petrol': Color(0xFF3B82F6),
+      'fuel': Color(0xFF3B82F6),
+      'recharges': Color(0xFF0EA5E9),
       'travel': Color(0xFF14B8A6),
+      'gas': Color(0xFFF97316),
+      'electricity': Color(0xFF8B5CF6),
+      'utility': Color(0xFF8B5CF6),
+      'medical': Color(0xFFEF4444),
+      'insurances': Color(0xFF4F46E5),
+      'shopping': Color(0xFFEC4899),
+      'rent': Color(0xFF78350F),
+      'bills': Color(0xFFF59E0B),
+      'entertainment': Color(0xFFF43F5E),
+      'education': Color(0xFF8B5CF6),
+      'college': Color(0xFF312E81),
       'others': Color(0xFF9CA3AF),
     },
     fallbackCategoryColor: Color(0xFF9CA3AF),
