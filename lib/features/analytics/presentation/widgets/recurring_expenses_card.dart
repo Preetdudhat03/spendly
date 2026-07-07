@@ -84,7 +84,7 @@ class RecurringExpensesCard extends StatelessWidget {
                 itemCount: items.length,
                 itemBuilder: (context, idx) {
                   final item = items[idx];
-                  final meta = getCategoryMetadata(item.category);
+                  final meta = getCategoryMetadata(context, item.category);
                   
                   // Emoji selection based on title/desc
                   String emoji = meta.emoji;
