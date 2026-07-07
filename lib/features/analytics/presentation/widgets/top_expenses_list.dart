@@ -67,7 +67,7 @@ class _TopExpensesListState extends State<TopExpensesList> {
               itemCount: widget.state.topExpenses.length,
               itemBuilder: (context, idx) {
                 final exp = widget.state.topExpenses[idx];
-                final meta = getCategoryMetadata(exp.category);
+                final meta = getCategoryMetadata(context, exp.category);
                 final isExpanded = idx == expandedIndex;
 
                 final title = exp.description.trim().isEmpty ? meta.name : exp.description;
