@@ -48,4 +48,8 @@ abstract class DbService {
   // Account & Family Deletion
   Future<void> deleteUserAccount(String userId);
   Future<void> deleteFamily(String familyId);
+  Future<void> removeFamilyMember(String userId);
+
+  // Profile Customization
+  Future<void> updateMemberAvatarColor(String colorHex);
 }
