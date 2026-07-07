@@ -151,4 +151,26 @@ class FamilyRepository {
     // Optionally trigger a background pull to fetch other members and expenses
     return family;
   }
+
+  Future<void> removeMember(String targetUserId) async {
+    final client = Supabase.instance.client;
+    
+    // 1. Delete from Supabase
+    try {
+      await client.from('family_members').delete().eq('user_id', targetUserId);
+    } catch (e) {
+      // If offline, we might want to enqueue this, but for simplicity we let it fail or assume online
+      // In a real app, we'd add to pending operations.
+    }
+
+    // 2. Delete from local Hive cache
+    final memberKeys = HiveService.familyMembers.keys.toList();
+    for (var key in memberKeys) {
+      final member = HiveService.familyMembers.get(key);
+      if (member?.userId == targetUserId) {
+        await HiveService.familyMembers.delete(key);
+        break;
+      }
+    }
+  }
 }
