@@ -428,7 +428,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text('Spent: ${currencyFormat.format(totalSpent)}', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey)),
-                              Text('${(budgetProgress * 100).toStringAsFixed(1)}%', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: budgetProgress >= 1.0 ? Colors.red : Theme.of(context).primaryColor)),
+                              Text('${(budgetProgress * 100).toStringAsFixed(1)}%', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: budgetProgress >= 1.0 ? Colors.red : Colors.grey)),
                             ],
                           ),
                           const SizedBox(height: 8),
