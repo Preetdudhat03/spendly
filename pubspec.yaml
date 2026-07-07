@@ -50,6 +50,7 @@ dependencies:
   hive_flutter: ^1.1.0
   connectivity_plus: ^7.2.0
   archive: ^4.0.9
+  qr_flutter: ^4.1.0
 
 dev_dependencies:
   flutter_test:
