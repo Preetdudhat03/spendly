@@ -76,7 +76,7 @@ class _StackedChartConsumer extends ConsumerWidget {
       for (var cat in sortedCats) {
         final amt = catSums[cat] ?? 0.0;
         if (amt > 0) {
-          final meta = getCategoryMetadata(cat);
+          final meta = getCategoryMetadata(context, cat);
           stackItems.add(
             BarChartRodStackItem(
               currentSum,
@@ -250,7 +250,7 @@ class _StackedChartConsumer extends ConsumerWidget {
               spacing: 12,
               runSpacing: 8,
               children: legendCategories.map((cat) {
-                final meta = getCategoryMetadata(cat);
+                final meta = getCategoryMetadata(context, cat);
                 return Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [

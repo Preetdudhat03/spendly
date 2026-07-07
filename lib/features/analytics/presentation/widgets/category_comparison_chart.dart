@@ -66,7 +66,7 @@ class CategoryComparisonChart extends StatelessWidget {
               itemCount: sortedShares.length,
               itemBuilder: (context, idx) {
                 final share = sortedShares[idx];
-                final meta = getCategoryMetadata(share.category);
+                final meta = getCategoryMetadata(context, share.category);
                 final widthRatio = share.amount / maxAmount;
                 final isIncrease = share.isIncrease;
 

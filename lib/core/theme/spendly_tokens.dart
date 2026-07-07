@@ -371,7 +371,31 @@ class SpendlyChartTheme extends ThemeExtension<SpendlyChartTheme> {
   }
 
   @override
-  ThemeExtension<SpendlyChartTheme> copyWith() => this;
+  ThemeExtension<SpendlyChartTheme> copyWith({
+    Color? grid,
+    Color? axis,
+    Color? tooltip,
+    Color? legend,
+    Color? label,
+    Color? selected,
+    Color? hovered,
+    Color? chartBackground,
+    Map<String, Color>? categories,
+    Color? fallbackCategoryColor,
+  }) {
+    return SpendlyChartTheme(
+      grid: grid ?? this.grid,
+      axis: axis ?? this.axis,
+      tooltip: tooltip ?? this.tooltip,
+      legend: legend ?? this.legend,
+      label: label ?? this.label,
+      selected: selected ?? this.selected,
+      hovered: hovered ?? this.hovered,
+      chartBackground: chartBackground ?? this.chartBackground,
+      categories: categories ?? this.categories,
+      fallbackCategoryColor: fallbackCategoryColor ?? this.fallbackCategoryColor,
+    );
+  }
 
   @override
   ThemeExtension<SpendlyChartTheme> lerp(covariant ThemeExtension<SpendlyChartTheme>? other, double t) {
