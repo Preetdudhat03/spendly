@@ -98,7 +98,7 @@ class SpendingCalendar extends StatelessWidget {
                         itemCount: dayExpenses.length,
                         itemBuilder: (context, idx) {
                           final exp = dayExpenses[idx];
-                          final meta = getCategoryMetadata(exp.category);
+                          final meta = getCategoryMetadata(context, exp.category);
                           return Padding(
                             padding: const EdgeInsets.symmetric(vertical: 8.0),
                             child: Row(
