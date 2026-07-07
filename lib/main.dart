@@ -7,6 +7,7 @@ import 'package:spendly/core/services/db_provider.dart';
 import 'package:spendly/core/services/router_service.dart';
 import 'package:spendly/core/theme/app_theme.dart';
 import 'package:spendly/core/providers/state_providers.dart';
+import 'package:spendly/core/providers/settings_provider.dart';
 import 'package:spendly/core/services/hive_service.dart';
 import 'package:spendly/core/services/migration_service.dart';
 import 'package:spendly/core/services/sync_service.dart';
@@ -86,6 +87,8 @@ class SpendlyApp extends ConsumerWidget {
       title: 'Spendly',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: ref.watch(settingsProvider).isDarkMode ? ThemeMode.dark : ThemeMode.light,
       routerConfig: router,
       builder: (context, child) {
         return ConnectionListenerWidget(child: child!);
