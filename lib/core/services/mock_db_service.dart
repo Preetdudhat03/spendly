@@ -580,4 +580,26 @@ class MockDbService implements DbService {
     }
     await _prefs.setStringList(_keyBudgets, updatedBudgets);
   }
+
+  @override
+  Future<void> removeFamilyMember(String userId) async {
+    final membersRaw = _prefs.getStringList(_keyMembers) ?? [];
+    final List<String> updatedMembers = [];
+    for (var mStr in membersRaw) {
+      final m = FamilyMember.fromJson(json.decode(mStr));
+      if (m.userId != userId) {
+        updatedMembers.add(mStr);
+      }
+    }
+    await _prefs.setStringList(_keyMembers, updatedMembers);
+  }
+
+  @override
+  Future<void> updateMemberAvatarColor(String colorHex) async {
+    final userId = getCurrentUserId();
+    if (userId == null) return;
+    // In mock DB, we don't store avatar_color in the member model yet,
+    // so we can just do a no-op or simulate it.
+    // We'll leave it as a no-op for the mock provider.
+  }
 }
