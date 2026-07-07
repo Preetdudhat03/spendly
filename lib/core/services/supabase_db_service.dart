@@ -568,4 +568,29 @@ class SupabaseDbService implements DbService {
     // Delete family record, database cascades will handle expenses, budgets, members
     await _client.from('families').delete().eq('id', familyId);
   }
+
+  @override
+  Future<void> removeFamilyMember(String userId) async {
+    debugPrint('Supabase DB: removeFamilyMember requested for user $userId');
+    // For standard members, removing them from the family_members table detaches them
+    await _client.from('family_members').delete().eq('user_id', userId);
+  }
+
+  @override
+  Future<void> updateMemberAvatarColor(String colorHex) async {
+    final userId = _client.auth.currentUser?.id;
+    if (userId == null) return;
+    debugPrint('Supabase DB: updateMemberAvatarColor requested for user $userId');
+    
+    // We update the users table directly (since that's where profiles are stored)
+    // We need to ensure there is an avatar_color column in the DB, or store it in user_metadata.
+    // For simplicity without running migrations, we will store it in Auth user metadata,
+    // and also update the users table if possible. Wait, the users table might not have avatar_color.
+    // Let's store it in user_metadata of auth.
+    await _client.auth.updateUser(
+      UserAttributes(
+        data: {'avatar_color': colorHex},
+      ),
+    );
+  }
 }
