@@ -3,7 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'spendly_tokens.dart';
 
 class AppTheme {
-  static SpendlyThemeMode currentMode = SpendlyThemeMode.legacy;
+  static SpendlyThemeMode currentMode = SpendlyThemeMode.premium;
 
   // --- PREMIUM TOKENS ---
   static const _premiumColors = SpendlyColors(
