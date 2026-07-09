@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:spendly/core/services/db_service.dart';
 import 'package:spendly/core/utils/crypto_utils.dart';
+import 'package:spendly/core/utils/schema_validator.dart';
 import 'package:spendly/models/family.dart';
 import 'package:spendly/models/family_member.dart';
 import 'package:spendly/models/expense.dart';
@@ -187,13 +188,16 @@ class SupabaseDbService implements DbService {
     final userId = getCurrentUserId();
     if (userId == null) throw Exception('Must be logged in.');
 
+    // Validate family name against strict schema
+    final cleanName = SchemaValidator.validateDisplayName(name, fieldName: 'Family Name');
+
     // Generate code: FAMILY-XXXX
     final int rand = DateTime.now().millisecondsSinceEpoch % 9000 + 1000;
     final code = 'FAMILY-$rand';
 
     // Insert family
     final familyData = await _client.from('families').insert({
-      'name': name,
+      'name': cleanName,
       'family_code': code,
       'created_by': userId,
     }).select().single();
@@ -448,16 +452,23 @@ class SupabaseDbService implements DbService {
       throw Exception('Must be logged in and part of a family.');
     }
 
+    // Validate expense fields against strict schema
+    final cleanAmount = SchemaValidator.validateExpenseAmount(amount);
+    final cleanCategory = SchemaValidator.validateExpenseCategory(category);
+    final cleanDescription = SchemaValidator.validateExpenseDescription(description);
+    final cleanPaymentMethod = SchemaValidator.validatePaymentMethod(paymentMethod);
+    final cleanDate = SchemaValidator.validateExpenseDate(expenseDate);
+
     final displayName = await getCurrentUserDisplayName() ?? 'Family Member';
 
     final data = await _client.from('expenses').insert({
       'family_id': family.id,
       'created_by': userId,
-      'amount': amount,
-      'category': category,
-      'description': description,
-      'payment_method': paymentMethod,
-      'expense_date': expenseDate.toIso8601String(),
+      'amount': cleanAmount,
+      'category': cleanCategory,
+      'description': cleanDescription,
+      'payment_method': cleanPaymentMethod,
+      'expense_date': cleanDate.toIso8601String(),
     }).select().single();
 
     return Expense(
@@ -483,13 +494,19 @@ class SupabaseDbService implements DbService {
     required String paymentMethod,
     required DateTime expenseDate,
   }) async {
+    // Validate expense fields against strict schema
+    final cleanAmount = SchemaValidator.validateExpenseAmount(amount);
+    final cleanCategory = SchemaValidator.validateExpenseCategory(category);
+    final cleanDescription = SchemaValidator.validateExpenseDescription(description);
+    final cleanPaymentMethod = SchemaValidator.validatePaymentMethod(paymentMethod);
+    final cleanDate = SchemaValidator.validateExpenseDate(expenseDate);
     final displayName = await getCurrentUserDisplayName() ?? 'Family Member';
     final data = await _client.from('expenses').update({
-      'amount': amount,
-      'category': category,
-      'description': description,
-      'payment_method': paymentMethod,
-      'expense_date': expenseDate.toIso8601String(),
+      'amount': cleanAmount,
+      'category': cleanCategory,
+      'description': cleanDescription,
+      'payment_method': cleanPaymentMethod,
+      'expense_date': cleanDate.toIso8601String(),
     }).eq('id', id).select().single();
 
     return Expense(
