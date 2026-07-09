@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:spendly/core/providers/state_providers.dart';
+import 'package:spendly/core/utils/schema_validator.dart';
 import 'package:spendly/core/widgets/shimmer_loading.dart';
 
 class FamilySetupScreen extends ConsumerStatefulWidget {
@@ -119,8 +120,14 @@ class _FamilySetupScreenState extends ConsumerState<FamilySetupScreen> {
                                 labelText: 'Family Name (e.g. Sharma Family)',
                                 prefixIcon: Icon(Icons.people),
                               ),
-                              validator: (value) =>
-                                  value == null || value.isEmpty ? 'Please enter a family name' : null,
+                              validator: (value) {
+                                try {
+                                  SchemaValidator.validateDisplayName(value, fieldName: 'Family Name');
+                                  return null;
+                                } catch (e) {
+                                  return e.toString();
+                                }
+                              },
                             ),
                             const SizedBox(height: 16),
                             ElevatedButton(
