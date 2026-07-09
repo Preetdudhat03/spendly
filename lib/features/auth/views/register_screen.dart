@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:spendly/core/providers/state_providers.dart';
 import 'package:spendly/core/utils/crypto_utils.dart';
+import 'package:spendly/core/utils/schema_validator.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
   final String? initialEmail;
@@ -173,7 +174,14 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           labelText: 'Your Name (e.g. Dad, Mom, Preet)',
                           prefixIcon: Icon(Icons.person_outline),
                         ),
-                        validator: (value) => value == null || value.isEmpty ? 'Please enter your name' : null,
+                        validator: (value) {
+                          try {
+                            SchemaValidator.validateDisplayName(value);
+                            return null;
+                          } catch (e) {
+                            return e.toString();
+                          }
+                        },
                       ),
                       const SizedBox(height: 16),
                       TextFormField(
@@ -184,9 +192,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           prefixIcon: Icon(Icons.email_outlined),
                         ),
                         validator: (value) {
-                          if (value == null || value.isEmpty) return 'Please enter your email';
-                          if (!value.contains('@')) return 'Please enter a valid email';
-                          return null;
+                          try {
+                            SchemaValidator.validateEmail(value);
+                            return null;
+                          } catch (e) {
+                            return e.toString();
+                          }
                         },
                       ),
                       const SizedBox(height: 16),
@@ -227,8 +238,14 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                             ],
                           ),
                         ),
-                        validator: (value) =>
-                            value == null || value.length < 6 ? 'Password must be at least 6 characters' : null,
+                        validator: (value) {
+                          try {
+                            SchemaValidator.validateStrictPassword(value);
+                            return null;
+                          } catch (e) {
+                            return e.toString();
+                          }
+                        },
                       ),
                       const SizedBox(height: 12),
                       Builder(
