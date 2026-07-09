@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart' hide Family;
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:spendly/core/utils/error_helper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:spendly/core/constants/config.dart';
@@ -186,7 +187,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
         }
       },
       error: (e, s) {
-        state = state.copyWith(isLoading: false, error: e.toString());
+        state = state.copyWith(isLoading: false, error: ErrorHelper.getReadableErrorMessage(e));
       },
     );
   }
@@ -212,7 +213,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       _ref.read(familyProvider.notifier).loadFamily();
     } catch (e) {
       debugPrint('Supabase Auth: auto-complete migration failed: $e');
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoading: false, error: ErrorHelper.getReadableErrorMessage(e));
     }
   }
 
@@ -238,7 +239,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
             return true;
           }
         } catch (e) {
-          final errorMsg = e.toString();
+          final errorMsg = ErrorHelper.getReadableErrorMessage(e);
           if (errorMsg.contains('USER_NOT_FOUND')) {
             state = state.copyWith(isLoading: false, error: 'USER_NOT_FOUND');
           } else {
@@ -328,7 +329,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       }
       return false;
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoading: false, error: ErrorHelper.getReadableErrorMessage(e));
       return false;
     }
   }
@@ -379,7 +380,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       state = state.copyWith(isLoading: false, error: 'Sign up failed');
       return false;
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoading: false, error: ErrorHelper.getReadableErrorMessage(e));
       return false;
     }
   }
@@ -403,7 +404,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       await _dbService.deleteUserAccount(currentId);
       await signOut();
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoading: false, error: ErrorHelper.getReadableErrorMessage(e));
       rethrow;
     }
   }
@@ -428,7 +429,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       // Reload expenses to update createdByName cache
       _ref.read(expenseProvider.notifier).loadExpenses();
     } catch (e) {
-      state = state.copyWith(error: e.toString());
+      state = state.copyWith(error: ErrorHelper.getReadableErrorMessage(e));
     }
   }
 
@@ -442,7 +443,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
         _ref.read(profileNotifierProvider(user.id).notifier).refresh();
       }
     } catch (e) {
-      state = state.copyWith(error: e.toString());
+      state = state.copyWith(error: ErrorHelper.getReadableErrorMessage(e));
     }
   }
 
@@ -457,7 +458,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
         _ref.read(profileNotifierProvider(user.id).notifier).refresh();
       }
     } catch (e) {
-      state = state.copyWith(error: e.toString());
+      state = state.copyWith(error: ErrorHelper.getReadableErrorMessage(e));
     }
   }
 
@@ -472,7 +473,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       state = state.copyWith(isLoading: false);
       return 'SUCCESS';
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoading: false, error: ErrorHelper.getReadableErrorMessage(e));
       return null;
     }
   }
@@ -511,7 +512,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       return false;
     } catch (e) {
       debugPrint('Supabase Auth: signUp generic error: $e');
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoading: false, error: ErrorHelper.getReadableErrorMessage(e));
       return false;
     }
   }
@@ -558,7 +559,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       return true;
     } catch (e) {
       debugPrint('Supabase Auth: verifyAndCompleteMigration failed: $e');
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoading: false, error: ErrorHelper.getReadableErrorMessage(e));
       return false;
     }
   }
@@ -650,7 +651,7 @@ class FamilyNotifier extends StateNotifier<FamilyState> {
           state = FamilyState.initial().copyWith(hasLoaded: true);
         }
       } catch (e) {
-        state = state.copyWith(error: e.toString());
+        state = state.copyWith(error: ErrorHelper.getReadableErrorMessage(e));
       }
       return;
     }
@@ -676,7 +677,7 @@ class FamilyNotifier extends StateNotifier<FamilyState> {
       state = state.copyWith(
         isLoading: false,
         hasLoaded: true,
-        error: e.toString(),
+        error: ErrorHelper.getReadableErrorMessage(e),
       );
     }
   }
@@ -687,7 +688,7 @@ class FamilyNotifier extends StateNotifier<FamilyState> {
       final members = await Future.value(_familyRepo.getFamilyMembers(_familyRepo.getCurrentFamily(HiveService.settings.get('active_user_id') ?? '')?.id ?? ''));
       state = state.copyWith(members: members);
     } catch (e) {
-      state = state.copyWith(error: e.toString());
+      state = state.copyWith(error: ErrorHelper.getReadableErrorMessage(e));
     }
   }
 
@@ -717,7 +718,7 @@ class FamilyNotifier extends StateNotifier<FamilyState> {
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
-        error: e.toString(),
+        error: ErrorHelper.getReadableErrorMessage(e),
       );
       return false;
     }
@@ -749,7 +750,7 @@ class FamilyNotifier extends StateNotifier<FamilyState> {
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
-        error: e.toString(),
+        error: ErrorHelper.getReadableErrorMessage(e),
       );
       return false;
     }
@@ -772,7 +773,7 @@ class FamilyNotifier extends StateNotifier<FamilyState> {
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
-        error: e.toString(),
+        error: ErrorHelper.getReadableErrorMessage(e),
       );
       return false;
     }
@@ -784,7 +785,7 @@ class FamilyNotifier extends StateNotifier<FamilyState> {
       await loadMembers(); // Reload members after removing
       return true;
     } catch (e) {
-      state = state.copyWith(error: e.toString());
+      state = state.copyWith(error: ErrorHelper.getReadableErrorMessage(e));
       return false;
     }
   }
@@ -847,7 +848,7 @@ class ExpenseNotifier extends StateNotifier<ExpenseState> {
         final expenses = await Future.value(_expenseRepo.getExpenses(_familyRepo.getCurrentFamily(HiveService.settings.get('active_user_id') ?? '')?.id ?? ''));
         state = ExpenseState(isLoading: false, expenses: expenses);
       } catch (e) {
-        state = state.copyWith(error: e.toString());
+        state = state.copyWith(error: ErrorHelper.getReadableErrorMessage(e));
       }
       return;
     }
@@ -857,7 +858,7 @@ class ExpenseNotifier extends StateNotifier<ExpenseState> {
       final expenses = await Future.value(_expenseRepo.getExpenses(_familyRepo.getCurrentFamily(HiveService.settings.get('active_user_id') ?? '')?.id ?? ''));
       state = ExpenseState(isLoading: false, expenses: expenses);
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoading: false, error: ErrorHelper.getReadableErrorMessage(e));
     }
   }
 
@@ -887,7 +888,7 @@ class ExpenseNotifier extends StateNotifier<ExpenseState> {
       _ref.read(syncServiceProvider).syncNow();
       return true;
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoading: false, error: ErrorHelper.getReadableErrorMessage(e));
       return false;
     }
   }
@@ -902,7 +903,7 @@ class ExpenseNotifier extends StateNotifier<ExpenseState> {
       _ref.read(syncServiceProvider).syncNow();
       return true;
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoading: false, error: ErrorHelper.getReadableErrorMessage(e));
       return false;
     }
   }
@@ -933,7 +934,7 @@ class ExpenseNotifier extends StateNotifier<ExpenseState> {
       // Trigger background sync
       _ref.read(syncServiceProvider).syncNow();
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoading: false, error: ErrorHelper.getReadableErrorMessage(e));
     }
   }
 }
@@ -996,7 +997,7 @@ class BudgetNotifier extends StateNotifier<BudgetState> {
         final budget = await Future.value(_budgetRepo.getBudget(_familyRepo.getCurrentFamily(HiveService.settings.get('active_user_id') ?? '')?.id ?? '', now.month, now.year));
         state = BudgetState(isLoading: false, currentBudget: budget);
       } catch (e) {
-        state = state.copyWith(error: e.toString());
+        state = state.copyWith(error: ErrorHelper.getReadableErrorMessage(e));
       }
       return;
     }
@@ -1007,7 +1008,7 @@ class BudgetNotifier extends StateNotifier<BudgetState> {
       final budget = await Future.value(_budgetRepo.getBudget(_familyRepo.getCurrentFamily(HiveService.settings.get('active_user_id') ?? '')?.id ?? '', now.month, now.year));
       state = BudgetState(isLoading: false, currentBudget: budget);
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoading: false, error: ErrorHelper.getReadableErrorMessage(e));
     }
   }
 
@@ -1024,7 +1025,7 @@ class BudgetNotifier extends StateNotifier<BudgetState> {
       );
       state = BudgetState(isLoading: false, currentBudget: budget);
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoading: false, error: ErrorHelper.getReadableErrorMessage(e));
     }
   }
 }

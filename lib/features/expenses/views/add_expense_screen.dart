@@ -95,11 +95,12 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
 
   Future<void> _saveExpense() async {
     if (!_formKey.currentState!.validate()) return;
-    final amount = double.tryParse(_amountController.text);
+    final amountVal = double.tryParse(_amountController.text);
     final desc = _descriptionController.text.trim();
+    final double amount;
 
     try {
-      SchemaValidator.validateExpenseAmount(amount);
+      amount = SchemaValidator.validateExpenseAmount(amountVal);
       SchemaValidator.validateExpenseCategory(_selectedCategory);
       SchemaValidator.validateExpenseDescription(desc);
       SchemaValidator.validatePaymentMethod(_paymentMethod);
