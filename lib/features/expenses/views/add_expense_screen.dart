@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:spendly/core/providers/state_providers.dart';
+import 'package:spendly/core/utils/schema_validator.dart';
 
 // Provider to hold quick-add categories selected from home screen
 final selectedCategoryProvider = StateProvider<String?>((ref) => null);
@@ -94,28 +95,24 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
 
   Future<void> _saveExpense() async {
     if (!_formKey.currentState!.validate()) return;
-    if (_selectedCategory == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please select a Category!'),
-          backgroundColor: Colors.amber,
-        ),
-      );
-      return;
-    }
-
-    final amount = double.tryParse(_amountController.text) ?? 0.0;
-    if (amount <= 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please enter a valid amount greater than 0.'),
-          backgroundColor: Colors.amber,
-        ),
-      );
-      return;
-    }
-
+    final amount = double.tryParse(_amountController.text);
     final desc = _descriptionController.text.trim();
+
+    try {
+      SchemaValidator.validateExpenseAmount(amount);
+      SchemaValidator.validateExpenseCategory(_selectedCategory);
+      SchemaValidator.validateExpenseDescription(desc);
+      SchemaValidator.validatePaymentMethod(_paymentMethod);
+      SchemaValidator.validateExpenseDate(_selectedDate);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.toString()),
+          backgroundColor: Colors.amber,
+        ),
+      );
+      return;
+    }
 
     final success = await ref.read(expenseProvider.notifier).addExpense(
           amount: amount,
@@ -216,8 +213,13 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
                               ),
                               validator: (value) {
                                 if (value == null || value.isEmpty) return 'Enter amount';
-                                if (double.tryParse(value) == null) return 'Enter a valid number';
-                                return null;
+                                final val = double.tryParse(value);
+                                try {
+                                  SchemaValidator.validateExpenseAmount(val);
+                                  return null;
+                                } catch (e) {
+                                  return e.toString();
+                                }
                               },
                             ),
                           ],
