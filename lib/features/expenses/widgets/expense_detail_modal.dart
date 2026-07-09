@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:spendly/core/providers/state_providers.dart';
+import 'package:spendly/core/utils/schema_validator.dart';
 import 'package:spendly/models/expense.dart';
 
 String getCategoryEmoji(String category) {
@@ -341,13 +342,29 @@ class _EditExpenseFormState extends State<_EditExpenseForm> {
 
   void _submit() {
     if (!_formKey.currentState!.validate()) return;
-    final amt = double.tryParse(_amountController.text) ?? 0.0;
-    if (amt <= 0) return;
+    final amt = double.tryParse(_amountController.text);
+    final desc = _descriptionController.text.trim();
+
+    try {
+      SchemaValidator.validateExpenseAmount(amt);
+      SchemaValidator.validateExpenseCategory(_selectedCategory);
+      SchemaValidator.validateExpenseDescription(desc);
+      SchemaValidator.validatePaymentMethod(_paymentMethod);
+      SchemaValidator.validateExpenseDate(_selectedDate);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.toString()),
+          backgroundColor: Colors.amber,
+        ),
+      );
+      return;
+    }
 
     widget.onSave(
-      amt,
+      amt!,
       _selectedCategory,
-      _descriptionController.text.trim(),
+      desc,
       _paymentMethod,
       _selectedDate,
     );
@@ -394,10 +411,13 @@ class _EditExpenseFormState extends State<_EditExpenseForm> {
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) return 'Enter amount';
-                      if (double.tryParse(value) == null || double.parse(value) <= 0) {
-                        return 'Enter valid amount';
+                      final val = double.tryParse(value);
+                      try {
+                        SchemaValidator.validateExpenseAmount(val);
+                        return null;
+                      } catch (e) {
+                        return e.toString();
                       }
-                      return null;
                     },
                   ),
                   const SizedBox(height: 24),
