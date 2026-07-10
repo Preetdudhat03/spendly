@@ -4,10 +4,17 @@ import 'package:intl/intl.dart';
 import 'package:spendly/features/analytics/providers/analytics_providers.dart';
 import 'drill_down_sheet.dart';
 
+import 'package:spendly/models/expense.dart';
+
 class SpendingHeatmap extends StatelessWidget {
   final AnalyticsState state;
+  final List<Expense> allExpenses;
 
-  const SpendingHeatmap({super.key, required this.state});
+  const SpendingHeatmap({
+    super.key,
+    required this.state,
+    required this.allExpenses,
+  });
 
   Color _getCellColor(BuildContext context, double amount) {
     final primary = Theme.of(context).primaryColor;
