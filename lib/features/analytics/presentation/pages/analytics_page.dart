@@ -58,7 +58,7 @@ class AnalyticsPage extends ConsumerWidget {
             ? _buildLoadingState(context, isWide)
             : expenseState.expenses.isEmpty || (state.filteredExpenses.isEmpty && ref.read(analyticsMemberFilterProvider) != null)
                 ? _buildEmptyState(context, ref)
-                : _buildDashboardContent(context, state, isWide),
+                : _buildDashboardContent(context, state, expenseState.expenses, isWide),
       ),
     );
   }
@@ -168,7 +168,7 @@ class AnalyticsPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildDashboardContent(BuildContext context, AnalyticsState state, bool isWide) {
+  Widget _buildDashboardContent(BuildContext context, AnalyticsState state, List<Expense> allExpenses, bool isWide) {
     // Wrap items in a FadeIn animation wrapper
     Widget animatedItem(Widget child, int index) {
       return TweenAnimationBuilder<double>(
@@ -239,7 +239,7 @@ class AnalyticsPage extends ConsumerWidget {
                       const SizedBox(height: 20),
                       animatedItem(SpendingPatternsCard(state: state), 11),
                       const SizedBox(height: 20),
-                      animatedItem(SpendingHeatmap(state: state, allExpenses: expenseState.expenses), 13),
+                      animatedItem(SpendingHeatmap(state: state, allExpenses: allExpenses), 13),
                       const SizedBox(height: 20),
                       animatedItem(SpendingCalendar(state: state), 14),
                       const SizedBox(height: 20),
@@ -274,7 +274,7 @@ class AnalyticsPage extends ConsumerWidget {
             const SizedBox(height: 16),
             animatedItem(SpendingTrendChart(state: state), 4),
             const SizedBox(height: 16),
-            animatedItem(SpendingHeatmap(state: state, allExpenses: expenseState.expenses), 5),
+            animatedItem(SpendingHeatmap(state: state, allExpenses: allExpenses), 5),
             const SizedBox(height: 16),
             animatedItem(CategoryDonutChart(state: state), 6),
             const SizedBox(height: 16),
