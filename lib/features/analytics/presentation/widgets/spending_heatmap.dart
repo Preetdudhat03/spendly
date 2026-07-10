@@ -2,6 +2,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:spendly/features/analytics/providers/analytics_providers.dart';
+import 'drill_down_sheet.dart';
 
 class SpendingHeatmap extends StatelessWidget {
   final AnalyticsState state;
@@ -149,12 +150,35 @@ class SpendingHeatmap extends StatelessWidget {
                                     child: Tooltip(
                                       triggerMode: TooltipTriggerMode.tap,
                                       message: '${dateFmt.format(day)}: ${currencyFmt.format(amount)}',
-                                      child: Container(
-                                        height: 16,
-                                        margin: const EdgeInsets.symmetric(horizontal: 3),
-                                        decoration: BoxDecoration(
-                                          color: _getCellColor(context, amount),
-                                          borderRadius: BorderRadius.circular(4),
+                                      child: GestureDetector(
+                                        onTap: () {
+                                          final dayExpenses = state.filteredExpenses.where((e) {
+                                            return e.expenseDate.year == day.year &&
+                                                e.expenseDate.month == day.month &&
+                                                e.expenseDate.day == day.day;
+                                          }).toList()
+                                            ..sort((a, b) => b.amount.compareTo(a.amount));
+
+                                          if (dayExpenses.isNotEmpty) {
+                                            DrillDownSheet.show(
+                                              context,
+                                              title: dateFmt.format(day),
+                                              subtitle: 'Daily transaction list',
+                                              icon: Icons.calendar_today,
+                                              color: Theme.of(context).primaryColor,
+                                              totalAmount: amount,
+                                              expenses: dayExpenses,
+                                              aiSummary: 'You logged ${dayExpenses.length} transactions on this day.',
+                                            );
+                                          }
+                                        },
+                                        child: Container(
+                                          height: 16,
+                                          margin: const EdgeInsets.symmetric(horizontal: 3),
+                                          decoration: BoxDecoration(
+                                            color: _getCellColor(context, amount),
+                                            borderRadius: BorderRadius.circular(4),
+                                          ),
                                         ),
                                       ),
                                     ),
