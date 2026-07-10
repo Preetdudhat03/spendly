@@ -159,25 +159,23 @@ class SpendingHeatmap extends StatelessWidget {
                                       message: '${dateFmt.format(day)}: ${currencyFmt.format(amount)}',
                                       child: GestureDetector(
                                         onTap: () {
-                                          final dayExpenses = state.filteredExpenses.where((e) {
+                                          final dayExpenses = allExpenses.where((e) {
                                             return e.expenseDate.year == day.year &&
                                                 e.expenseDate.month == day.month &&
                                                 e.expenseDate.day == day.day;
                                           }).toList()
                                             ..sort((a, b) => b.amount.compareTo(a.amount));
 
-                                          if (dayExpenses.isNotEmpty) {
-                                            DrillDownSheet.show(
-                                              context,
-                                              title: dateFmt.format(day),
-                                              subtitle: 'Daily transaction list',
-                                              icon: Icons.calendar_today,
-                                              color: Theme.of(context).primaryColor,
-                                              totalAmount: amount,
-                                              expenses: dayExpenses,
-                                              aiSummary: 'You logged ${dayExpenses.length} transactions on this day.',
-                                            );
-                                          }
+                                          DrillDownSheet.show(
+                                            context,
+                                            title: dateFmt.format(day),
+                                            subtitle: 'Daily transaction list',
+                                            icon: Icons.calendar_today,
+                                            color: Theme.of(context).primaryColor,
+                                            totalAmount: amount,
+                                            expenses: dayExpenses,
+                                            aiSummary: 'You logged ${dayExpenses.length} transactions on this day.',
+                                          );
                                         },
                                         child: Container(
                                           height: 16,
