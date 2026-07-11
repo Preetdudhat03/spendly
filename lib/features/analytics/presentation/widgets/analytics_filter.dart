@@ -39,77 +39,74 @@ class AnalyticsFilterHeader extends ConsumerWidget {
       ),
       builder: (context) {
         return SafeArea(
-          child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.only(bottom: 16.0),
             child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const SizedBox(height: 12),
-              Container(
-                width: 36,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(2),
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SizedBox(height: 12),
+                Container(
+                  width: 36,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(2),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Select Time Range',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-              ),
-              const SizedBox(height: 12),
-              const Divider(),
-              Expanded(
-                child: ListView(
-                  children: AnalyticsFilterType.values.map((type) {
-                    final isSelected = type == currentType;
-                    return ListTile(
-                      title: Text(
-                        _getFilterName(type),
-                        style: TextStyle(
-                          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                          color: isSelected ? Theme.of(context).primaryColor : null,
-                        ),
+                const SizedBox(height: 16),
+                Text(
+                  'Select Time Range',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
                       ),
-                      trailing: isSelected
-                          ? Icon(Icons.check_circle, color: Theme.of(context).primaryColor)
-                          : null,
-                      onTap: () async {
-                        Navigator.pop(context);
-                        if (type == AnalyticsFilterType.customDate) {
-                          final picked = await showDateRangePicker(
-                            context: context,
-                            firstDate: DateTime(2020),
-                            lastDate: DateTime.now().add(const Duration(days: 365)),
-                            builder: (context, child) {
-                              return Theme(
-                                data: Theme.of(context).copyWith(
-                                  colorScheme: ColorScheme.light(
-                                    primary: Theme.of(context).primaryColor,
-                                    onPrimary: Colors.white,
-                                    onSurface: Colors.black,
-                                  ),
-                                ),
-                                child: child!,
-                              );
-                            },
-                          );
-                          if (picked != null) {
-                            ref.read(analyticsCustomDateRangeProvider.notifier).state = picked;
-                            ref.read(analyticsFilterTypeProvider.notifier).state = AnalyticsFilterType.customDate;
-                          }
-                        } else {
-                          ref.read(analyticsFilterTypeProvider.notifier).state = type;
-                        }
-                      },
-                    );
-                  }).toList(),
                 ),
-              ),
-            ],
-          ),
+                const SizedBox(height: 12),
+                const Divider(),
+                ...AnalyticsFilterType.values.map((type) {
+                  final isSelected = type == currentType;
+                  return ListTile(
+                    title: Text(
+                      _getFilterName(type),
+                      style: TextStyle(
+                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                        color: isSelected ? Theme.of(context).primaryColor : null,
+                      ),
+                    ),
+                    trailing: isSelected
+                        ? Icon(Icons.check_circle, color: Theme.of(context).primaryColor)
+                        : null,
+                    onTap: () async {
+                      Navigator.pop(context);
+                      if (type == AnalyticsFilterType.customDate) {
+                        final picked = await showDateRangePicker(
+                          context: context,
+                          firstDate: DateTime(2020),
+                          lastDate: DateTime.now().add(const Duration(days: 365)),
+                          builder: (context, child) {
+                            return Theme(
+                              data: Theme.of(context).copyWith(
+                                colorScheme: ColorScheme.light(
+                                  primary: Theme.of(context).primaryColor,
+                                  onPrimary: Colors.white,
+                                  onSurface: Colors.black,
+                                ),
+                              ),
+                              child: child!,
+                            );
+                          },
+                        );
+                        if (picked != null) {
+                          ref.read(analyticsCustomDateRangeProvider.notifier).state = picked;
+                          ref.read(analyticsFilterTypeProvider.notifier).state = AnalyticsFilterType.customDate;
+                        }
+                      } else {
+                        ref.read(analyticsFilterTypeProvider.notifier).state = type;
+                      }
+                    },
+                  );
+                }),
+              ],
+            ),
           ),
         );
       },
