@@ -146,7 +146,13 @@ class AppTheme {
     final cardBg = Colors.white;
     final borderCol = isPremium ? const Color(0xFFE5E7EB) : const Color(0xFFE2E8F0);
 
-    final baseTextTheme = isPremium ? GoogleFonts.interTextTheme() : ThemeData.light().textTheme;
+    final baseTextTheme = isPremium 
+        ? GoogleFonts.interTextTheme() 
+        : ThemeData.light().textTheme;
+    
+    final headerTextTheme = isPremium 
+        ? GoogleFonts.outfitTextTheme(baseTextTheme) 
+        : baseTextTheme;
     
     return ThemeData(
       useMaterial3: true,
@@ -221,10 +227,10 @@ class AppTheme {
         iconTheme: IconThemeData(color: colors.neutral900),
       ),
       textTheme: baseTextTheme.copyWith(
-        headlineLarge: baseTextTheme.headlineLarge?.copyWith(fontWeight: FontWeight.bold, color: colors.neutral900),
-        headlineMedium: baseTextTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold, color: colors.neutral900),
-        titleLarge: baseTextTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold, color: colors.neutral900),
-        titleMedium: baseTextTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600, color: colors.neutral600),
+        headlineLarge: headerTextTheme.headlineLarge?.copyWith(fontWeight: FontWeight.bold, color: colors.neutral900),
+        headlineMedium: headerTextTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold, color: colors.neutral900),
+        titleLarge: headerTextTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold, color: colors.neutral900),
+        titleMedium: headerTextTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600, color: colors.neutral600),
         bodyLarge: baseTextTheme.bodyLarge?.copyWith(color: colors.neutral700),
         bodyMedium: baseTextTheme.bodyMedium?.copyWith(color: colors.neutral500),
       ),
