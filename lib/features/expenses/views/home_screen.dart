@@ -128,6 +128,8 @@ class HomeScreen extends ConsumerWidget {
                 builder: (context) {
                   final width = MediaQuery.of(context).size.width;
                   final isWide = width > 720;
+                  final theme = Theme.of(context);
+                  final spendlyTheme = context.spendly;
 
                   // Elegant Greeting Header
                   final hour = DateTime.now().hour;
