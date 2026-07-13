@@ -250,6 +250,7 @@ class AppTheme {
     final borderCol = const Color(0xFF334155);
 
     final baseTextTheme = isPremium ? GoogleFonts.interTextTheme(ThemeData.dark().textTheme) : ThemeData.dark().textTheme;
+    final headerTextTheme = isPremium ? GoogleFonts.outfitTextTheme(baseTextTheme) : baseTextTheme;
 
     return ThemeData(
       useMaterial3: true,
@@ -318,17 +319,17 @@ class AppTheme {
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
-        titleTextStyle: baseTextTheme.titleLarge?.copyWith(
+        titleTextStyle: headerTextTheme.titleLarge?.copyWith(
           color: Colors.white,
           fontWeight: FontWeight.bold,
         ),
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       textTheme: baseTextTheme.copyWith(
-        headlineLarge: baseTextTheme.headlineLarge?.copyWith(fontWeight: FontWeight.bold, color: Colors.white),
-        headlineMedium: baseTextTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold, color: Colors.white),
-        titleLarge: baseTextTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold, color: Colors.white),
-        titleMedium: baseTextTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600, color: colors.neutral300),
+        headlineLarge: headerTextTheme.headlineLarge?.copyWith(fontWeight: FontWeight.bold, color: Colors.white),
+        headlineMedium: headerTextTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold, color: Colors.white),
+        titleLarge: headerTextTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold, color: Colors.white),
+        titleMedium: headerTextTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600, color: colors.neutral300),
         bodyLarge: baseTextTheme.bodyLarge?.copyWith(color: colors.neutral200),
         bodyMedium: baseTextTheme.bodyMedium?.copyWith(color: colors.neutral400),
       ),
