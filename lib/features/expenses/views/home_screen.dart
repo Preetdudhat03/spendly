@@ -9,15 +9,11 @@ import 'package:spendly/features/expenses/views/add_expense_screen.dart';
 import 'package:spendly/models/expense.dart';
 import 'package:spendly/core/widgets/shimmer_loading.dart';
 import 'package:spendly/features/expenses/widgets/expense_detail_modal.dart';
-import 'package:spendly/core/theme/spendly_tokens.dart';
-
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = Theme.of(context);
-    final spendlyTheme = context.spendly;
     final authState = ref.watch(authProvider);
     final familyState = ref.watch(familyProvider);
     final expenseState = ref.watch(expenseProvider);
@@ -128,39 +124,12 @@ class HomeScreen extends ConsumerWidget {
                 builder: (context) {
                   final width = MediaQuery.of(context).size.width;
                   final isWide = width > 720;
-                  final theme = Theme.of(context);
-                  final spendlyTheme = context.spendly;
 
-                  // Elegant Greeting Header
-                  final hour = DateTime.now().hour;
-                  String greetingText = '👋 Good Morning';
-                  if (hour >= 12 && hour < 17) {
-                    greetingText = '👋 Good Afternoon';
-                  } else if (hour >= 17) {
-                    greetingText = '👋 Good Evening';
-                  }
-
-                  Widget welcomeMessage = Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        greetingText,
-                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                              color: spendlyTheme.colors.neutral500,
-                              fontWeight: FontWeight.w500,
-                            ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        authState.displayName ?? "Family Member",
-                        style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                              color: theme.brightness == Brightness.dark
-                                  ? Colors.white
-                                  : spendlyTheme.colors.neutral900,
-                              fontWeight: FontWeight.bold,
-                            ),
-                      ),
-                    ],
+                  Widget welcomeMessage = Text(
+                    'Hello, ${authState.displayName ?? "Family Member"}! 👋',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          color: const Color(0xFF64748B),
+                        ),
                   );
 
                   Widget summaryRow = Row(
@@ -170,8 +139,8 @@ class HomeScreen extends ConsumerWidget {
                           context,
                           'Today\'s Spending',
                           currencyFormat.format(todayTotal),
-                          const Icon(Icons.arrow_upward_rounded, size: 14, color: Colors.red),
-                          'vs yesterday',
+                          const Color(0xFFE8EAF6),
+                          Theme.of(context).primaryColor,
                         ),
                       ),
                       const SizedBox(width: 16),
@@ -180,8 +149,8 @@ class HomeScreen extends ConsumerWidget {
                           context,
                           'This Month',
                           currencyFormat.format(monthTotal),
-                          Icon(Icons.calendar_month_rounded, size: 14, color: spendlyTheme.colors.primary),
-                          'current cycle',
+                          const Color(0xFFECFDF5),
+                          const Color(0xFF059669),
                         ),
                       ),
                     ],
@@ -196,149 +165,124 @@ class HomeScreen extends ConsumerWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Frequently Used',
+                              'Frequently used Expenses',
                               style: Theme.of(context).textTheme.titleLarge,
                             ),
-                            const SizedBox(height: 12),
+                            const SizedBox(height: 8),
                             SizedBox(
-                              height: 175,
+                              height: 120,
                               child: ListView.builder(
                                 scrollDirection: Axis.horizontal,
                                 itemCount: suggestions.length,
                                 itemBuilder: (context, index) {
                                   final sug = suggestions[index];
                                   return Container(
-                                    width: 160,
-                                    margin: const EdgeInsets.only(right: 16),
+                                    width: 220,
+                                    margin: const EdgeInsets.only(right: 12),
                                     child: Card(
-                                      color: theme.brightness == Brightness.dark
-                                          ? const Color(0xFF1E293B)
-                                          : const Color(0xFFF8FAFC),
+                                      color: const Color(0xFFF1F5F9),
                                       shape: RoundedRectangleBorder(
-                                        borderRadius: spendlyTheme.radius.medium,
-                                        side: BorderSide(
-                                          color: theme.brightness == Brightness.dark
-                                              ? const Color(0x1AFFFFFF)
-                                              : const Color(0xFFE2E8F0),
-                                        ),
+                                        borderRadius: BorderRadius.circular(16),
+                                        side: const BorderSide(color: Color(0xFFE2E8F0)),
                                       ),
                                       child: Padding(
-                                        padding: const EdgeInsets.all(14.0),
+                                        padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 10.0),
                                         child: Column(
                                           crossAxisAlignment: CrossAxisAlignment.start,
                                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                           children: [
-                                            Column(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                              children: [
-                                                Row(
-                                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                  children: [
-                                                    Container(
-                                                      padding: const EdgeInsets.all(8),
-                                                      decoration: BoxDecoration(
-                                                        color: spendlyTheme.colors.primary.withValues(alpha: 0.1),
-                                                        shape: BoxShape.circle,
-                                                      ),
-                                                      child: Text(
-                                                        _getCategoryEmoji(sug.category),
-                                                        style: const TextStyle(fontSize: 16),
-                                                      ),
-                                                    ),
-                                                    PopupMenuButton<String>(
-                                                      icon: Icon(Icons.more_horiz_rounded, size: 18, color: spendlyTheme.colors.neutral500),
-                                                      padding: EdgeInsets.zero,
-                                                      constraints: const BoxConstraints(),
-                                                      itemBuilder: (context) => [
-                                                        const PopupMenuItem(
-                                                          value: 'edit',
-                                                          child: Row(
-                                                            children: [
-                                                              Icon(Icons.edit_outlined, size: 18),
-                                                              SizedBox(width: 8),
-                                                              Text('Edit details'),
-                                                            ],
-                                                          ),
-                                                        ),
-                                                        const PopupMenuItem(
-                                                          value: 'delete',
-                                                          child: Row(
-                                                            children: [
-                                                              Icon(Icons.delete_outline, size: 18, color: Colors.red),
-                                                              SizedBox(width: 8),
-                                                              Text('Delete card', style: TextStyle(color: Colors.red)),
-                                                            ],
-                                                          ),
-                                                        ),
-                                                      ],
-                                                      onSelected: (value) async {
-                                                        if (value == 'edit') {
-                                                          ref.read(selectedCategoryProvider.notifier).state = sug.category;
-                                                          ref.read(prefilledAmountProvider.notifier).state = sug.amount;
-                                                          ref.read(prefilledDescriptionProvider.notifier).state = sug.description;
-                                                          context.go('/add');
-                                                        } else if (value == 'delete') {
-                                                          final key = '${sug.category}|${sug.description}|${sug.amount}';
-                                                          await ref.read(blacklistSuggestionsProvider.notifier).blacklist(key);
-                                                        }
-                                                      },
-                                                    ),
-                                                  ],
-                                                ),
-                                                const SizedBox(height: 12),
-                                                Text(
-                                                  sug.description.isEmpty ? sug.category : sug.description,
-                                                  maxLines: 1,
-                                                  overflow: TextOverflow.ellipsis,
-                                                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                                                ),
-                                                const SizedBox(height: 2),
-                                                Text(
-                                                  sug.category,
-                                                  style: TextStyle(fontSize: 11, color: spendlyTheme.colors.neutral500),
-                                                ),
-                                              ],
-                                            ),
                                             Row(
                                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                               children: [
-                                                Text(
-                                                  currencyFormat.format(sug.amount),
-                                                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                                                Expanded(
+                                                  child: Text(
+                                                    '${sug.description.isEmpty ? sug.category : sug.description} • ${currencyFormat.format(sug.amount)}',
+                                                    maxLines: 1,
+                                                    overflow: TextOverflow.ellipsis,
+                                                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                                                  ),
                                                 ),
-                                                GestureDetector(
-                                                  onTap: () async {
-                                                    await ref.read(expenseProvider.notifier).addExpense(
-                                                          amount: sug.amount,
-                                                          category: sug.category,
-                                                          description: sug.description,
-                                                          paymentMethod: 'UPI',
-                                                          expenseDate: DateTime.now(),
+                                                PopupMenuButton<String>(
+                                                  icon: const Icon(Icons.more_vert, size: 18),
+                                                  padding: EdgeInsets.zero,
+                                                  constraints: const BoxConstraints(),
+                                                  itemBuilder: (context) => [
+                                                    const PopupMenuItem(
+                                                      value: 'edit',
+                                                      child: Row(
+                                                        children: [
+                                                          Icon(Icons.edit_outlined, size: 18),
+                                                          SizedBox(width: 8),
+                                                          Text('Edit details'),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                    const PopupMenuItem(
+                                                      value: 'delete',
+                                                      child: Row(
+                                                        children: [
+                                                          Icon(Icons.delete_outline, size: 18, color: Colors.red),
+                                                          SizedBox(width: 8),
+                                                          Text('Delete card', style: TextStyle(color: Colors.red)),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  ],
+                                                  onSelected: (value) async {
+                                                    if (value == 'edit') {
+                                                      ref.read(selectedCategoryProvider.notifier).state = sug.category;
+                                                      ref.read(prefilledAmountProvider.notifier).state = sug.amount;
+                                                      ref.read(prefilledDescriptionProvider.notifier).state = sug.description;
+                                                      context.go('/add');
+                                                    } else if (value == 'delete') {
+                                                      final key = '${sug.category}|${sug.description}|${sug.amount}';
+                                                      await ref.read(blacklistSuggestionsProvider.notifier).blacklist(key);
+                                                      if (context.mounted) {
+                                                        ScaffoldMessenger.of(context).showSnackBar(
+                                                          const SnackBar(
+                                                            content: Text('Suggestion deleted.'),
+                                                            duration: Duration(seconds: 2),
+                                                          ),
                                                         );
-                                                    if (context.mounted) {
-                                                      ScaffoldMessenger.of(context).showSnackBar(
-                                                        SnackBar(
-                                                          content: Text(
-                                                              'Logged ${sug.description} ${currencyFormat.format(sug.amount)}!'),
-                                                          duration: const Duration(seconds: 2),
-                                                        ),
-                                                      );
+                                                      }
                                                     }
                                                   },
-                                                  child: Container(
-                                                    padding: const EdgeInsets.all(6),
-                                                    decoration: BoxDecoration(
-                                                      color: spendlyTheme.colors.primary,
-                                                      shape: BoxShape.circle,
-                                                    ),
-                                                    child: const Icon(
-                                                      Icons.bolt_rounded,
-                                                      color: Colors.white,
-                                                      size: 14,
-                                                    ),
-                                                  ),
-                                                )
+                                                ),
                                               ],
+                                            ),
+                                            GestureDetector(
+                                              onTap: () async {
+                                                await ref.read(expenseProvider.notifier).addExpense(
+                                                      amount: sug.amount,
+                                                      category: sug.category,
+                                                      description: sug.description,
+                                                      paymentMethod: 'UPI',
+                                                      expenseDate: DateTime.now(),
+                                                    );
+                                                if (context.mounted) {
+                                                  ScaffoldMessenger.of(context).showSnackBar(
+                                                    SnackBar(
+                                                      content: Text(
+                                                          'Logged ${sug.description} ${currencyFormat.format(sug.amount)}!'),
+                                                      duration: const Duration(seconds: 2),
+                                                    ),
+                                                  );
+                                                }
+                                              },
+                                              child: Container(
+                                                padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
+                                                decoration: BoxDecoration(
+                                                  color: Theme.of(context).primaryColor,
+                                                  borderRadius: BorderRadius.circular(8),
+                                                ),
+                                                child: const Center(
+                                                  child: Text(
+                                                    'One Tap Save',
+                                                    style: TextStyle(
+                                                        color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
+                                                  ),
+                                                ),
+                                              ),
                                             )
                                           ],
                                         ),
@@ -355,12 +299,12 @@ class HomeScreen extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Quick Categories',
+                        'Quick Add Category',
                         style: Theme.of(context).textTheme.titleLarge,
                       ),
                       const SizedBox(height: 12),
                       SizedBox(
-                        height: 90,
+                        height: 100,
                         child: ListView(
                           scrollDirection: Axis.horizontal,
                           children: [
@@ -387,6 +331,7 @@ class HomeScreen extends ConsumerWidget {
                           ),
                           TextButton(
                             onPressed: () {
+                              // Navigate to All Expenses view
                               context.push('/expenses');
                             },
                             child: const Text('View All'),
@@ -479,56 +424,28 @@ class HomeScreen extends ConsumerWidget {
     BuildContext context,
     String label,
     String amount,
-    Widget icon,
-    String subtitle,
+    Color bg,
+    Color textCol,
   ) {
-    final spendlyTheme = context.spendly;
-    final theme = Theme.of(context);
-
     return Card(
-      color: theme.brightness == Brightness.dark
-          ? const Color(0xFF1E293B)
-          : Colors.white,
+      color: bg,
       shape: RoundedRectangleBorder(
-        borderRadius: spendlyTheme.radius.large,
-        side: BorderSide(
-          color: theme.brightness == Brightness.dark
-              ? const Color(0x1AFFFFFF)
-              : const Color(0xFFE2E8F0),
-          width: 1,
-        ),
+        borderRadius: BorderRadius.circular(20),
+        side: BorderSide.none,
       ),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  label,
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: spendlyTheme.colors.neutral500,
-                  ),
-                ),
-                icon,
-              ],
+            Text(
+              label,
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.grey),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
             Text(
               amount,
-              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              subtitle,
-              style: TextStyle(
-                fontSize: 10,
-                color: spendlyTheme.colors.neutral400,
-              ),
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: textCol),
             ),
           ],
         ),
@@ -544,25 +461,10 @@ class HomeScreen extends ConsumerWidget {
     Color color,
     NumberFormat fmt,
   ) {
-    final spendlyTheme = context.spendly;
-    final theme = Theme.of(context);
     final cleanPercent = percent.clamp(0.0, 1.0);
-
     return Card(
-      color: theme.brightness == Brightness.dark
-          ? const Color(0xFF1E293B)
-          : Colors.white,
-      shape: RoundedRectangleBorder(
-        borderRadius: spendlyTheme.radius.large,
-        side: BorderSide(
-          color: theme.brightness == Brightness.dark
-              ? const Color(0x1AFFFFFF)
-              : const Color(0xFFE2E8F0),
-          width: 1,
-        ),
-      ),
       child: Padding(
-        padding: const EdgeInsets.all(22.0),
+        padding: const EdgeInsets.all(20.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -570,47 +472,36 @@ class HomeScreen extends ConsumerWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Monthly Budget Progress',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                  'Family Budget Progress',
+                  style: Theme.of(context).textTheme.titleMedium,
                 ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    '${(percent * 100).toStringAsFixed(0)}%',
-                    style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 12),
-                  ),
+                Text(
+                  '${(percent * 100).toStringAsFixed(0)}%',
+                  style: TextStyle(color: color, fontWeight: FontWeight.bold),
                 )
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
             ClipRRect(
               borderRadius: BorderRadius.circular(10),
               child: LinearProgressIndicator(
                 value: cleanPercent,
-                minHeight: 10,
+                minHeight: 12,
                 color: color,
-                backgroundColor: theme.brightness == Brightness.dark
-                    ? const Color(0x1AFFFFFF)
-                    : const Color(0xFFF1F5F9),
+                backgroundColor: const Color(0xFFE2E8F0),
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
                   'Spent: ${fmt.format(spent)}',
-                  style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                  style: const TextStyle(fontWeight: FontWeight.w600),
                 ),
                 Text(
                   'Budget: ${fmt.format(limit)}',
-                  style: TextStyle(color: spendlyTheme.colors.neutral400, fontSize: 13),
+                  style: const TextStyle(color: Colors.grey),
                 )
               ],
             )
@@ -626,48 +517,35 @@ class HomeScreen extends ConsumerWidget {
     String emoji,
     String category,
   ) {
-    final spendlyTheme = context.spendly;
-    final theme = Theme.of(context);
-
     return Container(
-      margin: const EdgeInsets.only(right: 16),
-      child: Column(
-        children: [
-          InkWell(
-            onTap: () {
-              ref.read(selectedCategoryProvider.notifier).state = category;
-              context.go('/add');
-            },
-            borderRadius: BorderRadius.circular(30),
-            child: Container(
-              height: 54,
-              width: 54,
-              decoration: BoxDecoration(
-                color: theme.brightness == Brightness.dark
-                    ? const Color(0xFF1E293B)
-                    : const Color(0xFFF8FAFC),
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: theme.brightness == Brightness.dark
-                      ? const Color(0x1AFFFFFF)
-                      : const Color(0xFFE2E8F0),
-                ),
-              ),
-              child: Center(
-                child: Text(emoji, style: const TextStyle(fontSize: 22)),
-              ),
-            ),
+      margin: const EdgeInsets.only(right: 12),
+      width: 80,
+      child: InkWell(
+        onTap: () {
+          ref.read(selectedCategoryProvider.notifier).state = category;
+          context.go('/add');
+        },
+        borderRadius: BorderRadius.circular(16),
+        child: Ink(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xFFE2E8F0)),
           ),
-          const SizedBox(height: 6),
-          Text(
-            category,
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-              color: spendlyTheme.colors.neutral600,
-            ),
-          )
-        ],
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(emoji, style: const TextStyle(fontSize: 28)),
+              const SizedBox(height: 6),
+              Text(
+                category,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+              )
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -678,63 +556,45 @@ class HomeScreen extends ConsumerWidget {
     Expense exp,
     NumberFormat fmt,
   ) {
-    final spendlyTheme = context.spendly;
-    final theme = Theme.of(context);
     final dayStr = DateFormat('dd MMM').format(exp.expenseDate);
-
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: 10),
       child: Card(
-        color: theme.brightness == Brightness.dark
-            ? const Color(0xFF1E293B)
-            : Colors.white,
         shape: RoundedRectangleBorder(
-          borderRadius: spendlyTheme.radius.medium,
-          side: BorderSide(
-            color: theme.brightness == Brightness.dark
-                ? const Color(0x1AFFFFFF)
-                : const Color(0xFFE2E8F0),
-          ),
+          borderRadius: BorderRadius.circular(16),
+          side: const BorderSide(color: Color(0xFFE2E8F0)),
         ),
         child: ListTile(
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
           leading: Container(
-            height: 44,
-            width: 44,
+            padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: spendlyTheme.colors.primary.withValues(alpha: 0.1),
+              color: Theme.of(context).primaryColor.withOpacity(0.1),
               shape: BoxShape.circle,
             ),
-            child: Center(
-              child: Text(
-                _getCategoryEmoji(exp.category),
-                style: const TextStyle(fontSize: 20),
-              ),
+            child: Text(
+              _getCategoryEmoji(exp.category),
+              style: const TextStyle(fontSize: 22),
             ),
           ),
           title: Text(
             exp.description.isEmpty ? exp.category : exp.description,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+            style: const TextStyle(fontWeight: FontWeight.bold),
           ),
           subtitle: Text(
             'by ${exp.createdByName} • $dayStr',
-            style: TextStyle(fontSize: 11, color: spendlyTheme.colors.neutral400),
+            style: const TextStyle(fontSize: 12, color: Colors.grey),
           ),
           onTap: () => showExpenseDetail(context, ref, exp),
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                '-${fmt.format(exp.amount)}',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 15,
-                  color: spendlyTheme.colors.expense,
-                ),
+                fmt.format(exp.amount),
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color(0xFFF87171)),
               ),
               const SizedBox(width: 4),
               IconButton(
-                icon: Icon(Icons.delete_outline_rounded, size: 20, color: spendlyTheme.colors.neutral400),
+                icon: const Icon(Icons.delete_outline, size: 20, color: Colors.grey),
                 onPressed: () {
                   _showDeleteConfirm(context, ref, exp.id);
                 },
