@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:spendly/features/analytics/providers/analytics_providers.dart';
 import 'package:spendly/core/providers/state_providers.dart';
 import 'package:spendly/models/expense.dart';
+import 'package:spendly/core/widgets/spendly/spendly.dart';
 
 // Import all modular widgets
 import '../widgets/analytics_filter.dart';
@@ -42,6 +43,7 @@ class AnalyticsPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(analyticsProvider);
     final expenseState = ref.watch(expenseProvider);
+    final spendly = context.spendly;
 
     final isWide = MediaQuery.of(context).size.width > 720;
 
@@ -54,7 +56,7 @@ class AnalyticsPage extends ConsumerWidget {
       ),
       body: RefreshIndicator(
         onRefresh: () => _handleRefresh(ref),
-        color: Theme.of(context).primaryColor,
+        color: spendly.colors.primary,
         child: (expenseState.isLoading && expenseState.expenses.isEmpty) || (state.isLoading && state.filteredExpenses.isEmpty)
             ? _buildLoadingState(context, isWide)
             : expenseState.expenses.isEmpty || (state.filteredExpenses.isEmpty && ref.read(analyticsMemberFilterProvider) != null)
@@ -80,62 +82,41 @@ class AnalyticsPage extends ConsumerWidget {
       messageBody = 'No expenses were found for $memberName during this period.';
     }
 
+    if (selectedMemberId != null) {
+      return SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        child: Container(
+          height: MediaQuery.of(context).size.height * 0.75,
+          alignment: Alignment.center,
+          child: SpendlyEmptyState(
+            title: messageTitle,
+            description: messageBody,
+            primaryActionLabel: 'Clear Filter',
+            onPrimaryAction: () => ref.read(analyticsMemberFilterProvider.notifier).state = null,
+            icon: Icons.bar_chart_outlined,
+          ),
+        ),
+      );
+    }
+
     return SingleChildScrollView(
       physics: const AlwaysScrollableScrollPhysics(),
       child: Container(
         height: MediaQuery.of(context).size.height * 0.75,
         alignment: Alignment.center,
-        padding: const EdgeInsets.all(28.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: Theme.of(context).primaryColor.withOpacity(0.08),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(Icons.bar_chart_outlined, size: 64, color: Theme.of(context).primaryColor),
-            ),
-            const SizedBox(height: 24),
-            Text(
-              messageTitle,
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900, letterSpacing: -0.5),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              messageBody,
-              textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.grey[500], fontSize: 13, height: 1.4),
-            ),
-            const SizedBox(height: 24),
-            if (selectedMemberId != null)
-              OutlinedButton.icon(
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                ),
-                onPressed: () => ref.read(analyticsMemberFilterProvider.notifier).state = null,
-                icon: const Icon(Icons.clear),
-                label: const Text('Clear Filter', style: TextStyle(fontWeight: FontWeight.bold)),
-              )
-            else
-              ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                ),
-                onPressed: () => context.go('/add'),
-                icon: const Icon(Icons.add_circle_outline),
-                label: const Text('Add First Expense', style: TextStyle(fontWeight: FontWeight.bold)),
-              ),
-          ],
+        child: SpendlyEmptyState(
+          title: messageTitle,
+          description: messageBody,
+          primaryActionLabel: 'Add First Expense',
+          onPrimaryAction: () => context.go('/add'),
+          icon: Icons.bar_chart_outlined,
         ),
       ),
     );
   }
 
   Widget _buildLoadingState(BuildContext context, bool isWide) {
+    final spendly = context.spendly;
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       child: ShimmerLoading(
@@ -153,7 +134,7 @@ class AnalyticsPage extends ConsumerWidget {
                     margin: const EdgeInsets.only(right: 8),
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(20),
+                      borderRadius: spendly.radius.large,
                     ),
                   ),
                 ),
