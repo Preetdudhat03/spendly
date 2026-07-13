@@ -39,7 +39,7 @@ class MainLayout extends ConsumerWidget {
                     break;
                 }
               },
-              labelType: NavigationRailRailLabelType.all,
+              labelType: NavigationRailLabelType.all,
               indicatorColor: Theme.of(context).primaryColor,
               destinations: const [
                 NavigationRailDestination(

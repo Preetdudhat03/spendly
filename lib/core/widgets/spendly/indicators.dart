@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:spendly/core/theme/spendly_tokens.dart';
+import 'cards.dart';
 
 class SpendlyProgressBar extends StatelessWidget {
   final double value; // 0.0 to 1.0

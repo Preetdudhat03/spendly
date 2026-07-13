@@ -97,7 +97,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     return 'Weak';
   }
 
-  Color _getStrengthColor(String strength, SpendlyThemeData spendly) {
+  Color _getStrengthColor(String strength, SpendlyTheme spendly) {
     switch (strength) {
       case 'Strong':
         return spendly.colors.success;
