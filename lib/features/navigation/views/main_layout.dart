@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:spendly/features/expenses/views/home_screen.dart';
 import 'package:spendly/features/expenses/views/add_expense_screen.dart';
 import 'package:spendly/features/analytics/presentation/pages/analytics_page.dart';
+import 'package:spendly/features/expenses/views/all_expenses_screen.dart';
 import 'package:spendly/features/profile/views/profile_screen.dart';
 
 class MainLayout extends ConsumerWidget {
@@ -37,6 +38,9 @@ class MainLayout extends ConsumerWidget {
                     context.go('/analytics');
                     break;
                   case 3:
+                    context.go('/expenses');
+                    break;
+                  case 4:
                     context.go('/profile');
                     break;
                 }
@@ -60,6 +64,11 @@ class MainLayout extends ConsumerWidget {
                   label: Text('Analytics'),
                 ),
                 NavigationRailDestination(
+                  icon: Icon(Icons.history_outlined),
+                  selectedIcon: Icon(Icons.history, color: Colors.white),
+                  label: Text('History'),
+                ),
+                NavigationRailDestination(
                   icon: Icon(Icons.person_outline),
                   selectedIcon: Icon(Icons.person, color: Colors.white),
                   label: Text('Profile'),
@@ -73,6 +82,7 @@ class MainLayout extends ConsumerWidget {
                 HomeScreen(),
                 AddExpenseScreen(),
                 AnalyticsPage(),
+                AllExpensesScreen(),
                 ProfileScreen(),
               ],
             ),
@@ -83,7 +93,7 @@ class MainLayout extends ConsumerWidget {
           ? null
           : SafeArea(
               child: Container(
-                margin: const EdgeInsets.only(left: 20, right: 20, bottom: 20, top: 8),
+                margin: const EdgeInsets.only(left: 16, right: 16, bottom: 20, top: 8),
                 height: 76,
                 decoration: BoxDecoration(
                   color: isDark 
@@ -111,7 +121,7 @@ class MainLayout extends ConsumerWidget {
                   child: BackdropFilter(
                     filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
@@ -132,10 +142,17 @@ class MainLayout extends ConsumerWidget {
                             route: '/analytics',
                           ),
                           _buildFab(context),
-                          _buildExpensesItem(context),
                           _buildNavItem(
                             context,
                             index: 3,
+                            icon: Icons.history_rounded,
+                            activeIcon: Icons.history_rounded,
+                            label: 'History',
+                            route: '/expenses',
+                          ),
+                          _buildNavItem(
+                            context,
+                            index: 4,
                             icon: Icons.person_rounded,
                             activeIcon: Icons.person_rounded,
                             label: 'Profile',
@@ -170,7 +187,7 @@ class MainLayout extends ConsumerWidget {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 250),
         curve: Curves.easeInOut,
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         decoration: BoxDecoration(
           color: isActive ? activeColor.withOpacity(0.12) : Colors.transparent,
           borderRadius: BorderRadius.circular(24),
@@ -186,19 +203,19 @@ class MainLayout extends ConsumerWidget {
             AnimatedContainer(
               duration: const Duration(milliseconds: 250),
               curve: Curves.easeInOut,
-              width: isActive ? 60 : 0,
+              width: isActive ? 52 : 0,
               child: AnimatedOpacity(
                 duration: const Duration(milliseconds: 200),
                 opacity: isActive ? 1.0 : 0.0,
                 curve: Curves.easeInOut,
                 child: Padding(
-                  padding: const EdgeInsets.only(left: 6),
+                  padding: const EdgeInsets.only(left: 4),
                   child: Text(
                     label,
                     style: TextStyle(
                       color: activeColor,
                       fontWeight: FontWeight.w600,
-                      fontSize: 12,
+                      fontSize: 11,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.clip,
@@ -253,28 +270,6 @@ class MainLayout extends ConsumerWidget {
             color: Colors.white,
             size: 26,
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildExpensesItem(BuildContext context) {
-    final theme = Theme.of(context);
-    final inactiveColor = theme.colorScheme.onSurfaceVariant.withOpacity(0.6);
-
-    return GestureDetector(
-      onTap: () => context.push('/expenses'),
-      behavior: HitTestBehavior.opaque,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-        decoration: BoxDecoration(
-          color: Colors.transparent,
-          borderRadius: BorderRadius.circular(24),
-        ),
-        child: Icon(
-          Icons.history_rounded,
-          color: inactiveColor,
-          size: 24,
         ),
       ),
     );
