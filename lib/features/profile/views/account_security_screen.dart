@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spendly/core/providers/state_providers.dart';
+import 'package:spendly/core/widgets/spendly/spendly.dart';
 
 class AccountSecurityScreen extends ConsumerStatefulWidget {
   const AccountSecurityScreen({super.key});
@@ -11,89 +12,45 @@ class AccountSecurityScreen extends ConsumerStatefulWidget {
 
 class _AccountSecurityScreenState extends ConsumerState<AccountSecurityScreen> {
   void _showDeleteAccountDialog() {
-    showDialog(
+    SpendlyDialog.show(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Delete Account?', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
-        content: const Text(
-          'Are you sure you want to delete your account? All your personal profile settings will be permanently erased. This action cannot be undone.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('CANCEL', style: TextStyle(color: Colors.grey)),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              Navigator.pop(context); // Close confirmation dialog
-              
-              final messenger = ScaffoldMessenger.of(this.context);
-              try {
-                await ref.read(authProvider.notifier).deleteAccount();
-                messenger.showSnackBar(
-                  const SnackBar(content: Text('Your account has been deleted successfully.')),
-                );
-              } catch (e) {
-                messenger.showSnackBar(
-                  SnackBar(content: Text('Error deleting account: $e'), backgroundColor: Colors.red),
-                );
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
-            ),
-            child: const Text('DELETE ACCOUNT'),
-          ),
-        ],
-      ),
+      title: 'Delete Account?',
+      content: 'Are you sure you want to delete your account? All your personal profile settings will be permanently erased. This action cannot be undone.',
+      confirmText: 'DELETE ACCOUNT',
+      cancelText: 'CANCEL',
+      onConfirm: () async {
+        final messenger = ScaffoldMessenger.of(this.context);
+        try {
+          await ref.read(authProvider.notifier).deleteAccount();
+          SpendlySnackbar.show(context: this.context, message: 'Your account has been deleted successfully.');
+        } catch (e) {
+          SpendlySnackbar.show(context: this.context, message: 'Error deleting account: $e', isError: true);
+        }
+      },
     );
   }
 
   void _showDeleteFamilyDialog(String familyName) {
-    showDialog(
+    SpendlyDialog.show(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Delete Family & Data?', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
-        content: Text(
-          'Are you sure you want to delete "$familyName" and ALL associated expenses, budgets, and member links? This action is permanent and cannot be undone.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('CANCEL', style: TextStyle(color: Colors.grey)),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              Navigator.pop(context); // Close confirmation dialog
-              
-              final messenger = ScaffoldMessenger.of(this.context);
-              try {
-                final success = await ref.read(familyProvider.notifier).deleteFamily();
-                if (success) {
-                  messenger.showSnackBar(
-                    const SnackBar(content: Text('Family and all its data deleted successfully.')),
-                  );
-                } else {
-                  final errorMsg = ref.read(familyProvider).error ?? 'Unknown error';
-                  messenger.showSnackBar(
-                    SnackBar(content: Text('Error deleting family: $errorMsg'), backgroundColor: Colors.red),
-                  );
-                }
-              } catch (e) {
-                messenger.showSnackBar(
-                  SnackBar(content: Text('Error deleting family: $e'), backgroundColor: Colors.red),
-                );
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
-            ),
-            child: const Text('DELETE FAMILY'),
-          ),
-        ],
-      ),
+      title: 'Delete Family & Data?',
+      content: 'Are you sure you want to delete "$familyName" and ALL associated expenses, budgets, and member links? This action is permanent and cannot be undone.',
+      confirmText: 'DELETE FAMILY',
+      cancelText: 'CANCEL',
+      onConfirm: () async {
+        final messenger = ScaffoldMessenger.of(this.context);
+        try {
+          final success = await ref.read(familyProvider.notifier).deleteFamily();
+          if (success) {
+            SpendlySnackbar.show(context: this.context, message: 'Family and all its data deleted successfully.');
+          } else {
+            final errorMsg = ref.read(familyProvider).error ?? 'Unknown error';
+            SpendlySnackbar.show(context: this.context, message: 'Error deleting family: $errorMsg', isError: true);
+          }
+        } catch (e) {
+          SpendlySnackbar.show(context: this.context, message: 'Error deleting family: $e', isError: true);
+        }
+      },
     );
   }
 
@@ -101,6 +58,7 @@ class _AccountSecurityScreenState extends ConsumerState<AccountSecurityScreen> {
   Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
     final familyState = ref.watch(familyProvider);
+    final spendly = context.spendly;
 
     bool isCurrentUserAdmin = false;
     for (final m in familyState.members) {
@@ -116,39 +74,43 @@ class _AccountSecurityScreenState extends ConsumerState<AccountSecurityScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Account Security'),
-        elevation: 0,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Icon(Icons.warning_amber_rounded, color: Colors.red, size: 64),
+            Icon(Icons.warning_amber_rounded, color: spendly.colors.error, size: 64),
             const SizedBox(height: 16),
-            const Text(
+            Text(
               'Danger Zone',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
-                color: Colors.red,
+                color: spendly.colors.error,
               ),
             ),
             const SizedBox(height: 8),
-            const Text(
+            Text(
               'Actions here are permanent and cannot be undone. Please proceed with caution.',
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.grey, fontSize: 14),
+              style: TextStyle(color: spendly.colors.neutral500, fontSize: 14),
             ),
             const SizedBox(height: 32),
 
             // Delete Account button
-            OutlinedButton.icon(
+            SpendlyButton(
+              text: 'DELETE MY ACCOUNT',
+              variant: SpendlyButtonVariant.danger,
+              icon: const Icon(Icons.person_remove),
               onPressed: isCurrentUserAdmin
                   ? () {
                       showDialog(
                         context: context,
                         builder: (context) => AlertDialog(
+                          backgroundColor: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF111827) : Colors.white,
+                          shape: RoundedRectangleBorder(borderRadius: spendly.radius.large),
                           title: const Text('Admin Restriction', style: TextStyle(fontWeight: FontWeight.bold)),
                           content: const Text(
                             'As the family admin, you cannot delete your account while the family group still exists.\n\n'
@@ -157,32 +119,29 @@ class _AccountSecurityScreenState extends ConsumerState<AccountSecurityScreen> {
                           actions: [
                             TextButton(
                               onPressed: () => Navigator.pop(context),
-                              child: const Text('UNDERSTOOD'),
+                              child: Text('UNDERSTOOD', style: TextStyle(color: spendly.colors.neutral500, fontWeight: FontWeight.bold)),
                             ),
                           ],
                         ),
                       );
                     }
                   : _showDeleteAccountDialog,
-              icon: const Icon(Icons.person_remove),
-              label: const Text('DELETE MY ACCOUNT'),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: Colors.red,
-                side: const BorderSide(color: Colors.red),
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                textStyle: const TextStyle(fontWeight: FontWeight.bold),
-              ),
             ),
             
             if (isCurrentUserAdmin) ...[
               const SizedBox(height: 16),
               // Delete Family button
-              ElevatedButton.icon(
+              SpendlyButton(
+                text: 'DELETE FAMILY & ALL DATA',
+                variant: SpendlyButtonVariant.danger,
+                icon: const Icon(Icons.delete_forever),
                 onPressed: otherMembersExist
                     ? () {
                         showDialog(
                           context: context,
                           builder: (context) => AlertDialog(
+                            backgroundColor: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF111827) : Colors.white,
+                            shape: RoundedRectangleBorder(borderRadius: spendly.radius.large),
                             title: const Text('Members Still Active', style: TextStyle(fontWeight: FontWeight.bold)),
                             content: const Text(
                               'As the admin, you can only delete the family once all other members have deleted their accounts or left the family group.\n\n'
@@ -191,21 +150,13 @@ class _AccountSecurityScreenState extends ConsumerState<AccountSecurityScreen> {
                             actions: [
                               TextButton(
                                 onPressed: () => Navigator.pop(context),
-                                child: const Text('UNDERSTOOD'),
+                                child: Text('UNDERSTOOD', style: TextStyle(color: spendly.colors.neutral500, fontWeight: FontWeight.bold)),
                               ),
                             ],
                           ),
                         );
                       }
                     : () => _showDeleteFamilyDialog(familyName),
-                icon: const Icon(Icons.delete_forever),
-                label: const Text('DELETE FAMILY & ALL DATA'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  textStyle: const TextStyle(fontWeight: FontWeight.bold),
-                ),
               ),
             ],
           ],
