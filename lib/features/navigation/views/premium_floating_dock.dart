@@ -231,7 +231,7 @@ class _PremiumFloatingDockState extends State<PremiumFloatingDock> with TickerPr
             children: [
               AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
-                margin: const EdgeInsets.bottom(2),
+                margin: const EdgeInsets.only(bottom: 2),
                 child: Icon(
                   icon,
                   color: isActive ? activeColor : inactiveColor.withOpacity(0.6),
