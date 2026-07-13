@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 import 'package:spendly/core/providers/state_providers.dart';
 import 'package:spendly/core/utils/schema_validator.dart';
 import 'package:spendly/core/widgets/shimmer_loading.dart';
-import 'package:spendly/core/widgets/spendly/spendly.dart';
 
 class FamilySetupScreen extends ConsumerStatefulWidget {
   const FamilySetupScreen({super.key});
@@ -48,18 +47,17 @@ class _FamilySetupScreenState extends ConsumerState<FamilySetupScreen> {
   }
 
   void _showError(String message) {
-    SpendlySnackbar.show(
-      context: context,
-      message: message,
-      isError: true,
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Theme.of(context).colorScheme.error,
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     final familyState = ref.watch(familyProvider);
-    final spendly = context.spendly;
-    final theme = Theme.of(context);
 
     return Scaffold(
       appBar: AppBar(
@@ -92,82 +90,93 @@ class _FamilySetupScreenState extends ConsumerState<FamilySetupScreen> {
                     style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                   );
 
-                  Widget subtitleWidget = Text(
+                  Widget subtitleWidget = const Text(
                     'To start tracking spending, you need to either create a new family group or join an existing one.',
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 16, color: spendly.colors.neutral500),
+                    style: TextStyle(fontSize: 16, color: Colors.grey),
                   );
 
-                  Widget createFamilyCard = SpendlyCard(
-                    child: Form(
-                      key: _createFormKey,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Text(
-                            'Create a Family',
-                            style: Theme.of(context).textTheme.titleLarge,
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Start a new expense tracking group and invite others.',
-                            style: TextStyle(fontSize: 14, color: spendly.colors.neutral500),
-                          ),
-                          const SizedBox(height: 16),
-                          SpendlyInputField(
-                            controller: _createController,
-                            label: 'Family Name (e.g. Sharma Family)',
-                            prefixIcon: Icon(Icons.people, color: spendly.colors.neutral400),
-                            validator: (value) {
-                              try {
-                                SchemaValidator.validateDisplayName(value, fieldName: 'Family Name');
-                                return null;
-                              } catch (e) {
-                                return e.toString();
-                              }
-                            },
-                          ),
-                          const SizedBox(height: 16),
-                          SpendlyButton(
-                            text: 'CREATE FAMILY',
-                            variant: SpendlyButtonVariant.primary,
-                            onPressed: _createFamily,
-                          ),
-                        ],
+                  Widget createFamilyCard = Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(20.0),
+                      child: Form(
+                        key: _createFormKey,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Text(
+                              'Create a Family',
+                              style: Theme.of(context).textTheme.titleLarge,
+                            ),
+                            const SizedBox(height: 8),
+                            const Text(
+                              'Start a new expense tracking group and invite others.',
+                              style: TextStyle(fontSize: 14, color: Colors.grey),
+                            ),
+                            const SizedBox(height: 16),
+                            TextFormField(
+                              controller: _createController,
+                              decoration: const InputDecoration(
+                                labelText: 'Family Name (e.g. Sharma Family)',
+                                prefixIcon: Icon(Icons.people),
+                              ),
+                              validator: (value) {
+                                try {
+                                  SchemaValidator.validateDisplayName(value, fieldName: 'Family Name');
+                                  return null;
+                                } catch (e) {
+                                  return e.toString();
+                                }
+                              },
+                            ),
+                            const SizedBox(height: 16),
+                            ElevatedButton(
+                              onPressed: _createFamily,
+                              child: const Text('CREATE FAMILY'),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   );
 
-                  Widget joinFamilyCard = SpendlyCard(
-                    child: Form(
-                      key: _joinFormKey,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Text(
-                            'Join a Family',
-                            style: Theme.of(context).textTheme.titleLarge,
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Enter a family code provided by a family administrator.',
-                            style: TextStyle(fontSize: 14, color: spendly.colors.neutral500),
-                          ),
-                          const SizedBox(height: 16),
-                          SpendlyInputField(
-                            controller: _joinController,
-                            label: 'Family Code (e.g. 1234)',
-                            prefixIcon: Icon(Icons.vpn_key, color: spendly.colors.neutral400),
-                            validator: (value) =>
-                                value == null || value.isEmpty ? 'Please enter a family code' : null,
-                          ),
-                          const SizedBox(height: 16),
-                          SpendlyButton(
-                            text: 'JOIN FAMILY',
-                            variant: SpendlyButtonVariant.outlined,
-                            onPressed: _joinFamily,
-                          ),
-                        ],
+                  Widget joinFamilyCard = Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(20.0),
+                      child: Form(
+                        key: _joinFormKey,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Text(
+                              'Join a Family',
+                              style: Theme.of(context).textTheme.titleLarge,
+                            ),
+                            const SizedBox(height: 8),
+                            const Text(
+                              'Enter a family code provided by a family administrator.',
+                              style: TextStyle(fontSize: 14, color: Colors.grey),
+                            ),
+                            const SizedBox(height: 16),
+                            TextFormField(
+                              controller: _joinController,
+                              textCapitalization: TextCapitalization.characters,
+                              decoration: const InputDecoration(
+                                labelText: 'Family Code (e.g. 1234)',
+                                prefixText: 'FAMILY-',
+                                prefixStyle: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                                prefixIcon: Icon(Icons.vpn_key),
+                              ),
+                              validator: (value) =>
+                                  value == null || value.isEmpty ? 'Please enter a family code' : null,
+                            ),
+                            const SizedBox(height: 16),
+                            OutlinedButton(
+                              onPressed: _joinFamily,
+                              child: const Text('JOIN FAMILY'),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   );
@@ -205,9 +214,9 @@ class _FamilySetupScreenState extends ConsumerState<FamilySetupScreen> {
                         const SizedBox(height: 40),
                         createFamilyCard,
                         const SizedBox(height: 24),
-                        Center(
+                        const Center(
                             child: Text('— OR —',
-                                style: TextStyle(fontWeight: FontWeight.bold, color: spendly.colors.neutral400))),
+                                style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey))),
                         const SizedBox(height: 24),
                         joinFamilyCard,
                       ],

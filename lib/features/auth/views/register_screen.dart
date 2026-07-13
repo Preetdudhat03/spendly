@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 import 'package:spendly/core/providers/state_providers.dart';
 import 'package:spendly/core/utils/crypto_utils.dart';
 import 'package:spendly/core/utils/schema_validator.dart';
-import 'package:spendly/core/widgets/spendly/spendly.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
   final String? initialEmail;
@@ -19,6 +18,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  bool _obscurePassword = true;
 
   @override
   void initState() {
@@ -49,33 +49,30 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
     if (success) {
       final stateMsg = ref.read(authProvider).error ?? 'Check your email for confirmation!';
-      final spendly = context.spendly;
       showDialog(
         context: context,
         barrierDismissible: false,
         builder: (context) => AlertDialog(
-          backgroundColor: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF111827) : Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: spendly.radius.large),
-          title: const Text('Confirm Email', style: TextStyle(fontWeight: FontWeight.bold)),
+          title: const Text('Confirm Email'),
           content: Text(stateMsg),
           actions: [
-            SpendlyButton(
-              text: 'OK',
-              size: SpendlyButtonSize.small,
+            TextButton(
               onPressed: () {
                 Navigator.pop(context); // Close dialog
                 context.go('/login'); // Return to login
               },
+              child: const Text('OK'),
             ),
           ],
         ),
       );
     } else {
       final error = ref.read(authProvider).error ?? 'Registration failed';
-      SpendlySnackbar.show(
-        context: context,
-        message: error,
-        isError: true,
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(error),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
       );
     }
   }
@@ -97,15 +94,15 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     return 'Weak';
   }
 
-  Color _getStrengthColor(String strength, SpendlyTheme spendly) {
+  Color _getStrengthColor(String strength) {
     switch (strength) {
       case 'Strong':
-        return spendly.colors.success;
+        return Colors.green;
       case 'Medium':
-        return spendly.colors.warning;
+        return Colors.orange;
       case 'Weak':
       default:
-        return spendly.colors.error;
+        return Colors.red;
     }
   }
 
@@ -125,173 +122,201 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
     final isWide = MediaQuery.of(context).size.width > 720;
-    final spendly = context.spendly;
-    final theme = Theme.of(context);
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Create Account'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => context.pop(),
+        ),
       ),
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),
           child: Container(
             constraints: BoxConstraints(maxWidth: isWide ? 460 : double.infinity),
-            child: SpendlyCard(
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Image.asset(
-                      'assets/images/logo.png',
-                      height: 72,
-                      width: 72,
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Join Spendly',
-                      textAlign: TextAlign.center,
-                      style: theme.textTheme.headlineMedium?.copyWith(
-                        color: spendly.colors.primary,
-                        letterSpacing: -0.5,
+            child: Card(
+              elevation: 4,
+              shadowColor: Colors.black.withOpacity(0.08),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 28.0, vertical: 36.0),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Image.asset(
+                        'assets/images/logo.png',
+                        height: 72,
+                        width: 72,
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Start tracking expenses together with your family securely.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: spendly.colors.neutral500),
-                    ),
-                    const SizedBox(height: 28),
-                    SpendlyInputField(
-                      controller: _nameController,
-                      label: 'Your Name (e.g. Dad, Mom, Preet)',
-                      prefixIcon: Icon(Icons.person_outline, color: spendly.colors.neutral400),
-                      validator: (value) {
-                        try {
-                          SchemaValidator.validateDisplayName(value);
-                          return null;
-                        } catch (e) {
-                          return e.toString();
-                        }
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    SpendlyInputField(
-                      controller: _emailController,
-                      keyboardType: TextInputType.emailAddress,
-                      label: 'Email Address',
-                      prefixIcon: Icon(Icons.email_outlined, color: spendly.colors.neutral400),
-                      validator: (value) {
-                        try {
-                          SchemaValidator.validateEmail(value);
-                          return null;
-                        } catch (e) {
-                          return e.toString();
-                        }
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    SpendlyInputField(
-                      controller: _passwordController,
-                      isPassword: true,
-                      label: 'Password',
-                      prefixIcon: Icon(Icons.lock_outline, color: spendly.colors.neutral400),
-                      suffixIcon: IconButton(
-                        icon: Icon(Icons.vpn_key_outlined, size: 20, color: spendly.colors.neutral400),
-                        tooltip: 'Suggest Strong Password',
-                        onPressed: () {
-                          final strongPass = CryptoUtils.generateStrongPassword();
-                          setState(() {
-                            _passwordController.text = strongPass;
-                          });
+                      const SizedBox(height: 16),
+                      Text(
+                        'Join Spendly',
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                              color: Theme.of(context).primaryColor,
+                              letterSpacing: -0.5,
+                            ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Start tracking expenses together with your family securely.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(color: Colors.grey[600]),
+                      ),
+                      const SizedBox(height: 28),
+                      TextFormField(
+                        controller: _nameController,
+                        decoration: const InputDecoration(
+                          labelText: 'Your Name (e.g. Dad, Mom, Preet)',
+                          prefixIcon: Icon(Icons.person_outline),
+                        ),
+                        validator: (value) {
+                          try {
+                            SchemaValidator.validateDisplayName(value);
+                            return null;
+                          } catch (e) {
+                            return e.toString();
+                          }
                         },
                       ),
-                      onChanged: (val) {
-                        setState(() {});
-                      },
-                      validator: (value) {
-                        try {
-                          SchemaValidator.validateStrictPassword(value);
-                          return null;
-                        } catch (e) {
-                          return e.toString();
-                        }
-                      },
-                    ),
-                    const SizedBox(height: 12),
-                    Builder(
-                      builder: (context) {
-                        final strength = _checkPasswordStrength(_passwordController.text);
-                        if (strength.isEmpty) return const SizedBox.shrink();
-                        final color = _getStrengthColor(strength, spendly);
-                        final percent = _getStrengthPercent(strength);
-                        
-                        String tip = 'Tip: Use at least 6 characters, including numbers and symbols.';
-                        if (strength == 'Medium') {
-                          tip = 'Tip: Add capital letters and symbols to make it Strong.';
-                        } else if (strength == 'Strong') {
-                          tip = 'Excellent! Your password is highly secure.';
-                        }
-
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  'Password Strength: $strength',
-                                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: color),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 6),
-                            SpendlyProgressBar(
-                              value: percent,
-                              color: color,
-                              height: 6,
-                            ),
-                            const SizedBox(height: 6),
-                            Text(
-                              tip,
-                              style: TextStyle(fontSize: 12, color: spendly.colors.neutral400),
-                            ),
-                          ],
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 28),
-                    SpendlyButton(
-                      text: 'CREATE ACCOUNT',
-                      variant: SpendlyButtonVariant.primary,
-                      size: SpendlyButtonSize.large,
-                      isLoading: authState.isLoading,
-                      onPressed: _submit,
-                    ),
-                    const SizedBox(height: 20),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          "Already have an account?",
-                          style: TextStyle(color: spendly.colors.neutral500),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _emailController,
+                        keyboardType: TextInputType.emailAddress,
+                        decoration: const InputDecoration(
+                          labelText: 'Email Address',
+                          prefixIcon: Icon(Icons.email_outlined),
                         ),
-                        TextButton(
-                          onPressed: () => context.pop(),
-                          child: Text(
-                            "Login",
-                            style: TextStyle(
-                              color: spendly.colors.primary,
-                              fontWeight: FontWeight.bold,
-                            ),
+                        validator: (value) {
+                          try {
+                            SchemaValidator.validateEmail(value);
+                            return null;
+                          } catch (e) {
+                            return e.toString();
+                          }
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _passwordController,
+                        obscureText: _obscurePassword,
+                        onChanged: (val) {
+                          setState(() {});
+                        },
+                        decoration: InputDecoration(
+                          labelText: 'Password',
+                          prefixIcon: const Icon(Icons.lock_outline),
+                          suffixIcon: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.vpn_key_outlined, size: 20),
+                                tooltip: 'Suggest Strong Password',
+                                onPressed: () {
+                                  final strongPass = CryptoUtils.generateStrongPassword();
+                                  setState(() {
+                                    _passwordController.text = strongPass;
+                                  });
+                                },
+                              ),
+                              IconButton(
+                                icon: Icon(
+                                  _obscurePassword ? Icons.visibility : Icons.visibility_off,
+                                  size: 20,
+                                ),
+                                tooltip: _obscurePassword ? 'Show Password' : 'Hide Password',
+                                onPressed: () {
+                                  setState(() {
+                                    _obscurePassword = !_obscurePassword;
+                                  });
+                                },
+                              ),
+                            ],
                           ),
                         ),
-                      ],
-                    ),
-                  ],
+                        validator: (value) {
+                          try {
+                            SchemaValidator.validateStrictPassword(value);
+                            return null;
+                          } catch (e) {
+                            return e.toString();
+                          }
+                        },
+                      ),
+                      const SizedBox(height: 12),
+                      Builder(
+                        builder: (context) {
+                          final strength = _checkPasswordStrength(_passwordController.text);
+                          if (strength.isEmpty) return const SizedBox.shrink();
+                          final color = _getStrengthColor(strength);
+                          final percent = _getStrengthPercent(strength);
+                          
+                          String tip = 'Tip: Use at least 6 characters, including numbers and symbols.';
+                          if (strength == 'Medium') {
+                            tip = 'Tip: Add capital letters and symbols to make it Strong.';
+                          } else if (strength == 'Strong') {
+                            tip = 'Excellent! Your password is highly secure.';
+                          }
+
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    'Password Strength: $strength',
+                                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: color),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 6),
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(4),
+                                child: LinearProgressIndicator(
+                                  value: percent,
+                                  minHeight: 6,
+                                  color: color,
+                                  backgroundColor: Colors.grey[200],
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                tip,
+                                style: const TextStyle(fontSize: 12, color: Colors.grey),
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 28),
+                      if (authState.isLoading)
+                        const Center(child: CircularProgressIndicator())
+                      else
+                        ElevatedButton(
+                          onPressed: _submit,
+                          child: const Text('CREATE ACCOUNT'),
+                        ),
+                      const SizedBox(height: 20),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            "Already have an account?",
+                            style: TextStyle(color: Colors.grey[600]),
+                          ),
+                          TextButton(
+                            onPressed: () => context.pop(),
+                            child: const Text("Login"),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),

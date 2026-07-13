@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:spendly/core/providers/state_providers.dart';
 import 'package:spendly/core/utils/schema_validator.dart';
-import 'package:spendly/core/widgets/spendly/spendly.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -16,6 +15,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  bool _obscurePassword = true;
 
   @override
   void dispose() {
@@ -37,20 +37,24 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     if (!success) {
       final error = ref.read(authProvider).error;
       if (error == 'USER_NOT_FOUND') {
-        SpendlySnackbar.show(
-          context: context,
-          message: 'This account does not exist. Please sign up first.',
-          isError: false,
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('This account does not exist. Please sign up first.'),
+            backgroundColor: Colors.amber,
+          ),
         );
+        // Automatically switch to the register screen and pre-fill the email!
         context.push('/register?email=${Uri.encodeComponent(email)}');
       } else {
-        SpendlySnackbar.show(
-          context: context,
-          message: error ?? 'Authentication failed',
-          isError: true,
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(error ?? 'Authentication failed'),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
         );
       }
     } else {
+      // Check if migration is pending
       final authState = ref.read(authProvider);
       if (authState.isMigrationPending) {
         context.go('/verify-email');
@@ -63,8 +67,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final authState = ref.watch(authProvider);
     final connection = ref.watch(connectionProvider);
     final isWide = MediaQuery.of(context).size.width > 720;
-    final spendly = context.spendly;
-    final theme = Theme.of(context);
 
     return Scaffold(
       body: Center(
@@ -72,145 +74,138 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           padding: const EdgeInsets.all(24.0),
           child: Container(
             constraints: BoxConstraints(maxWidth: isWide ? 460 : double.infinity),
-            child: SpendlyCard(
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Image.asset(
-                      'assets/images/logo.png',
-                      height: 72,
-                      width: 72,
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Spendly',
-                      textAlign: TextAlign.center,
-                      style: theme.textTheme.headlineLarge?.copyWith(
-                        color: spendly.colors.primary,
-                        letterSpacing: -0.5,
+            child: Card(
+              elevation: 4,
+              shadowColor: Colors.black.withOpacity(0.08),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 28.0, vertical: 36.0),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Image.asset(
+                        'assets/images/logo.png',
+                        height: 72,
+                        width: 72,
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Simple Family Expense Tracker',
-                      textAlign: TextAlign.center,
-                      style: theme.textTheme.bodyLarge?.copyWith(
-                        color: spendly.colors.neutral500,
+                      const SizedBox(height: 16),
+                      Text(
+                        'Spendly',
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                              color: Theme.of(context).primaryColor,
+                              letterSpacing: -0.5,
+                            ),
                       ),
-                    ),
-                    const SizedBox(height: 24),
-                    Center(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: spendly.colors.neutral100,
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Container(
-                              width: 8,
-                              height: 8,
-                              decoration: BoxDecoration(
-                                color: connection == ConnectionStatus.online
-                                    ? spendly.colors.success
-                                    : (connection == ConnectionStatus.sandbox ? Colors.blue : spendly.colors.warning),
-                                shape: BoxShape.circle,
-                              ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Simple Family Expense Tracker',
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                              color: Colors.grey[600],
                             ),
-                            const SizedBox(width: 8),
-                            Text(
-                              connection == ConnectionStatus.online
-                                  ? 'Connected to Supabase'
-                                  : (connection == ConnectionStatus.sandbox
-                                      ? 'Offline Sandbox (Local Mode)'
-                                      : 'Offline (No Connection)'),
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
-                                color: spendly.colors.neutral600,
-                              ),
-                            ),
-                          ],
+                      ),
+                      const SizedBox(height: 24),
+                      Center(
+                        child: Chip(
+                          avatar: CircleAvatar(
+                            backgroundColor: connection == ConnectionStatus.online
+                                ? Colors.green
+                                : (connection == ConnectionStatus.sandbox ? Colors.blue : Colors.amber),
+                            radius: 5,
+                          ),
+                          label: Text(
+                            connection == ConnectionStatus.online
+                                ? 'Connected to Supabase'
+                                : (connection == ConnectionStatus.sandbox
+                                    ? 'Offline Sandbox (Local Mode)'
+                                    : 'Offline (No Connection)'),
+                            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
+                          ),
+                          backgroundColor: Colors.grey[500]!.withOpacity(0.08),
+                          side: BorderSide.none,
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 28),
-                    SpendlyInputField(
-                      controller: _emailController,
-                      keyboardType: TextInputType.emailAddress,
-                      label: 'Email Address',
-                      prefixIcon: Icon(Icons.email_outlined, color: spendly.colors.neutral400),
-                      validator: (value) {
-                        try {
-                          SchemaValidator.validateEmail(value);
-                          return null;
-                        } catch (e) {
-                          return e.toString();
-                        }
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    SpendlyInputField(
-                      controller: _passwordController,
-                      isPassword: true,
-                      label: 'Password',
-                      prefixIcon: Icon(Icons.lock_outline, color: spendly.colors.neutral400),
-                      validator: (value) {
-                        try {
-                          SchemaValidator.validateBasicPassword(value);
-                          return null;
-                        } catch (e) {
-                          return e.toString();
-                        }
-                      },
-                    ),
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: TextButton(
-                        onPressed: () => context.push('/forgot-password'),
-                        child: Text(
-                          'Forgot Password?',
-                          style: TextStyle(
-                            color: spendly.colors.primary,
-                            fontWeight: FontWeight.w600,
+                      const SizedBox(height: 28),
+                      TextFormField(
+                        controller: _emailController,
+                        keyboardType: TextInputType.emailAddress,
+                        decoration: const InputDecoration(
+                          labelText: 'Email Address',
+                          prefixIcon: Icon(Icons.email_outlined),
+                        ),
+                        validator: (value) {
+                          try {
+                            SchemaValidator.validateEmail(value);
+                            return null;
+                          } catch (e) {
+                            return e.toString();
+                          }
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _passwordController,
+                        obscureText: _obscurePassword,
+                        decoration: InputDecoration(
+                          labelText: 'Password',
+                          prefixIcon: const Icon(Icons.lock_outline),
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _obscurePassword ? Icons.visibility : Icons.visibility_off,
+                              size: 20,
+                            ),
+                            tooltip: _obscurePassword ? 'Show Password' : 'Hide Password',
+                            onPressed: () {
+                              setState(() {
+                                _obscurePassword = !_obscurePassword;
+                              });
+                            },
                           ),
                         ),
+                        validator: (value) {
+                          try {
+                            SchemaValidator.validateBasicPassword(value);
+                            return null;
+                          } catch (e) {
+                            return e.toString();
+                          }
+                        },
                       ),
-                    ),
-                    const SizedBox(height: 16),
-                    SpendlyButton(
-                      text: 'LOGIN',
-                      variant: SpendlyButtonVariant.primary,
-                      size: SpendlyButtonSize.large,
-                      isLoading: authState.isLoading,
-                      onPressed: _submit,
-                    ),
-                    const SizedBox(height: 20),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          "Don't have an account?",
-                          style: TextStyle(color: spendly.colors.neutral500),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: TextButton(
+                          onPressed: () => context.push('/forgot-password'),
+                          child: const Text('Forgot Password?'),
                         ),
-                        TextButton(
-                          onPressed: () => context.push('/register'),
-                          child: Text(
-                            "Sign Up",
-                            style: TextStyle(
-                              color: spendly.colors.primary,
-                              fontWeight: FontWeight.bold,
-                            ),
+                      ),
+                      const SizedBox(height: 16),
+                      if (authState.isLoading)
+                        const Center(child: CircularProgressIndicator())
+                      else
+                        ElevatedButton(
+                          onPressed: _submit,
+                          child: const Text('LOGIN'),
+                        ),
+                      const SizedBox(height: 20),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            "Don't have an account?",
+                            style: TextStyle(color: Colors.grey[600]),
                           ),
-                        ),
-                      ],
-                    ),
-                  ],
+                          TextButton(
+                            onPressed: () => context.push('/register'),
+                            child: const Text("Sign Up"),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),

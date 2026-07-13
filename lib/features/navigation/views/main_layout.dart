@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:spendly/core/widgets/spendly/spendly.dart';
 import 'package:spendly/features/expenses/views/home_screen.dart';
 import 'package:spendly/features/expenses/views/add_expense_screen.dart';
 import 'package:spendly/features/analytics/presentation/pages/analytics_page.dart';
@@ -17,7 +16,6 @@ class MainLayout extends ConsumerWidget {
     final isWide = MediaQuery.of(context).size.width > 720;
 
     return Scaffold(
-      extendBody: true, // Allows content to show behind the floating navigation bar
       body: Row(
         children: [
           if (isWide)
@@ -79,7 +77,7 @@ class MainLayout extends ConsumerWidget {
       ),
       bottomNavigationBar: isWide
           ? null
-          : SpendlyFloatingNavigationBar(
+          : NavigationBar(
               selectedIndex: initialTab,
               onDestinationSelected: (index) {
                 switch (index) {
@@ -98,27 +96,28 @@ class MainLayout extends ConsumerWidget {
                 }
               },
               destinations: const [
-                SpendlyNavigationDestination(
-                  icon: Icons.home_outlined,
-                  selectedIcon: Icons.home,
+                NavigationDestination(
+                  icon: Icon(Icons.home_outlined),
+                  selectedIcon: Icon(Icons.home, color: Colors.white),
                   label: 'Home',
                 ),
-                SpendlyNavigationDestination(
-                  icon: Icons.add_circle_outline,
-                  selectedIcon: Icons.add_circle,
+                NavigationDestination(
+                  icon: Icon(Icons.add_circle_outline),
+                  selectedIcon: Icon(Icons.add_circle, color: Colors.white),
                   label: 'Add',
                 ),
-                SpendlyNavigationDestination(
-                  icon: Icons.bar_chart_outlined,
-                  selectedIcon: Icons.bar_chart,
+                NavigationDestination(
+                  icon: Icon(Icons.bar_chart_outlined),
+                  selectedIcon: Icon(Icons.bar_chart, color: Colors.white),
                   label: 'Analytics',
                 ),
-                SpendlyNavigationDestination(
-                  icon: Icons.person_outline,
-                  selectedIcon: Icons.person,
+                NavigationDestination(
+                  icon: Icon(Icons.person_outline),
+                  selectedIcon: Icon(Icons.person, color: Colors.white),
                   label: 'Profile',
                 ),
               ],
+              indicatorColor: Theme.of(context).primaryColor,
             ),
     );
   }
