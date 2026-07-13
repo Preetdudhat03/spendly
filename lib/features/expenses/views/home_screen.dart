@@ -332,7 +332,7 @@ class HomeScreen extends ConsumerWidget {
                           TextButton(
                             onPressed: () {
                               // Navigate to All Expenses view
-                              context.go('/expenses');
+                              context.push('/expenses');
                             },
                             child: const Text('View All'),
                           )

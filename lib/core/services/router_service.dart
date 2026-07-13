@@ -89,7 +89,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/expenses',
-        builder: (context, state) => const MainLayout(initialTab: 3),
+        builder: (context, state) => const AllExpensesScreen(),
       ),
       // Shell route or sub-paths for MainLayout
       GoRoute(
@@ -106,7 +106,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/profile',
-        builder: (context, state) => const MainLayout(initialTab: 4),
+        builder: (context, state) => const MainLayout(initialTab: 3),
       ),
       GoRoute(
         path: '/account-security',
