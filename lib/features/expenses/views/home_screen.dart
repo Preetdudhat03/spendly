@@ -9,11 +9,15 @@ import 'package:spendly/features/expenses/views/add_expense_screen.dart';
 import 'package:spendly/models/expense.dart';
 import 'package:spendly/core/widgets/shimmer_loading.dart';
 import 'package:spendly/features/expenses/widgets/expense_detail_modal.dart';
+import 'package:spendly/core/theme/spendly_tokens.dart';
+
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final spendlyTheme = context.spendly;
     final authState = ref.watch(authProvider);
     final familyState = ref.watch(familyProvider);
     final expenseState = ref.watch(expenseProvider);
