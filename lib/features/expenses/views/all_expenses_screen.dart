@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:spendly/core/providers/state_providers.dart';
 import 'package:spendly/core/widgets/shimmer_loading.dart';
+import 'package:spendly/core/widgets/spendly/spendly.dart';
 import 'package:spendly/models/expense.dart';
 import 'package:spendly/features/expenses/widgets/expense_detail_modal.dart';
 
@@ -43,8 +44,11 @@ class _AllExpensesScreenState extends ConsumerState<AllExpensesScreen> {
     super.dispose();
   }
 
+  @override
   Widget build(BuildContext context) {
     final expenseState = ref.watch(expenseProvider);
+    final spendly = context.spendly;
+    final theme = Theme.of(context);
 
     // Apply filtering & searching
     final filteredExpenses = expenseState.expenses.where((e) {
@@ -81,29 +85,19 @@ class _AllExpensesScreenState extends ConsumerState<AllExpensesScreen> {
           // Shared widgets
           Widget searchBar = Padding(
             padding: const EdgeInsets.all(16.0),
-            child: TextField(
+            child: SpendlySearchBar(
               controller: _searchController,
+              hint: 'Search description, member or amount...',
               onChanged: (val) {
                 setState(() {
                   _searchQuery = val;
                 });
               },
-              decoration: InputDecoration(
-                hintText: 'Search description, member or amount...',
-                prefixIcon: const Icon(Icons.search),
-                suffixIcon: _searchQuery.isNotEmpty
-                    ? IconButton(
-                        icon: const Icon(Icons.clear),
-                        onPressed: () {
-                          _searchController.clear();
-                          setState(() {
-                            _searchQuery = '';
-                          });
-                        },
-                      )
-                    : null,
-                contentPadding: const EdgeInsets.symmetric(vertical: 12.0),
-              ),
+              onClear: () {
+                setState(() {
+                  _searchQuery = '';
+                });
+              },
             ),
           );
 
@@ -118,17 +112,14 @@ class _AllExpensesScreenState extends ConsumerState<AllExpensesScreen> {
                 final isSelected = _selectedFilterCategory == cat['name'];
                 return Padding(
                   padding: const EdgeInsets.only(right: 8.0),
-                  child: FilterChip(
-                    avatar: Text(cat['emoji'] ?? '💰'),
-                    label: Text(cat['name'] ?? ''),
-                    selected: isSelected,
+                  child: SpendlyFilterChip(
+                    label: '${cat['emoji']} ${cat['name']}',
+                    isSelected: isSelected,
                     onSelected: (selected) {
                       setState(() {
                         _selectedFilterCategory = cat['name']!;
                       });
                     },
-                    selectedColor: Theme.of(context).primaryColor.withOpacity(0.2),
-                    checkmarkColor: Theme.of(context).primaryColor,
                   ),
                 );
               },
@@ -140,17 +131,14 @@ class _AllExpensesScreenState extends ConsumerState<AllExpensesScreen> {
             runSpacing: 8,
             children: _categories.map((cat) {
               final isSelected = _selectedFilterCategory == cat['name'];
-              return FilterChip(
-                avatar: Text(cat['emoji'] ?? '💰'),
-                label: Text(cat['name'] ?? ''),
-                selected: isSelected,
+              return SpendlyFilterChip(
+                label: '${cat['emoji']} ${cat['name']}',
+                isSelected: isSelected,
                 onSelected: (selected) {
                   setState(() {
                     _selectedFilterCategory = cat['name']!;
                   });
                 },
-                selectedColor: Theme.of(context).primaryColor.withOpacity(0.2),
-                checkmarkColor: Theme.of(context).primaryColor,
               );
             }).toList(),
           );
@@ -163,53 +151,36 @@ class _AllExpensesScreenState extends ConsumerState<AllExpensesScreen> {
             symbol: '₹',
           ).format(totalSpentFiltered);
 
-          Widget summaryPanel = Card(
-            margin: const EdgeInsets.all(16.0),
-            color: Theme.of(context).primaryColor.withOpacity(0.05),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-              side: BorderSide(color: Theme.of(context).primaryColor.withOpacity(0.15)),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Summary',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Theme.of(context).primaryColor,
+          Widget summaryPanel = SpendlyCard(
+            title: 'Summary',
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('Total Transactions:', style: TextStyle(color: spendly.colors.neutral500)),
+                    Text(
+                      '${filteredExpenses.length}',
+                      style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text('Total Transactions:', style: TextStyle(color: Colors.grey)),
-                      Text(
-                        '${filteredExpenses.length}',
-                        style: const TextStyle(fontWeight: FontWeight.bold),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('Filtered Spend:', style: TextStyle(color: spendly.colors.neutral500)),
+                    Text(
+                      formattedTotal,
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: spendly.colors.primary,
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text('Filtered Spend:', style: TextStyle(color: Colors.grey)),
-                      Text(
-                        formattedTotal,
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Theme.of(context).primaryColor,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+                    ),
+                  ],
+                ),
+              ],
             ),
           );
 
@@ -222,20 +193,10 @@ class _AllExpensesScreenState extends ConsumerState<AllExpensesScreen> {
                   ),
                 )
               : filteredExpenses.isEmpty
-                  ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.receipt_long_outlined, size: 64, color: Colors.grey[400]),
-                          const SizedBox(height: 16),
-                          Text(
-                            'No expenses found',
-                            style: TextStyle(fontSize: 18, color: Colors.grey[600], fontWeight: FontWeight.bold),
-                          ),
-                          const SizedBox(height: 6),
-                          const Text('Try adjusting filters or search query.', style: TextStyle(color: Colors.grey)),
-                        ],
-                      ),
+                  ? const SpendlyEmptyState(
+                      title: 'No expenses found',
+                      description: 'Try adjusting filters or search query.',
+                      icon: Icons.receipt_long_outlined,
                     )
                   : ListView.builder(
                       padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -247,7 +208,6 @@ class _AllExpensesScreenState extends ConsumerState<AllExpensesScreen> {
                         return Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // Sticky-style Date Header
                             Padding(
                               padding: const EdgeInsets.symmetric(vertical: 12.0),
                               child: Text(
@@ -255,23 +215,22 @@ class _AllExpensesScreenState extends ConsumerState<AllExpensesScreen> {
                                 style: TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.bold,
-                                  color: Theme.of(context).primaryColor,
+                                  color: spendly.colors.primary,
                                   letterSpacing: 0.5,
                                 ),
                               ),
                             ),
 
-                            // Card containing the day's expenses list
                             Card(
                               margin: EdgeInsets.zero,
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
+                                borderRadius: spendly.radius.large,
                               ),
                               child: ListView.separated(
                                 shrinkWrap: true,
                                 physics: const NeverScrollableScrollPhysics(),
                                 itemCount: groupItems.length,
-                                separatorBuilder: (context, index) => const Divider(height: 1, indent: 70),
+                                separatorBuilder: (context, index) => const SpendlyDivider(),
                                 itemBuilder: (context, index) {
                                   final exp = groupItems[index];
                                   final amtStr = NumberFormat.currency(
@@ -280,13 +239,15 @@ class _AllExpensesScreenState extends ConsumerState<AllExpensesScreen> {
                                     symbol: '₹',
                                   ).format(exp.amount);
 
+                                  final catColor = spendly.charts.getCategoryColor(exp.category);
+
                                   return ListTile(
                                     contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
                                     leading: CircleAvatar(
                                       radius: 22,
-                                      backgroundColor: getCategoryColor(exp.category).withOpacity(0.12),
+                                      backgroundColor: catColor.withOpacity(0.12),
                                       child: Text(
-                                        getCategoryEmoji(exp.category),
+                                        _getCategoryEmoji(exp.category),
                                         style: const TextStyle(fontSize: 20),
                                       ),
                                     ),
@@ -300,12 +261,12 @@ class _AllExpensesScreenState extends ConsumerState<AllExpensesScreen> {
                                         Container(
                                           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                           decoration: BoxDecoration(
-                                            color: Colors.grey[200],
+                                            color: theme.brightness == Brightness.dark ? Colors.white12 : Colors.grey[200],
                                             borderRadius: BorderRadius.circular(6),
                                           ),
                                           child: Text(
                                             exp.createdByName,
-                                            style: TextStyle(fontSize: 10, color: Colors.grey[700]),
+                                            style: TextStyle(fontSize: 10, color: spendly.colors.neutral500),
                                           ),
                                         ),
                                       ],
@@ -334,7 +295,6 @@ class _AllExpensesScreenState extends ConsumerState<AllExpensesScreen> {
             return Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Left Column: Search & Filters
                 Expanded(
                   flex: 4,
                   child: SingleChildScrollView(
@@ -355,14 +315,15 @@ class _AllExpensesScreenState extends ConsumerState<AllExpensesScreen> {
                           child: categoryFiltersWrap,
                         ),
                         const SizedBox(height: 16),
-                        summaryPanel,
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                          child: summaryPanel,
+                        ),
                       ],
                     ),
                   ),
                 ),
-                // Divider
-                VerticalDivider(width: 1, color: Colors.grey[300]),
-                // Right Column: Expenses List
+                VerticalDivider(width: 1, color: spendly.colors.neutral200),
                 Expanded(
                   flex: 6,
                   child: expensesListView,
@@ -396,5 +357,44 @@ class _AllExpensesScreenState extends ConsumerState<AllExpensesScreen> {
     }
     return formattedDate.toUpperCase();
   }
-}
 
+  String _getCategoryEmoji(String category) {
+    switch (category.toLowerCase()) {
+      case 'food':
+        return '🍔';
+      case 'groceries':
+        return '🛒';
+      case 'transport':
+      case 'fuel':
+      case 'petrol':
+        return '🚗';
+      case 'recharges':
+        return '📱';
+      case 'travel':
+        return '✈️';
+      case 'gas':
+        return '⛽';
+      case 'electricity':
+      case 'water':
+      case 'utility':
+        return '⚡';
+      case 'medical':
+        return '💊';
+      case 'insurances':
+        return '🛡️';
+      case 'shopping':
+        return '🛍️';
+      case 'rent':
+        return '🏠';
+      case 'entertainment':
+        return '🎬';
+      case 'education':
+        return '📚';
+      case 'college':
+      case 'collage':
+        return '🎓';
+      default:
+        return '💰';
+    }
+  }
+}
