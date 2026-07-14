@@ -123,7 +123,7 @@ class MainLayout extends ConsumerWidget {
                         boxShadow: [
                           BoxShadow(
                             color: Colors.black.withOpacity(0.15),
-                            blurRadius: 24,
+                            blurRadius: 50,
                             offset: const Offset(0, 8),
                           ),
                         ],
