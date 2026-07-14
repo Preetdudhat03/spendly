@@ -174,7 +174,7 @@ class MainLayout extends ConsumerWidget {
                                 label: 'Add',
                                 isSelected: initialTab == 1,
                               ),
-                              const SizedBox(width: 2),
+                              const SizedBox(width: 15),
                               _buildNavItem(
                                 context,
                                 index: 3,
