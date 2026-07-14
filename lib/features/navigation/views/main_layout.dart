@@ -77,48 +77,147 @@ class MainLayout extends ConsumerWidget {
       ),
       bottomNavigationBar: isWide
           ? null
-          : NavigationBar(
-              selectedIndex: initialTab,
-              onDestinationSelected: (index) {
-                switch (index) {
-                  case 0:
-                    context.go('/home');
-                    break;
-                  case 1:
-                    context.go('/add');
-                    break;
-                  case 2:
-                    context.go('/analytics');
-                    break;
-                  case 3:
-                    context.go('/profile');
-                    break;
-                }
-              },
-              destinations: const [
-                NavigationDestination(
-                  icon: Icon(Icons.home_outlined),
-                  selectedIcon: Icon(Icons.home, color: Colors.white),
-                  label: 'Home',
+          : SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
+                child: Container(
+                  clipBehavior: Clip.antiAlias,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(32),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.12),
+                        blurRadius: 16,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
+                  ),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? context.spendly.colors.neutral900.withOpacity(0.8)
+                            : Colors.white.withOpacity(0.85),
+                        borderRadius: BorderRadius.circular(32),
+                        border: BorderSide(
+                          color: Theme.of(context).brightness == Brightness.dark
+                              ? context.spendly.colors.neutral800.withOpacity(0.4)
+                              : context.spendly.colors.neutral200.withOpacity(0.4),
+                          width: 1.5,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: [
+                          _buildNavItem(
+                            context,
+                            index: 0,
+                            icon: Icons.home_outlined,
+                            selectedIcon: Icons.home,
+                            label: 'Home',
+                            isSelected: initialTab == 0,
+                          ),
+                          _buildNavItem(
+                            context,
+                            index: 1,
+                            icon: Icons.add_circle_outline,
+                            selectedIcon: Icons.add_circle,
+                            label: 'Add',
+                            isSelected: initialTab == 1,
+                          ),
+                          _buildNavItem(
+                            context,
+                            index: 2,
+                            icon: Icons.bar_chart_outlined,
+                            selectedIcon: Icons.bar_chart,
+                            label: 'Analytics',
+                            isSelected: initialTab == 2,
+                          ),
+                          _buildNavItem(
+                            context,
+                            index: 3,
+                            icon: Icons.person_outline,
+                            selectedIcon: Icons.person,
+                            label: 'Profile',
+                            isSelected: initialTab == 3,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
-                NavigationDestination(
-                  icon: Icon(Icons.add_circle_outline),
-                  selectedIcon: Icon(Icons.add_circle, color: Colors.white),
-                  label: 'Add',
-                ),
-                NavigationDestination(
-                  icon: Icon(Icons.bar_chart_outlined),
-                  selectedIcon: Icon(Icons.bar_chart, color: Colors.white),
-                  label: 'Analytics',
-                ),
-                NavigationDestination(
-                  icon: Icon(Icons.person_outline),
-                  selectedIcon: Icon(Icons.person, color: Colors.white),
-                  label: 'Profile',
-                ),
-              ],
-              indicatorColor: Theme.of(context).primaryColor,
+              ),
             ),
+    );
+  }
+
+  Widget _buildNavItem(
+    BuildContext context, {
+    required int index,
+    required IconData icon,
+    required IconData selectedIcon,
+    required String label,
+    required bool isSelected,
+  }) {
+    final colors = context.spendly.colors;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final activeBgColor = isDark
+        ? colors.primary.withOpacity(0.2)
+        : colors.primary.withOpacity(0.12);
+        
+    final activeColor = colors.primary;
+    final inactiveColor = isDark ? colors.neutral400 : colors.neutral500;
+
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () {
+        switch (index) {
+          case 0:
+            context.go('/home');
+            break;
+          case 1:
+            context.go('/add');
+            break;
+          case 2:
+            context.go('/analytics');
+            break;
+          case 3:
+            context.go('/profile');
+            break;
+        }
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeInOut,
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        decoration: BoxDecoration(
+          color: isSelected ? activeBgColor : Colors.transparent,
+          shape: BoxShape.circle,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              isSelected ? selectedIcon : icon,
+              color: isSelected ? activeColor : inactiveColor,
+              size: 24,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: TextStyle(
+                color: isSelected ? activeColor : inactiveColor,
+                fontSize: 11,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
