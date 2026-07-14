@@ -258,7 +258,7 @@ class MainLayout extends ConsumerWidget {
           color: isAddButton
               ? colors.primary
               : (isSelected ? activeBgColor : Colors.transparent),
-          borderRadius: BorderRadius.circular(30),
+          borderRadius: BorderRadius.circular(50),
           boxShadow: isAddButton
               ? [
                   BoxShadow(
