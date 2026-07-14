@@ -231,7 +231,10 @@ class MainLayout extends ConsumerWidget {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         curve: Curves.easeInOut,
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        padding: EdgeInsets.symmetric(
+          horizontal: isSelected ? 12.0 : 8.0,
+          vertical: 8.0,
+        ),
         decoration: BoxDecoration(
           color: isSelected ? activeBgColor : Colors.transparent,
           borderRadius: BorderRadius.circular(24),
@@ -243,14 +246,14 @@ class MainLayout extends ConsumerWidget {
             Icon(
               isSelected ? selectedIcon : icon,
               color: isSelected ? activeColor : inactiveColor,
-              size: 24,
+              size: 22,
             ),
             const SizedBox(height: 4),
             Text(
               label,
               style: TextStyle(
                 color: isSelected ? activeColor : inactiveColor,
-                fontSize: 11,
+                fontSize: 10,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
               ),
             ),
