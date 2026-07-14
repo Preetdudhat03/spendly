@@ -142,7 +142,7 @@ class MainLayout extends ConsumerWidget {
                               const SizedBox(width: 2),
                               _buildNavItem(
                                 context,
-                                index: 2,
+                                index: 1,
                                 icon: Icons.add_circle_outline,
                                 selectedIcon: Icons.add_circle,
                                 label: 'Add',
@@ -151,7 +151,7 @@ class MainLayout extends ConsumerWidget {
                               const SizedBox(width: 2),
                               _buildNavItem(
                                 context,
-                                index: 1,
+                                index: 2,
                                 icon: Icons.bar_chart_outlined,
                                 selectedIcon: Icons.bar_chart,
                                 label: 'Analytics',
