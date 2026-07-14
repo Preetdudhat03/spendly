@@ -165,6 +165,15 @@ class MainLayout extends ConsumerWidget {
                                 label: 'Analytics',
                                 isSelected: initialTab == 2,
                               ),
+                              const SizedBox(width: 15),
+                              _buildNavItem(
+                                context,
+                                index: 1,
+                                icon: Icons.add_circle_outline,
+                                selectedIcon: Icons.add_circle,
+                                label: 'Add',
+                                isSelected: initialTab == 1,
+                              ),
                               const SizedBox(width: 2),
                               _buildNavItem(
                                 context,
@@ -183,15 +192,7 @@ class MainLayout extends ConsumerWidget {
                                 label: 'Profile',
                                 isSelected: initialTab == 4,
                               ),
-                              const SizedBox(width: 6),
-                              _buildNavItem(
-                                context,
-                                index: 1,
-                                icon: Icons.add_circle_outline,
-                                selectedIcon: Icons.add_circle,
-                                label: 'Add',
-                                isSelected: initialTab == 1,
-                              ),
+                              
                             ],
                           ),
                         ),
