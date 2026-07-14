@@ -6,6 +6,7 @@ import 'package:spendly/core/theme/spendly_tokens.dart';
 import 'package:spendly/features/expenses/views/home_screen.dart';
 import 'package:spendly/features/expenses/views/add_expense_screen.dart';
 import 'package:spendly/features/analytics/presentation/pages/analytics_page.dart';
+import 'package:spendly/features/expenses/views/all_expenses_screen.dart';
 import 'package:spendly/features/profile/views/profile_screen.dart';
 
 class MainLayout extends ConsumerWidget {
