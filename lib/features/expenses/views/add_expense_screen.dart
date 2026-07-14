@@ -173,7 +173,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
               child: Container(
                 constraints: BoxConstraints(maxWidth: isWide ? 600 : double.infinity),
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 10.0),
+                  padding: EdgeInsets.fromLTRB(24.0, 10.0, 24.0, isWide ? 10.0 : 100.0),
               child: Form(
                 key: _formKey,
                 child: Column(
