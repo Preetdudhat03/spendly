@@ -281,7 +281,7 @@ class MainLayout extends ConsumerWidget {
               size: isAddButton ? 30 : 26,
             ),
             const SizedBox(height: 4),
-            Text(
+            /*Text(
               label,
               style: TextStyle(
                 color: isAddButton
@@ -290,7 +290,7 @@ class MainLayout extends ConsumerWidget {
                 fontSize: isAddButton ? 11 : 10,
                 fontWeight: FontWeight.bold,
               ),
-            ),
+            ),*/
           ],
         ),
       ),
