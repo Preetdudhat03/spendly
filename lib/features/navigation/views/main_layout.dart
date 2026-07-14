@@ -102,7 +102,7 @@ class MainLayout extends ConsumerWidget {
                     child: Container(
                       clipBehavior: Clip.antiAlias,
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(32),
+                        borderRadius: BorderRadius.circular(50),
                         boxShadow: [
                           BoxShadow(
                             color: Colors.black.withOpacity(0.15),
@@ -119,7 +119,7 @@ class MainLayout extends ConsumerWidget {
                             color: Theme.of(context).brightness == Brightness.dark
                                 ? context.spendly.colors.neutral900.withOpacity(0.8)
                                 : Colors.white.withOpacity(0.85),
-                            borderRadius: BorderRadius.circular(32),
+                            borderRadius: BorderRadius.circular(50),
                             border: Border.all(
                               color: Theme.of(context).brightness == Brightness.dark
                                   ? context.spendly.colors.neutral800.withOpacity(0.4)
@@ -142,7 +142,7 @@ class MainLayout extends ConsumerWidget {
                               const SizedBox(width: 2),
                               _buildNavItem(
                                 context,
-                                index: 1,
+                                index: 2,
                                 icon: Icons.add_circle_outline,
                                 selectedIcon: Icons.add_circle,
                                 label: 'Add',
@@ -151,7 +151,7 @@ class MainLayout extends ConsumerWidget {
                               const SizedBox(width: 2),
                               _buildNavItem(
                                 context,
-                                index: 2,
+                                index: 1,
                                 icon: Icons.bar_chart_outlined,
                                 selectedIcon: Icons.bar_chart,
                                 label: 'Analytics',
