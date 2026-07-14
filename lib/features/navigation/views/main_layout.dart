@@ -97,6 +97,11 @@ class _MainLayoutState extends ConsumerState<MainLayout> {
                       label: Text('Analytics'),
                     ),
                     NavigationRailDestination(
+                      icon: Icon(Icons.add_circle_outline),
+                      selectedIcon: Icon(Icons.add_circle, color: Colors.white),
+                      label: Text('Add'),
+                    ),
+                    NavigationRailDestination(
                       icon: Icon(Icons.receipt_long_outlined),
                       selectedIcon: Icon(Icons.receipt_long, color: Colors.white),
                       label: Text('Expenses'),
@@ -106,11 +111,7 @@ class _MainLayoutState extends ConsumerState<MainLayout> {
                       selectedIcon: Icon(Icons.person, color: Colors.white),
                       label: Text('Profile'),
                     ),
-                    NavigationRailDestination(
-                      icon: Icon(Icons.add_circle_outline),
-                      selectedIcon: Icon(Icons.add_circle, color: Colors.white),
-                      label: Text('Add'),
-                    ),
+                    
                   ],
                 ),
               Expanded(
