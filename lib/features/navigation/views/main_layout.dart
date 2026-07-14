@@ -252,7 +252,7 @@ class MainLayout extends ConsumerWidget {
         curve: Curves.easeInOut,
         padding: EdgeInsets.symmetric(
           horizontal: isAddButton ? 18.0 : (isSelected ? 12.0 : 8.0),
-          vertical: isAddButton ? 10.0 : 8.0,
+          vertical: isAddButton ? 8.0 : 8.0,
         ),
         decoration: BoxDecoration(
           color: isAddButton
