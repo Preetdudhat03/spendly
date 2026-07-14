@@ -119,7 +119,7 @@ class MainLayout extends ConsumerWidget {
                     child: Container(
                       clipBehavior: Clip.antiAlias,
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(50),
+                        borderRadius: BorderRadius.circular(100),
                         boxShadow: [
                           BoxShadow(
                             color: Colors.black.withOpacity(0.15),
@@ -136,7 +136,7 @@ class MainLayout extends ConsumerWidget {
                             color: Theme.of(context).brightness == Brightness.dark
                                 ? context.spendly.colors.neutral900.withOpacity(0.8)
                                 : Colors.white.withOpacity(0.85),
-                            borderRadius: BorderRadius.circular(50),
+                            borderRadius: BorderRadius.circular(100),
                             border: Border.all(
                               color: Theme.of(context).brightness == Brightness.dark
                                   ? context.spendly.colors.neutral800.withOpacity(0.4)
