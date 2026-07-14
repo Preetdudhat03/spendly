@@ -18,7 +18,7 @@ class MainLayout extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isWide = MediaQuery.of(context).size.width > 720;
 
-    int? getVisualIndex(int tabIndex) {
+    int getVisualIndex(int tabIndex) {
       switch (tabIndex) {
         case 0:
           return 0; // Home
@@ -28,8 +28,10 @@ class MainLayout extends ConsumerWidget {
           return 2; // Expenses
         case 4:
           return 3; // Profile
+        case 1:
+          return 4; // Add
         default:
-          return null;
+          return 0;
       }
     }
 
@@ -55,6 +57,9 @@ class MainLayout extends ConsumerWidget {
                       case 3:
                         context.go('/profile');
                         break;
+                      case 4:
+                        context.go('/add');
+                        break;
                     }
                   },
                   labelType: NavigationRailLabelType.all,
@@ -79,6 +84,11 @@ class MainLayout extends ConsumerWidget {
                       icon: Icon(Icons.person_outline),
                       selectedIcon: Icon(Icons.person, color: Colors.white),
                       label: Text('Profile'),
+                    ),
+                    NavigationRailDestination(
+                      icon: Icon(Icons.add_circle_outline),
+                      selectedIcon: Icon(Icons.add_circle, color: Colors.white),
+                      label: Text('Add'),
                     ),
                   ],
                 ),
@@ -173,6 +183,15 @@ class MainLayout extends ConsumerWidget {
                                 label: 'Profile',
                                 isSelected: initialTab == 4,
                               ),
+                              const SizedBox(width: 6),
+                              _buildNavItem(
+                                context,
+                                index: 1,
+                                icon: Icons.add_circle_outline,
+                                selectedIcon: Icons.add_circle,
+                                label: 'Add',
+                                isSelected: initialTab == 1,
+                              ),
                             ],
                           ),
                         ),
@@ -184,18 +203,6 @@ class MainLayout extends ConsumerWidget {
             ),
         ],
       ),
-      floatingActionButton: !isWide
-          ? Container(
-              margin: const EdgeInsets.only(bottom: 76),
-              child: FloatingActionButton(
-                onPressed: () => context.go('/add'),
-                backgroundColor: context.spendly.colors.primary,
-                elevation: 6,
-                shape: const CircleBorder(),
-                child: const Icon(Icons.add, color: Colors.white, size: 28),
-              ),
-            )
-          : null,
     );
   }
 
@@ -209,6 +216,7 @@ class MainLayout extends ConsumerWidget {
   }) {
     final colors = context.spendly.colors;
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isAddButton = index == 1;
 
     final activeBgColor = isDark
         ? colors.primary.withOpacity(0.2)
@@ -242,12 +250,23 @@ class MainLayout extends ConsumerWidget {
         duration: const Duration(milliseconds: 200),
         curve: Curves.easeInOut,
         padding: EdgeInsets.symmetric(
-          horizontal: isSelected ? 12.0 : 8.0,
-          vertical: 8.0,
+          horizontal: isAddButton ? 18.0 : (isSelected ? 12.0 : 8.0),
+          vertical: isAddButton ? 10.0 : 8.0,
         ),
         decoration: BoxDecoration(
-          color: isSelected ? activeBgColor : Colors.transparent,
-          borderRadius: BorderRadius.circular(24),
+          color: isAddButton
+              ? colors.primary
+              : (isSelected ? activeBgColor : Colors.transparent),
+          borderRadius: BorderRadius.circular(30),
+          boxShadow: isAddButton
+              ? [
+                  BoxShadow(
+                    color: colors.primary.withOpacity(0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  ),
+                ]
+              : null,
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -255,16 +274,20 @@ class MainLayout extends ConsumerWidget {
           children: [
             Icon(
               isSelected ? selectedIcon : icon,
-              color: isSelected ? activeColor : inactiveColor,
-              size: 22,
+              color: isAddButton
+                  ? Colors.white
+                  : (isSelected ? activeColor : inactiveColor),
+              size: isAddButton ? 26 : 22,
             ),
             const SizedBox(height: 4),
             Text(
               label,
               style: TextStyle(
-                color: isSelected ? activeColor : inactiveColor,
-                fontSize: 10,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                color: isAddButton
+                    ? Colors.white
+                    : (isSelected ? activeColor : inactiveColor),
+                fontSize: isAddButton ? 11 : 10,
+                fontWeight: FontWeight.bold,
               ),
             ),
           ],
