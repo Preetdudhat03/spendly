@@ -197,7 +197,7 @@ class MainLayout extends ConsumerWidget {
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
         decoration: BoxDecoration(
           color: isSelected ? activeBgColor : Colors.transparent,
-          shape: BoxShape.circle,
+          borderRadius: BorderRadius.circular(24),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
