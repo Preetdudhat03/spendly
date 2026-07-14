@@ -113,7 +113,7 @@ class MainLayout extends ConsumerWidget {
               bottom: 0,
               child: SafeArea(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+                  padding: const EdgeInsets.fromLTRB(24, 0, 24, 50),
                   child: Align(
                     alignment: Alignment.bottomCenter,
                     child: Container(
