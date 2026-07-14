@@ -278,7 +278,7 @@ class MainLayout extends ConsumerWidget {
               color: isAddButton
                   ? Colors.white
                   : (isSelected ? activeColor : inactiveColor),
-              size: isAddButton ? 26 : 22,
+              size: isAddButton ? 30 : 26,
             ),
             const SizedBox(height: 4),
             Text(
@@ -287,7 +287,7 @@ class MainLayout extends ConsumerWidget {
                 color: isAddButton
                     ? Colors.white
                     : (isSelected ? activeColor : inactiveColor),
-                fontSize: isAddButton ? 11 : 10,
+                fontSize: isAddButton ? 17 : 16,
                 fontWeight: FontWeight.bold,
               ),
             ),
