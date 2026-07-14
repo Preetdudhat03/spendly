@@ -287,7 +287,7 @@ class MainLayout extends ConsumerWidget {
                 color: isAddButton
                     ? Colors.white
                     : (isSelected ? activeColor : inactiveColor),
-                fontSize: isAddButton ? 17 : 16,
+                fontSize: isAddButton ? 11 : 10,
                 fontWeight: FontWeight.bold,
               ),
             ),
