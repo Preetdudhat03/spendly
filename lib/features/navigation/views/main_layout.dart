@@ -38,6 +38,9 @@ class MainLayout extends ConsumerWidget {
                         context.go('/analytics');
                         break;
                       case 3:
+                        context.go('/expenses');
+                        break;
+                      case 4:
                         context.go('/profile');
                         break;
                     }
@@ -61,6 +64,11 @@ class MainLayout extends ConsumerWidget {
                       label: Text('Analytics'),
                     ),
                     NavigationRailDestination(
+                      icon: Icon(Icons.receipt_long_outlined),
+                      selectedIcon: Icon(Icons.receipt_long, color: Colors.white),
+                      label: Text('Expenses'),
+                    ),
+                    NavigationRailDestination(
                       icon: Icon(Icons.person_outline),
                       selectedIcon: Icon(Icons.person, color: Colors.white),
                       label: Text('Profile'),
@@ -74,6 +82,7 @@ class MainLayout extends ConsumerWidget {
                     HomeScreen(),
                     AddExpenseScreen(),
                     AnalyticsPage(),
+                    AllExpensesScreen(),
                     ProfileScreen(),
                   ],
                 ),
@@ -152,10 +161,19 @@ class MainLayout extends ConsumerWidget {
                               _buildNavItem(
                                 context,
                                 index: 3,
+                                icon: Icons.receipt_long_outlined,
+                                selectedIcon: Icons.receipt_long,
+                                label: 'Expenses',
+                                isSelected: initialTab == 3,
+                              ),
+                              const SizedBox(width: 8),
+                              _buildNavItem(
+                                context,
+                                index: 4,
                                 icon: Icons.person_outline,
                                 selectedIcon: Icons.person,
                                 label: 'Profile',
-                                isSelected: initialTab == 3,
+                                isSelected: initialTab == 4,
                               ),
                             ],
                           ),
