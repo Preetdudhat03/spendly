@@ -82,37 +82,9 @@ class MainLayout extends ConsumerWidget {
           : SafeArea(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
-                child: Container(
-                  clipBehavior: Clip.antiAlias,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(32),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.12),
-                        blurRadius: 16,
-                        offset: const Offset(0, 8),
-                      ),
-                    ],
-                  ),
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).brightness == Brightness.dark
-                            ? context.spendly.colors.neutral900.withOpacity(0.8)
-                            : Colors.white.withOpacity(0.85),
-                        borderRadius: BorderRadius.circular(32),
-                        border: Border.all(
-                          color: Theme.of(context).brightness == Brightness.dark
-                              ? context.spendly.colors.neutral800.withOpacity(0.4)
-                              : context.spendly.colors.neutral200.withOpacity(0.4),
-                          width: 1.5,
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: [
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
                           _buildNavItem(
                             context,
                             index: 0,
@@ -147,9 +119,6 @@ class MainLayout extends ConsumerWidget {
                           ),
                         ],
                       ),
-                    ),
-                  ),
-                ),
               ),
             ),
     );
