@@ -119,7 +119,7 @@ class HomeScreen extends ConsumerWidget {
               },
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+                padding: const EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 100.0),
                 child: Builder(
                 builder: (context) {
                   final width = MediaQuery.of(context).size.width;

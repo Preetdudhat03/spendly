@@ -18,141 +18,146 @@ class MainLayout extends ConsumerWidget {
     final isWide = MediaQuery.of(context).size.width > 720;
 
     return Scaffold(
-      extendBody: true,
-      body: Row(
+      body: Stack(
         children: [
-          if (isWide)
-            NavigationRail(
-              selectedIndex: initialTab,
-              onDestinationSelected: (index) {
-                switch (index) {
-                  case 0:
-                    context.go('/home');
-                    break;
-                  case 1:
-                    context.go('/add');
-                    break;
-                  case 2:
-                    context.go('/analytics');
-                    break;
-                  case 3:
-                    context.go('/profile');
-                    break;
-                }
-              },
-              labelType: NavigationRailLabelType.all,
-              indicatorColor: Theme.of(context).primaryColor,
-              destinations: const [
-                NavigationRailDestination(
-                  icon: Icon(Icons.home_outlined),
-                  selectedIcon: Icon(Icons.home, color: Colors.white),
-                  label: Text('Home'),
-                ),
-                NavigationRailDestination(
-                  icon: Icon(Icons.add_circle_outline),
-                  selectedIcon: Icon(Icons.add_circle, color: Colors.white),
-                  label: Text('Add'),
-                ),
-                NavigationRailDestination(
-                  icon: Icon(Icons.bar_chart_outlined),
-                  selectedIcon: Icon(Icons.bar_chart, color: Colors.white),
-                  label: Text('Analytics'),
-                ),
-                NavigationRailDestination(
-                  icon: Icon(Icons.person_outline),
-                  selectedIcon: Icon(Icons.person, color: Colors.white),
-                  label: Text('Profile'),
-                ),
-              ],
-            ),
-          Expanded(
-            child: IndexedStack(
-              index: initialTab,
-              children: const [
-                HomeScreen(),
-                AddExpenseScreen(),
-                AnalyticsPage(),
-                ProfileScreen(),
-              ],
-            ),
-          ),
-        ],
-      ),
-      bottomNavigationBar: isWide
-          ? null
-          : SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
-                child: Align(
-                  alignment: Alignment.bottomCenter,
-                  child: Container(
-                    clipBehavior: Clip.antiAlias,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(32),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.15),
-                          blurRadius: 24,
-                          offset: const Offset(0, 8),
-                        ),
-                      ],
+          Row(
+            children: [
+              if (isWide)
+                NavigationRail(
+                  selectedIndex: initialTab,
+                  onDestinationSelected: (index) {
+                    switch (index) {
+                      case 0:
+                        context.go('/home');
+                        break;
+                      case 1:
+                        context.go('/add');
+                        break;
+                      case 2:
+                        context.go('/analytics');
+                        break;
+                      case 3:
+                        context.go('/profile');
+                        break;
+                    }
+                  },
+                  labelType: NavigationRailLabelType.all,
+                  indicatorColor: Theme.of(context).primaryColor,
+                  destinations: const [
+                    NavigationRailDestination(
+                      icon: Icon(Icons.home_outlined),
+                      selectedIcon: Icon(Icons.home, color: Colors.white),
+                      label: Text('Home'),
                     ),
-                    child: BackdropFilter(
-                      filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).brightness == Brightness.dark
-                              ? context.spendly.colors.neutral900.withOpacity(0.8)
-                              : Colors.white.withOpacity(0.85),
-                          borderRadius: BorderRadius.circular(32),
-                          border: Border.all(
-                            color: Theme.of(context).brightness == Brightness.dark
-                                ? context.spendly.colors.neutral800.withOpacity(0.4)
-                                : context.spendly.colors.neutral200.withOpacity(0.4),
-                            width: 1.5,
+                    NavigationRailDestination(
+                      icon: Icon(Icons.add_circle_outline),
+                      selectedIcon: Icon(Icons.add_circle, color: Colors.white),
+                      label: Text('Add'),
+                    ),
+                    NavigationRailDestination(
+                      icon: Icon(Icons.bar_chart_outlined),
+                      selectedIcon: Icon(Icons.bar_chart, color: Colors.white),
+                      label: Text('Analytics'),
+                    ),
+                    NavigationRailDestination(
+                      icon: Icon(Icons.person_outline),
+                      selectedIcon: Icon(Icons.person, color: Colors.white),
+                      label: Text('Profile'),
+                    ),
+                  ],
+                ),
+              Expanded(
+                child: IndexedStack(
+                  index: initialTab,
+                  children: const [
+                    HomeScreen(),
+                    AddExpenseScreen(),
+                    AnalyticsPage(),
+                    ProfileScreen(),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          if (!isWide)
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
+                  child: Align(
+                    alignment: Alignment.bottomCenter,
+                    child: Container(
+                      clipBehavior: Clip.antiAlias,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(32),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.15),
+                            blurRadius: 24,
+                            offset: const Offset(0, 8),
                           ),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            _buildNavItem(
-                              context,
-                              index: 0,
-                              icon: Icons.home_outlined,
-                              selectedIcon: Icons.home,
-                              label: 'Home',
-                              isSelected: initialTab == 0,
+                        ],
+                      ),
+                      child: BackdropFilter(
+                        filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).brightness == Brightness.dark
+                                ? context.spendly.colors.neutral900.withOpacity(0.8)
+                                : Colors.white.withOpacity(0.85),
+                            borderRadius: BorderRadius.circular(32),
+                            border: Border.all(
+                              color: Theme.of(context).brightness == Brightness.dark
+                                  ? context.spendly.colors.neutral800.withOpacity(0.4)
+                                  : context.spendly.colors.neutral200.withOpacity(0.4),
+                              width: 1.5,
                             ),
-                            const SizedBox(width: 8),
-                            _buildNavItem(
-                              context,
-                              index: 1,
-                              icon: Icons.add_circle_outline,
-                              selectedIcon: Icons.add_circle,
-                              label: 'Add',
-                              isSelected: initialTab == 1,
-                            ),
-                            const SizedBox(width: 8),
-                            _buildNavItem(
-                              context,
-                              index: 2,
-                              icon: Icons.bar_chart_outlined,
-                              selectedIcon: Icons.bar_chart,
-                              label: 'Analytics',
-                              isSelected: initialTab == 2,
-                            ),
-                            const SizedBox(width: 8),
-                            _buildNavItem(
-                              context,
-                              index: 3,
-                              icon: Icons.person_outline,
-                              selectedIcon: Icons.person,
-                              label: 'Profile',
-                              isSelected: initialTab == 3,
-                            ),
-                          ],
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              _buildNavItem(
+                                context,
+                                index: 0,
+                                icon: Icons.home_outlined,
+                                selectedIcon: Icons.home,
+                                label: 'Home',
+                                isSelected: initialTab == 0,
+                              ),
+                              const SizedBox(width: 8),
+                              _buildNavItem(
+                                context,
+                                index: 1,
+                                icon: Icons.add_circle_outline,
+                                selectedIcon: Icons.add_circle,
+                                label: 'Add',
+                                isSelected: initialTab == 1,
+                              ),
+                              const SizedBox(width: 8),
+                              _buildNavItem(
+                                context,
+                                index: 2,
+                                icon: Icons.bar_chart_outlined,
+                                selectedIcon: Icons.bar_chart,
+                                label: 'Analytics',
+                                isSelected: initialTab == 2,
+                              ),
+                              const SizedBox(width: 8),
+                              _buildNavItem(
+                                context,
+                                index: 3,
+                                icon: Icons.person_outline,
+                                selectedIcon: Icons.person,
+                                label: 'Profile',
+                                isSelected: initialTab == 3,
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -160,6 +165,8 @@ class MainLayout extends ConsumerWidget {
                 ),
               ),
             ),
+        ],
+      ),
     );
   }
 
