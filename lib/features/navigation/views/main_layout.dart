@@ -114,7 +114,7 @@ class MainLayout extends ConsumerWidget {
                       child: BackdropFilter(
                         filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
                         child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                          padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
                           decoration: BoxDecoration(
                             color: Theme.of(context).brightness == Brightness.dark
                                 ? context.spendly.colors.neutral900.withOpacity(0.8)
@@ -139,7 +139,7 @@ class MainLayout extends ConsumerWidget {
                                 label: 'Home',
                                 isSelected: initialTab == 0,
                               ),
-                              const SizedBox(width: 8),
+                              const SizedBox(width: 2),
                               _buildNavItem(
                                 context,
                                 index: 1,
@@ -148,7 +148,7 @@ class MainLayout extends ConsumerWidget {
                                 label: 'Add',
                                 isSelected: initialTab == 1,
                               ),
-                              const SizedBox(width: 8),
+                              const SizedBox(width: 2),
                               _buildNavItem(
                                 context,
                                 index: 2,
@@ -157,7 +157,7 @@ class MainLayout extends ConsumerWidget {
                                 label: 'Analytics',
                                 isSelected: initialTab == 2,
                               ),
-                              const SizedBox(width: 8),
+                              const SizedBox(width: 2),
                               _buildNavItem(
                                 context,
                                 index: 3,
@@ -166,7 +166,7 @@ class MainLayout extends ConsumerWidget {
                                 label: 'Expenses',
                                 isSelected: initialTab == 3,
                               ),
-                              const SizedBox(width: 8),
+                              const SizedBox(width: 2),
                               _buildNavItem(
                                 context,
                                 index: 4,
