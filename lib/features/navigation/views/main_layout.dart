@@ -131,7 +131,7 @@ class MainLayout extends ConsumerWidget {
                       child: BackdropFilter(
                         filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
                         child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 14),
+                          padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
                           decoration: BoxDecoration(
                             color: Theme.of(context).brightness == Brightness.dark
                                 ? context.spendly.colors.neutral900.withOpacity(0.8)
