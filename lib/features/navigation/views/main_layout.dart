@@ -156,7 +156,7 @@ class MainLayout extends ConsumerWidget {
                                 label: 'Home',
                                 isSelected: initialTab == 0,
                               ),
-                              const SizedBox(width: 2),
+                              const SizedBox(width: 5),
                               _buildNavItem(
                                 context,
                                 index: 2,
@@ -183,7 +183,7 @@ class MainLayout extends ConsumerWidget {
                                 label: 'Expenses',
                                 isSelected: initialTab == 3,
                               ),
-                              const SizedBox(width: 2),
+                              const SizedBox(width: 5),
                               _buildNavItem(
                                 context,
                                 index: 4,
