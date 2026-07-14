@@ -89,24 +89,34 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/expenses',
-        builder: (context, state) => const MainLayout(initialTab: 3),
+        pageBuilder: (context, state) => const NoTransitionPage(
+          child: MainLayout(initialTab: 3),
+        ),
       ),
       // Shell route or sub-paths for MainLayout
       GoRoute(
         path: '/home',
-        builder: (context, state) => const MainLayout(initialTab: 0),
+        pageBuilder: (context, state) => const NoTransitionPage(
+          child: MainLayout(initialTab: 0),
+        ),
       ),
       GoRoute(
         path: '/add',
-        builder: (context, state) => const MainLayout(initialTab: 1),
+        pageBuilder: (context, state) => const NoTransitionPage(
+          child: MainLayout(initialTab: 1),
+        ),
       ),
       GoRoute(
         path: '/analytics',
-        builder: (context, state) => const MainLayout(initialTab: 2),
+        pageBuilder: (context, state) => const NoTransitionPage(
+          child: MainLayout(initialTab: 2),
+        ),
       ),
       GoRoute(
         path: '/profile',
-        builder: (context, state) => const MainLayout(initialTab: 4),
+        pageBuilder: (context, state) => const NoTransitionPage(
+          child: MainLayout(initialTab: 4),
+        ),
       ),
       GoRoute(
         path: '/account-security',
