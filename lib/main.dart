@@ -108,7 +108,7 @@ class ConnectionListenerWidget extends ConsumerWidget {
     ref.watch(syncServiceProvider);
 
     // Listen to connection changes to show Toast Messages globally
-    ref.listen<ConnectionStatus>(connectionProvider, (previous, next) {
+    {/*ref.listen<ConnectionStatus>(connectionProvider, (previous, next) {
       if (next == ConnectionStatus.offline) {
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
         ScaffoldMessenger.of(context).showSnackBar(
@@ -140,7 +140,7 @@ class ConnectionListenerWidget extends ConsumerWidget {
           ),
         );
       }
-    });
+    });*/}
 
     return child;
   }
