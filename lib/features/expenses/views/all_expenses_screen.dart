@@ -236,6 +236,7 @@ class _AllExpensesScreenState extends ConsumerState<AllExpensesScreen> {
                           const Text('Try adjusting filters or search query.', style: TextStyle(color: Colors.grey)),
                         ],
                       ),
+                    )
                   : ListView.builder(
                       padding: EdgeInsets.fromLTRB(16.0, 0, 16.0, isWide ? 0.0 : 100.0),
                       itemCount: groupedKeys.length,
