@@ -137,7 +137,7 @@ class AnalyticsPage extends ConsumerWidget {
 
   Widget _buildLoadingState(BuildContext context, bool isWide) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      padding: isWide ? const EdgeInsets.symmetric(horizontal: 20, vertical: 10) : const EdgeInsets.fromLTRB(20, 10, 20, 100),
       child: ShimmerLoading(
         isLoading: true,
         child: Column(
@@ -262,7 +262,7 @@ class AnalyticsPage extends ConsumerWidget {
     } else {
       return SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        padding: const EdgeInsets.fromLTRB(20, 12, 20, 100),
         child: Column(
           children: [
             animatedItem(const AnalyticsFilterHeader(), 0),
