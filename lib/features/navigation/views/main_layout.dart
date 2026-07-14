@@ -103,7 +103,7 @@ class MainLayout extends ConsumerWidget {
                             ? context.spendly.colors.neutral900.withOpacity(0.8)
                             : Colors.white.withOpacity(0.85),
                         borderRadius: BorderRadius.circular(32),
-                        border: BorderSide(
+                        border: Border.all(
                           color: Theme.of(context).brightness == Brightness.dark
                               ? context.spendly.colors.neutral800.withOpacity(0.4)
                               : context.spendly.colors.neutral200.withOpacity(0.4),
