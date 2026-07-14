@@ -221,6 +221,9 @@ class MainLayout extends ConsumerWidget {
             context.go('/analytics');
             break;
           case 3:
+            context.go('/expenses');
+            break;
+          case 4:
             context.go('/profile');
             break;
         }
