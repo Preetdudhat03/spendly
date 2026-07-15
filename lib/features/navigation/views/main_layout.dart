@@ -275,7 +275,7 @@ class _MainLayoutState extends ConsumerState<MainLayout> {
         duration: const Duration(milliseconds: 200),
         curve: Curves.easeInOut,
         padding: EdgeInsets.symmetric(
-          horizontal: isAddButton ? 12.0 : (isSelected ? 8.0 : 8.0),
+          horizontal: isAddButton ? 11.0 : (isSelected ? 8.0 : 8.0),
           vertical: isAddButton ? 8.0 : 8.0,
         ),
         decoration: BoxDecoration(
