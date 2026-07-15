@@ -170,6 +170,7 @@ class _MainLayoutState extends ConsumerState<MainLayout> {
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
                               _buildNavItem(
                                 context,
@@ -274,7 +275,7 @@ class _MainLayoutState extends ConsumerState<MainLayout> {
         duration: const Duration(milliseconds: 200),
         curve: Curves.easeInOut,
         padding: EdgeInsets.symmetric(
-          horizontal: isAddButton ? 26.0 : (isSelected ? 8.0 : 8.0),
+          horizontal: isAddButton ? 12.0 : (isSelected ? 8.0 : 8.0),
           vertical: isAddButton ? 8.0 : 8.0,
         ),
         decoration: BoxDecoration(
@@ -319,8 +320,8 @@ class _MainLayoutState extends ConsumerState<MainLayout> {
                 );
               },
             ),
-            const SizedBox(height: 4),
-            /*Text(
+            /*const SizedBox(height: 4),
+            Text(
               label,
               style: TextStyle(
                 color: isAddButton
