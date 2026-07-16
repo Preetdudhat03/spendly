@@ -26,6 +26,23 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
   DateTime _selectedDate = DateTime.now();
 
   final List<Map<String, String>> _categoriesList = [
+    /*{'name': 'Food', 'emoji': '🍔'},
+    {'name': 'Groceries', 'emoji': '🛒'},
+    {'name': 'Petrol', 'emoji': '🚗'},
+    {'name': 'Recharges', 'emoji': '📱'},
+    {'name': 'Travel', 'emoji': '✈️'},
+    {'name': 'Gas', 'emoji': '⛽'},
+    {'name': 'Electricity', 'emoji': '⚡'},
+    {'name': 'Medical', 'emoji': '💊'},
+    {'name': 'Insurances', 'emoji': '🛡️'},
+    {'name': 'Rent', 'emoji': '🏠'},
+    {'name': 'Shopping', 'emoji': '🛍️'},
+    {'name': 'Entertainment', 'emoji': '🎬'},
+    {'name': 'Education', 'emoji': '📚'},
+    {'name': 'College', 'emoji': '🎓'},
+    {'name': 'Others', 'emoji': '💰'},*/
+
+
     {'name': 'Food', 'emoji': '🍔'},
     {'name': 'Groceries', 'emoji': '🛒'},
     {'name': 'Petrol', 'emoji': '🚗'},
