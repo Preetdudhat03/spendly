@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:spendly/core/providers/state_providers.dart';
 import 'package:spendly/core/utils/schema_validator.dart';
-import 'package:flutter_svg/'
+import 'package:flutter_svg/flutter_svg.dart';
 
 // Provider to hold quick-add categories selected from home screen
 final selectedCategoryProvider = StateProvider<String?>((ref) => null);
@@ -297,9 +297,13 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Text(
-                                  cat['emoji']!,
-                                  style: const TextStyle(fontSize: 26),
+                                SvgPicture.asset(
+                                  cat['iconPath']!,
+                                  width: 32,
+                                  height: 32,
+                                  colorFilter: isSelected
+                                      ? const ColorFilter.mode(Colors.white, BlendMode.srcIn)
+                                      : ColorFilter.mode(Theme.of(context).primaryColor, BlendMode.srcIn),
                                 ),
                                 const SizedBox(height: 6),
                                 Text(
