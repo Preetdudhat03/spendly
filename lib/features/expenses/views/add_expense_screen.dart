@@ -44,21 +44,21 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
 
 
     
-    {'name': 'Food' , 'iconPath': 'assets/icons/food.svg'},
-    {'name': 'Groceries', 'iconPath': 'assets/icons/groceries.svg'},
-    {'name': 'Petrol', 'iconPath': 'assets/icons/petrol.svg'},
-    {'name': 'Recharges', 'iconPath': 'assets/icons/recharges.svg'},
-    {'name': 'Travel', 'iconPath': 'assets/icons/travel.svg'},
-    {'name': 'Gas', 'iconPath': 'assets/icons/gas.svg'},
-    {'name': 'Electricity', 'iconPath': 'assets/icons/electricity.svg'},
-    {'name': 'Medical', 'iconPath': 'assets/icons/medical.svg'},
-    {'name': 'Insurances', 'iconPath': 'assets/icons/insurances.svg'},
-    {'name': 'Rent', 'iconPath': 'assets/icons/rent.svg'},
-    {'name': 'Shopping', 'iconPath': 'assets/icons/shopping.svg'},
-    {'name': 'Entertainment', 'iconPath': 'assets/icons/entertainment.svg'},
-    {'name': 'Education', 'iconPath': 'assets/icons/education.svg'},
-    {'name': 'College', 'iconPath': 'assets/icons/college.svg'},
-    {'name': 'Others', 'iconPath': 'assets/icons/others.svg'},
+    {'name': 'Food', 'emoji': '🍔', 'iconPath': 'assets/icons/food.svg'},
+    {'name': 'Groceries', 'emoji': '🛒', 'iconPath': 'assets/icons/groceries.svg'},
+    {'name': 'Petrol', 'emoji': '🚗', 'iconPath': 'assets/icons/petrol.svg'},
+    {'name': 'Recharges', 'emoji': '📱', 'iconPath': 'assets/icons/recharges.svg'},
+    {'name': 'Travel', 'emoji': '✈️', 'iconPath': 'assets/icons/travel.svg'},
+    {'name': 'Gas', 'emoji': '⛽', 'iconPath': 'assets/icons/gas.svg'},
+    {'name': 'Electricity', 'emoji': '⚡', 'iconPath': 'assets/icons/electricity.svg'},
+    {'name': 'Medical', 'emoji': '💊', 'iconPath': 'assets/icons/medical.svg'},
+    {'name': 'Insurances', 'emoji': '🛡️', 'iconPath': 'assets/icons/insurances.svg'},
+    {'name': 'Rent', 'emoji': '🏠', 'iconPath': 'assets/icons/rent.svg'},
+    {'name': 'Shopping', 'emoji': '🛍️', 'iconPath': 'assets/icons/shopping.svg'},
+    {'name': 'Entertainment', 'emoji': '🎬', 'iconPath': 'assets/icons/entertainment.svg'},
+    {'name': 'Education', 'emoji': '📚', 'iconPath': 'assets/icons/education.svg'},
+    {'name': 'College', 'emoji': '🎓', 'iconPath': 'assets/icons/college.svg'},
+    {'name': 'Others', 'emoji': '💰', 'iconPath': 'assets/icons/others.svg'},
   ];
 
   @override
