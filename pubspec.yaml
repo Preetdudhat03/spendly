@@ -53,6 +53,7 @@ dependencies:
   archive: ^4.0.9
   qr_flutter: ^4.1.0
   fui_kit: ^2.1.0
+  lucide_icons: ^0.257.0
 
 dev_dependencies:
   flutter_test:

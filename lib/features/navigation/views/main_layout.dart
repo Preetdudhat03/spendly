@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:spendly/core/theme/spendly_tokens.dart';
@@ -177,8 +178,8 @@ class _MainLayoutState extends ConsumerState<MainLayout> {
                                 context,
                                 index: 0,
                                 //icon: Icons.home_outlined,
-                                icon:
-                                selectedIcon: Icons.home,
+                                icon: LucideIcons.home,
+                                selectedIcon: LucideIcons.home,
                                 label: 'Home',
                                 isSelected: widget.initialTab == 0,
                               ),
@@ -187,8 +188,8 @@ class _MainLayoutState extends ConsumerState<MainLayout> {
                                 context,
                                 index: 2,
                                 //icon: Icons.bar_chart_outlined,
-                                icon:
-                                selectedIcon: Icons.bar_chart,
+                                icon: LucideIcons.pieChart,
+                                selectedIcon: LucideIcons.pieChart,
                                 label: 'Analytics',
                                 isSelected: widget.initialTab == 2,
                               ),
@@ -197,8 +198,8 @@ class _MainLayoutState extends ConsumerState<MainLayout> {
                                 context,
                                 index: 1,
                                 //icon: Icons.add_circle_outline,
-                                icon:
-                                selectedIcon: Icons.add_circle,
+                                icon: LucideIcons.plusCircle,
+                                selectedIcon: LucideIcons.plusCircle,
                                 label: 'Add',
                                 isSelected: widget.initialTab == 1,
                               ),
@@ -207,8 +208,8 @@ class _MainLayoutState extends ConsumerState<MainLayout> {
                                 context,
                                 index: 3,
                                 //icon: Icons.receipt_long_outlined,
-                                icon:
-                                selectedIcon: Icons.receipt_long,
+                                icon: LucideIcons.receipt,
+                                selectedIcon: LucideIcons.receipt,
                                 label: 'Expenses',
                                 isSelected: widget.initialTab == 3,
                               ),
@@ -217,8 +218,8 @@ class _MainLayoutState extends ConsumerState<MainLayout> {
                                 context,
                                 index: 4,
                                 //icon: Icons.person_outline,
-                                icon:
-                                selectedIcon: Icons.person,
+                                icon: LucideIcons.user,
+                                selectedIcon: LucideIcons.user,
                                 label: 'Profile',
                                 isSelected: widget.initialTab == 4,
                               ),
