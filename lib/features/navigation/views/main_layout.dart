@@ -332,7 +332,6 @@ class _MainLayoutState extends ConsumerState<MainLayout> {
               ),
             ),
           ],...
-          
         ),
       ),
     );
