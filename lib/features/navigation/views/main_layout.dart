@@ -172,6 +172,7 @@ class _MainLayoutState extends ConsumerState<MainLayout> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
+                              const SizedBox(width: 3),
                               _buildNavItem(
                                 context,
                                 index: 0,
@@ -221,6 +222,7 @@ class _MainLayoutState extends ConsumerState<MainLayout> {
                                 label: 'Profile',
                                 isSelected: widget.initialTab == 4,
                               ),
+                              const SizedBox(width: 3),
                               
                             ],
                           ),
