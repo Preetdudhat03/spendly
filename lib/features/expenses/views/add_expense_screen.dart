@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:spendly/core/providers/state_providers.dart';
 import 'package:spendly/core/utils/schema_validator.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:assets/category/*.svg'; // Ensure you have the correct path to your SVG assets
 
 // Provider to hold quick-add categories selected from home screen
 final selectedCategoryProvider = StateProvider<String?>((ref) => null);
