@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spendly/core/services/hive_service.dart';
 import 'package:spendly/models/hive/expense_model.dart';
 import 'package:spendly/models/hive/family_model.dart';
@@ -10,10 +11,14 @@ import 'package:spendly/models/hive/budget_model.dart';
 import 'package:spendly/models/hive/pending_operation_model.dart';
 import 'package:spendly/models/hive/sync_metadata_model.dart';
 
+final syncStateProvider = StateProvider<bool>((ref) => false);
+
 class SyncService {
+  final Ref _ref;
   final SupabaseClient _client = Supabase.instance.client;
-  bool _isSyncing = false;
   StreamSubscription? _connectivitySubscription;
+
+  SyncService(this._ref);
 
   void initialize() {
     _connectivitySubscription = Connectivity().onConnectivityChanged.listen((results) {
@@ -34,8 +39,10 @@ class SyncService {
       });
     });
 
-    // Run initial sync on startup
-    syncNow();
+    // Only run initial sync if native user is already authenticated
+    if (_client.auth.currentUser != null) {
+      syncNow();
+    }
   }
 
   void dispose() {
@@ -43,8 +50,16 @@ class SyncService {
   }
 
   Future<void> syncNow() async {
-    if (_isSyncing) return;
-    _isSyncing = true;
+    if (_ref.read(syncStateProvider)) return;
+
+    // Guard: Only sync if native user is logged in
+    final nativeUser = _client.auth.currentUser;
+    if (nativeUser == null) {
+      debugPrint('SyncService: Skipping sync as native user is not logged in.');
+      return;
+    }
+
+    _ref.read(syncStateProvider.notifier).state = true;
     
     try {
       debugPrint('SyncService: Starting synchronization');
@@ -54,7 +69,7 @@ class SyncService {
     } catch (e) {
       debugPrint('SyncService: Synchronization failed: $e');
     } finally {
-      _isSyncing = false;
+      _ref.read(syncStateProvider.notifier).state = false;
     }
   }
 

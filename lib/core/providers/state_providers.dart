@@ -32,6 +32,7 @@ import 'package:spendly/models/budget.dart';
 
 class AuthState {
   final bool isLoading;
+  final bool isInitializing;
   final String? userId;
   final String? email;
   final String? displayName;
@@ -44,6 +45,7 @@ class AuthState {
 
   AuthState({
     required this.isLoading,
+    this.isInitializing = false,
     this.userId,
     this.email,
     this.displayName,
@@ -53,10 +55,11 @@ class AuthState {
     this.pendingPassword,
   });
 
-  factory AuthState.initial() => AuthState(isLoading: false);
+  factory AuthState.initial() => AuthState(isLoading: false, isInitializing: true);
 
   AuthState copyWith({
     bool? isLoading,
+    bool? isInitializing,
     String? userId,
     String? email,
     String? displayName,
@@ -67,6 +70,7 @@ class AuthState {
   }) {
     return AuthState(
       isLoading: isLoading ?? this.isLoading,
+      isInitializing: isInitializing ?? this.isInitializing,
       userId: userId ?? this.userId,
       email: email ?? this.email,
       displayName: displayName ?? this.displayName,
@@ -101,7 +105,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     // Postpone to next microtask to avoid Riverpod modify-while-building errors
     await Future.microtask(() {});
     
-    state = state.copyWith(isLoading: true);
+    state = state.copyWith(isLoading: true, isInitializing: true);
     
     // Check native user first
     final user = _ref.read(currentUserProvider);
@@ -118,6 +122,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       final displayName = await _dbService.getCurrentUserDisplayName();
       state = AuthState(
         isLoading: false,
+        isInitializing: false,
         userId: legacyId,
         email: email,
         displayName: displayName,
@@ -125,7 +130,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       HiveService.settings.put('active_user_id', legacyId);
       _ref.read(familyProvider.notifier).loadFamily();
     } else {
-      state = AuthState.initial();
+      state = AuthState(isLoading: false, isInitializing: false);
     }
   }
 
@@ -138,7 +143,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
         return; // Don't wipe legacy session if active
       }
       if (!state.isMigrationPending) {
-        state = AuthState.initial();
+        state = AuthState(isLoading: false, isInitializing: false);
       }
       return;
     }
@@ -157,6 +162,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
           state = AuthState(
             isLoading: false,
+            isInitializing: false,
             userId: profile.id,
             email: profile.email,
             displayName: profile.displayName.isNotEmpty ? profile.displayName : (user.userMetadata?['display_name'] as String? ?? 'User'),
@@ -173,6 +179,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
           
           state = AuthState(
             isLoading: false,
+            isInitializing: false,
             userId: user.id,
             email: user.email,
             displayName: user.userMetadata?['display_name'] as String? ?? 'User',
@@ -187,7 +194,11 @@ class AuthNotifier extends StateNotifier<AuthState> {
         }
       },
       error: (e, s) {
-        state = state.copyWith(isLoading: false, error: ErrorHelper.getReadableErrorMessage(e));
+        state = state.copyWith(
+          isLoading: false,
+          isInitializing: false,
+          error: ErrorHelper.getReadableErrorMessage(e),
+        );
       },
     );
   }
@@ -204,6 +215,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       
       state = AuthState(
         isLoading: false,
+        isInitializing: false,
         userId: newUserId,
         email: _ref.read(currentUserProvider)?.email,
         displayName: state.displayName,
@@ -213,7 +225,11 @@ class AuthNotifier extends StateNotifier<AuthState> {
       _ref.read(familyProvider.notifier).loadFamily();
     } catch (e) {
       debugPrint('Supabase Auth: auto-complete migration failed: $e');
-      state = state.copyWith(isLoading: false, error: ErrorHelper.getReadableErrorMessage(e));
+      state = state.copyWith(
+        isLoading: false,
+        isInitializing: false,
+        error: ErrorHelper.getReadableErrorMessage(e),
+      );
     }
   }
 

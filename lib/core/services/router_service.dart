@@ -6,6 +6,7 @@ import 'package:spendly/features/auth/views/login_screen.dart';
 import 'package:spendly/features/auth/views/register_screen.dart';
 import 'package:spendly/features/auth/views/forgot_password_screen.dart';
 import 'package:spendly/features/auth/views/verify_email_screen.dart';
+import 'package:spendly/features/auth/views/startup_screen.dart';
 import 'package:spendly/features/family/views/family_setup_screen.dart';
 import 'package:spendly/features/navigation/views/main_layout.dart';
 import 'package:spendly/features/expenses/views/all_expenses_screen.dart';
@@ -20,10 +21,14 @@ final routerProvider = Provider<GoRouter>((ref) {
       final auth = ref.read(authProvider);
       final family = ref.read(familyProvider);
 
+      if (auth.isInitializing) {
+        return '/splash';
+      }
+
       final isLoggedIn = auth.userId != null;
       final isPendingMigration = auth.isMigrationPending;
       
-      final publicRoutes = ['/login', '/register', '/forgot-password', '/verify-email'];
+      final publicRoutes = ['/login', '/register', '/forgot-password', '/verify-email', '/splash'];
       final isPublicRoute = publicRoutes.contains(state.matchedLocation);
 
       if (!isLoggedIn) {
@@ -41,7 +46,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       if (state.matchedLocation == '/login' || 
           state.matchedLocation == '/register' || 
           state.matchedLocation == '/forgot-password' ||
-          state.matchedLocation == '/verify-email') {
+          state.matchedLocation == '/verify-email' ||
+          state.matchedLocation == '/splash') {
         return '/home';
       }
 
@@ -64,6 +70,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       return null;
     },
     routes: [
+      GoRoute(
+        path: '/splash',
+        builder: (context, state) => const StartupScreen(),
+      ),
       GoRoute(
         path: '/login',
         builder: (context, state) => const LoginScreen(),

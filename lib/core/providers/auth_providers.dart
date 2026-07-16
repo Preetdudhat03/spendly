@@ -3,6 +3,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:spendly/models/profile.dart';
+import 'package:spendly/core/services/hive_service.dart';
+import 'package:spendly/models/hive/profile_model.dart';
 
 // 1. Session Provider
 // Watches the stream of Supabase Auth state changes and maps it to Session.
@@ -36,28 +38,55 @@ final currentUserProvider = Provider<User?>((ref) {
 class ProfileNotifier extends FamilyAsyncNotifier<Profile?, String> {
   @override
   FutureOr<Profile?> build(String arg) async {
-    // If no user is logged in or we are in mock mode, return null
+    Profile? cachedProfile;
+    try {
+      final cachedModel = HiveService.profiles.get(arg);
+      if (cachedModel != null) {
+        cachedProfile = cachedModel.toDomain();
+      }
+    } catch (e) {
+      debugPrint('Error loading cached profile from Hive: $e');
+    }
+
+    if (cachedProfile != null) {
+      // Return cached profile immediately and refresh in background
+      Future.microtask(() => refreshSilently());
+      return cachedProfile;
+    }
+
+    return await _fetchRemoteProfile();
+  }
+
+  Future<Profile?> _fetchRemoteProfile() async {
     try {
       final client = Supabase.instance.client;
       final data = await client.from('profiles').select().eq('id', arg).maybeSingle();
       if (data != null) {
-        return Profile.fromJson(data);
+        final profile = Profile.fromJson(data);
+        await HiveService.profiles.put(arg, ProfileModel.fromDomain(profile));
+        return profile;
       }
     } catch (e) {
-      debugPrint('Error fetching profile for $arg: $e');
+      debugPrint('Error fetching remote profile for $arg: $e');
     }
     return null;
+  }
+
+  Future<void> refreshSilently() async {
+    try {
+      final profile = await _fetchRemoteProfile();
+      if (profile != null) {
+        state = AsyncValue.data(profile);
+      }
+    } catch (e) {
+      debugPrint('Error silently refreshing profile: $e');
+    }
   }
 
   Future<void> refresh() async {
     state = const AsyncValue.loading();
     state = await AsyncValue.guard(() async {
-      final client = Supabase.instance.client;
-      final data = await client.from('profiles').select().eq('id', arg).maybeSingle();
-      if (data != null) {
-        return Profile.fromJson(data);
-      }
-      return null;
+      return await _fetchRemoteProfile();
     });
   }
 }
