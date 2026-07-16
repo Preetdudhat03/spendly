@@ -25,7 +25,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
   String _paymentMethod = 'UPI';
   DateTime _selectedDate = DateTime.now();
 
-  final List<Map<String, String>> _categoriesList = [
+  final List<Map<String, dynamic>> _categoriesList = [
     /*{'name': 'Food', 'emoji': '🍔'},
     {'name': 'Groceries', 'emoji': '🛒'},
     {'name': 'Petrol', 'emoji': '🚗'},
