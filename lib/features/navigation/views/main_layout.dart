@@ -327,7 +327,7 @@ class _MainLayoutState extends ConsumerState<MainLayout> {
                 color: isAddButton
                     ? Colors.white
                     : (isSelected ? activeColor : inactiveColor),
-                fontSize: isAddButton ? 11 : 10,
+                fontSize: isAddButton ? 15 : 14,
                 fontWeight: FontWeight.bold,
               ),
             ),
