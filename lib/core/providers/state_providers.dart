@@ -235,6 +235,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   Future<bool> signIn(String email, String password) async {
+    if (state.isLoading) return false;
     state = state.copyWith(isLoading: true, error: null);
     try {
       final cleanEmail = email.toLowerCase().trim();
@@ -286,7 +287,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
         final response = await client.auth.signInWithPassword(
           email: cleanEmail,
           password: password,
-        );
+        ).timeout(const Duration(seconds: 10));
         if (response.user != null) {
           await _ref.read(syncServiceProvider).mergeLocalDataToCloud(response.user!.id);
           _updateStateFromProviders();
@@ -298,8 +299,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
         if (msg.contains('invalid login credentials') || msg.contains('invalid_credentials')) {
           final client = Supabase.instance.client;
           
-          final legacyUser = await client.from('users').select().eq('email', cleanEmail).maybeSingle();
-          final nativeProfile = await client.from('profiles').select().eq('email', cleanEmail).maybeSingle();
+          final legacyUser = await client.from('users').select().eq('email', cleanEmail).maybeSingle().timeout(const Duration(seconds: 10));
+          final nativeProfile = await client.from('profiles').select().eq('email', cleanEmail).maybeSingle().timeout(const Duration(seconds: 10));
           
           if (legacyUser == null && nativeProfile == null) {
             state = state.copyWith(isLoading: false, error: 'USER_NOT_FOUND');
@@ -318,7 +319,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
             final legacyUserId = legacyUser['id'] as String;
             
             // Check if already completed migration
-            final existingProfile = await client.from('profiles').select().eq('legacy_user_id', legacyUserId).maybeSingle();
+            final existingProfile = await client.from('profiles').select().eq('legacy_user_id', legacyUserId).maybeSingle().timeout(const Duration(seconds: 10));
             if (existingProfile != null && existingProfile['migration_completed'] == true) {
               state = state.copyWith(
                 isLoading: false,
@@ -358,7 +359,27 @@ class AuthNotifier extends StateNotifier<AuthState> {
       }
       return false;
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: ErrorHelper.getReadableErrorMessage(e));
+      final errStr = e.toString().toLowerCase();
+      if (e is TimeoutException ||
+          e is SocketException ||
+          errStr.contains('timeout') ||
+          errStr.contains('socketexception') ||
+          errStr.contains('httpexception') ||
+          errStr.contains('clientexception') ||
+          errStr.contains('failed host lookup') ||
+          errStr.contains('connection failed') ||
+          errStr.contains('handshake') ||
+          errStr.contains('unreachable')) {
+        state = state.copyWith(
+          isLoading: false,
+          error: "Unable to connect. Check your internet connection and try again.",
+        );
+      } else {
+        state = state.copyWith(
+          isLoading: false,
+          error: ErrorHelper.getReadableErrorMessage(e),
+        );
+      }
       return false;
     }
   }
