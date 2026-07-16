@@ -223,7 +223,6 @@ class _MainLayoutState extends ConsumerState<MainLayout> {
                                 isSelected: widget.initialTab == 4,
                               ),
                               const SizedBox(width: 3),
-                              
                             ],
                           ),
                         ),
