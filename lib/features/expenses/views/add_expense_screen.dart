@@ -44,7 +44,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
 
 
     
-    {'name': 'Food', 'emoji': '🍔', 'iconPath': 'assets/icons/food.svg'},
+    {'name': 'Food' , 'iconPath': 'assets/icons/food.svg'},
     {'name': 'Groceries', 'emoji': '🛒', 'iconPath': 'assets/icons/groceries.svg'},
     {'name': 'Petrol', 'emoji': '🚗', 'iconPath': 'assets/icons/petrol.svg'},
     {'name': 'Recharges', 'emoji': '📱', 'iconPath': 'assets/icons/recharges.svg'},
