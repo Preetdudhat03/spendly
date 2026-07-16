@@ -214,7 +214,7 @@ class _MainLayoutState extends ConsumerState<MainLayout> {
                                   context,
                                   index: 4,
                                   //icon: Icons.person_outline,
-                                  iconPath: 'assets/icons/user.png',
+                                  iconPath: 'assets/icons/user.svg',
                                   label: 'Profile',
                                   isSelected: widget.initialTab == 4,
                                 ),
