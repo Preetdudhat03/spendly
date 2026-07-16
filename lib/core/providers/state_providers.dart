@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart' hide Family;
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:spendly/core/utils/error_helper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -238,6 +239,18 @@ class AuthNotifier extends StateNotifier<AuthState> {
     try {
       final cleanEmail = email.toLowerCase().trim();
 
+      // Check internet connectivity first if Supabase is configured
+      if (AppConfig.isSupabaseConfigured) {
+        final connectivityResult = await Connectivity().checkConnectivity();
+        if (connectivityResult.contains(ConnectivityResult.none) || connectivityResult.isEmpty) {
+          state = state.copyWith(
+            isLoading: false,
+            error: "You're offline. Connect to the internet to sign in.",
+          );
+          return false;
+        }
+      }
+
       // Fallback to local DB Service if Supabase is not configured or initialized
       if (!AppConfig.isSupabaseConfigured || !AppConfig.isSupabaseInitialized) {
         try {
@@ -405,7 +418,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     state = state.copyWith(isLoading: true);
     await HiveService.settings.delete('active_user_id');
     await _dbService.signOut();
-    state = AuthState.initial();
+    state = AuthState(isLoading: false, isInitializing: false);
     _ref.read(familyProvider.notifier).reset();
     _ref.read(expenseProvider.notifier).reset();
     _ref.read(budgetProvider.notifier).reset();
@@ -581,7 +594,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   void cancelMigration() {
-    state = AuthState.initial();
+    state = AuthState(isLoading: false, isInitializing: false);
   }
 }
 
