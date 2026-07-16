@@ -320,7 +320,7 @@ class _MainLayoutState extends ConsumerState<MainLayout> {
                 );
               },
             ),
-            /*const SizedBox(height: 4),
+            const SizedBox(height: 4),
             Text(
               label,
               style: TextStyle(
@@ -330,7 +330,7 @@ class _MainLayoutState extends ConsumerState<MainLayout> {
                 fontSize: isAddButton ? 11 : 10,
                 fontWeight: FontWeight.bold,
               ),
-            ),*/
+            ),
           ],
         ),
       ),
