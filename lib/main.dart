@@ -13,8 +13,17 @@ import 'package:spendly/core/services/migration_service.dart';
 import 'package:spendly/core/services/sync_service.dart';
 
 final syncServiceProvider = Provider<SyncService>((ref) {
-  final service = SyncService();
+  final service = SyncService(ref);
   service.initialize();
+  
+  // Listen to currentUserProvider changes
+  ref.listen(currentUserProvider, (previous, next) {
+    if (next != null) {
+      debugPrint('SyncService: User authenticated. Triggering sync.');
+      service.syncNow();
+    }
+  });
+
   ref.onDispose(() => service.dispose());
   return service;
 });
