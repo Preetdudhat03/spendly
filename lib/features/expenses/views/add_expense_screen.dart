@@ -43,21 +43,22 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
     {'name': 'Others', 'emoji': '💰'},*/
 
 
-    {'name': 'Food', 'emoji': '🍔'},
-    {'name': 'Groceries', 'emoji': '🛒'},
-    {'name': 'Petrol', 'emoji': '🚗'},
-    {'name': 'Recharges', 'emoji': '📱'},
-    {'name': 'Travel', 'emoji': '✈️'},
-    {'name': 'Gas', 'emoji': '⛽'},
-    {'name': 'Electricity', 'emoji': '⚡'},
-    {'name': 'Medical', 'emoji': '💊'},
-    {'name': 'Insurances', 'emoji': '🛡️'},
-    {'name': 'Rent', 'emoji': '🏠'},
-    {'name': 'Shopping', 'emoji': '🛍️'},
-    {'name': 'Entertainment', 'emoji': '🎬'},
-    {'name': 'Education', 'emoji': '📚'},
-    {'name': 'College', 'emoji': '🎓'},
-    {'name': 'Others', 'emoji': '💰'},
+    
+    {'name': 'Food', 'emoji': '🍔', 'iconPath': 'assets/icons/food.svg'},
+    {'name': 'Groceries', 'emoji': '🛒', 'iconPath': 'assets/icons/groceries.svg'},
+    {'name': 'Petrol', 'emoji': '🚗', 'iconPath': 'assets/icons/petrol.svg'},
+    {'name': 'Recharges', 'emoji': '📱', 'iconPath': 'assets/icons/recharges.svg'},
+    {'name': 'Travel', 'emoji': '✈️', 'iconPath': 'assets/icons/travel.svg'},
+    {'name': 'Gas', 'emoji': '⛽', 'iconPath': 'assets/icons/gas.svg'},
+    {'name': 'Electricity', 'emoji': '⚡', 'iconPath': 'assets/icons/electricity.svg'},
+    {'name': 'Medical', 'emoji': '💊', 'iconPath': 'assets/icons/medical.svg'},
+    {'name': 'Insurances', 'emoji': '🛡️', 'iconPath': 'assets/icons/insurances.svg'},
+    {'name': 'Rent', 'emoji': '🏠', 'iconPath': 'assets/icons/rent.svg'},
+    {'name': 'Shopping', 'emoji': '🛍️', 'iconPath': 'assets/icons/shopping.svg'},
+    {'name': 'Entertainment', 'emoji': '🎬', 'iconPath': 'assets/icons/entertainment.svg'},
+    {'name': 'Education', 'emoji': '📚', 'iconPath': 'assets/icons/education.svg'},
+    {'name': 'College', 'emoji': '🎓', 'iconPath': 'assets/icons/college.svg'},
+    {'name': 'Others', 'emoji': '💰', 'iconPath': 'assets/icons/others.svg'},
   ];
 
   @override
