@@ -4,7 +4,6 @@ import 'package:intl/intl.dart';
 import 'package:spendly/core/providers/state_providers.dart';
 import 'package:spendly/core/utils/schema_validator.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:assets/category/*.svg'; // Ensure you have the correct path to your SVG assets
 
 // Provider to hold quick-add categories selected from home screen
 final selectedCategoryProvider = StateProvider<String?>((ref) => null);
@@ -49,12 +48,12 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
     {'name': 'Food', 'emoji': '🍔', 'iconPath': 'assets/category/food.svg'},
     {'name': 'Groceries', 'emoji': '🛒', 'iconPath': 'assets/category/groceries.svg'},
     {'name': 'Petrol', 'emoji': '🚗', 'iconPath': 'assets/category/petrol.svg'},
-    {'name': 'Recharges', 'emoji': '📱', 'iconPath': 'assets/category/recharges.svg'},
+    {'name': 'Recharges', 'emoji': '📱', 'iconPath': 'assets/category/recharge.svg'},
     {'name': 'Travel', 'emoji': '✈️', 'iconPath': 'assets/category/travel.svg'},
     {'name': 'Gas', 'emoji': '⛽', 'iconPath': 'assets/category/gas.svg'},
     {'name': 'Electricity', 'emoji': '⚡', 'iconPath': 'assets/category/electricity.svg'},
     {'name': 'Medical', 'emoji': '💊', 'iconPath': 'assets/category/medical.svg'},
-    {'name': 'Insurances', 'emoji': '🛡️', 'iconPath': 'assets/category/insurances.svg'},
+    {'name': 'Insurances', 'emoji': '🛡️', 'iconPath': 'assets/category/insurences.svg'},
     {'name': 'Rent', 'emoji': '🏠', 'iconPath': 'assets/category/rent.svg'},
     {'name': 'Shopping', 'emoji': '🛍️', 'iconPath': 'assets/category/shopping.svg'},
     {'name': 'Entertainment', 'emoji': '🎬', 'iconPath': 'assets/category/entertainment.svg'},
