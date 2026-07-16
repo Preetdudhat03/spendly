@@ -57,7 +57,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
     {'name': 'Shopping', 'iconPath': 'assets/icons/shopping.svg'},
     {'name': 'Entertainment', 'iconPath': 'assets/icons/entertainment.svg'},
     {'name': 'Education', 'iconPath': 'assets/icons/education.svg'},
-    {'name': 'College', 'emoji': '🎓', 'iconPath': 'assets/icons/college.svg'},
+    {'name': 'College', 'iconPath': 'assets/icons/college.svg'},
     {'name': 'Others', 'emoji': '💰', 'iconPath': 'assets/icons/others.svg'},
   ];
 
