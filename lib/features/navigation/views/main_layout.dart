@@ -315,7 +315,7 @@ class _MainLayoutState extends ConsumerState<MainLayout> {
                   child: Icon(
                     isSelected ? selectedIcon : icon,
                     color: color,
-                    size: isAddButton ? 40 : 30,
+                    size: isAddButton ? 45 : 30,
                   ),
                 );
               },
