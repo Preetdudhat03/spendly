@@ -205,7 +205,7 @@ class _MainLayoutState extends ConsumerState<MainLayout> {
                                   context,
                                   index: 3,
                                   //icon: Icons.receipt_long_outlined,
-                                  iconPath: 'assets/icons/list.png',
+                                  iconPath: 'assets/icons/list.svg',
                                   label: 'Expenses',
                                   isSelected: widget.initialTab == 3,
                                 ),
