@@ -331,7 +331,7 @@ class _MainLayoutState extends ConsumerState<MainLayout> {
                 fontWeight: FontWeight.bold,
               ),
             ),
-          ],.....
+          ],....
         ),
       ),
     );
