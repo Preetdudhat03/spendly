@@ -1,6 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:lucide_icons/lucide_icons.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:spendly/core/theme/spendly_tokens.dart';
@@ -313,9 +313,9 @@ class _MainLayoutState extends ConsumerState<MainLayout> {
                   scale: isSelected ? 1.15 : 1.0,
                   duration: const Duration(milliseconds: 200),
                   curve: Curves.easeOutBack,
-                  child: Image.asset(
+                  child: SvgPicture.asset(
                     iconPath,
-                    color: color,
+                    colorFilter: color != null ? ColorFilter.mode(color, BlendMode.srcIn) : null,
                     width: isAddButton ? 36 : 30,
                     height: isAddButton ? 36 : 30,
                   ),
