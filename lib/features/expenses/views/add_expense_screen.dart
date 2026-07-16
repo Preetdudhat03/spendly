@@ -45,21 +45,21 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
 
 
     
-    {'name': 'Food', 'emoji': '🍔', 'iconPath': 'assets/categories/food.svg'},
-    {'name': 'Groceries', 'emoji': '🛒', 'iconPath': 'assets/categories/groceries.svg'},
-    {'name': 'Petrol', 'emoji': '🚗', 'iconPath': 'assets/categories/petrol.svg'},
-    {'name': 'Recharges', 'emoji': '📱', 'iconPath': 'assets/categories/recharges.svg'},
-    {'name': 'Travel', 'emoji': '✈️', 'iconPath': 'assets/categories/travel.svg'},
-    {'name': 'Gas', 'emoji': '⛽', 'iconPath': 'assets/categories/gas.svg'},
-    {'name': 'Electricity', 'emoji': '⚡', 'iconPath': 'assets/categories/electricity.svg'},
-    {'name': 'Medical', 'emoji': '💊', 'iconPath': 'assets/categories/medical.svg'},
-    {'name': 'Insurances', 'emoji': '🛡️', 'iconPath': 'assets/categories/insurances.svg'},
-    {'name': 'Rent', 'emoji': '🏠', 'iconPath': 'assets/categories/rent.svg'},
-    {'name': 'Shopping', 'emoji': '🛍️', 'iconPath': 'assets/categories/shopping.svg'},
-    {'name': 'Entertainment', 'emoji': '🎬', 'iconPath': 'assets/categories/entertainment.svg'},
-    {'name': 'Education', 'emoji': '📚', 'iconPath': 'assets/categories/education.svg'},
-    {'name': 'College', 'emoji': '🎓', 'iconPath': 'assets/categories/college.svg'},
-    {'name': 'Others', 'emoji': '💰', 'iconPath': 'assets/categories/others.svg'},
+    {'name': 'Food', 'emoji': '🍔', 'iconPath': 'assets/category/food.svg'},
+    {'name': 'Groceries', 'emoji': '🛒', 'iconPath': 'assets/category/groceries.svg'},
+    {'name': 'Petrol', 'emoji': '🚗', 'iconPath': 'assets/category/petrol.svg'},
+    {'name': 'Recharges', 'emoji': '📱', 'iconPath': 'assets/category/recharges.svg'},
+    {'name': 'Travel', 'emoji': '✈️', 'iconPath': 'assets/category/travel.svg'},
+    {'name': 'Gas', 'emoji': '⛽', 'iconPath': 'assets/category/gas.svg'},
+    {'name': 'Electricity', 'emoji': '⚡', 'iconPath': 'assets/category/electricity.svg'},
+    {'name': 'Medical', 'emoji': '💊', 'iconPath': 'assets/category/medical.svg'},
+    {'name': 'Insurances', 'emoji': '🛡️', 'iconPath': 'assets/category/insurances.svg'},
+    {'name': 'Rent', 'emoji': '🏠', 'iconPath': 'assets/category/rent.svg'},
+    {'name': 'Shopping', 'emoji': '🛍️', 'iconPath': 'assets/category/shopping.svg'},
+    {'name': 'Entertainment', 'emoji': '🎬', 'iconPath': 'assets/category/entertainment.svg'},
+    {'name': 'Education', 'emoji': '📚', 'iconPath': 'assets/category/education.svg'},
+    {'name': 'College', 'emoji': '🎓', 'iconPath': 'assets/category/college.svg'},
+    {'name': 'Others', 'emoji': '💰', 'iconPath': 'assets/category/others.svg'},
   ];
 
   @override
