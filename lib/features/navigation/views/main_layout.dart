@@ -176,6 +176,7 @@ class _MainLayoutState extends ConsumerState<MainLayout> {
                                 context,
                                 index: 0,
                                 //icon: Icons.home_outlined,
+                                icon:
                                 selectedIcon: Icons.home,
                                 label: 'Home',
                                 isSelected: widget.initialTab == 0,
@@ -185,6 +186,7 @@ class _MainLayoutState extends ConsumerState<MainLayout> {
                                 context,
                                 index: 2,
                                 //icon: Icons.bar_chart_outlined,
+                                icon:
                                 selectedIcon: Icons.bar_chart,
                                 label: 'Analytics',
                                 isSelected: widget.initialTab == 2,
@@ -194,6 +196,7 @@ class _MainLayoutState extends ConsumerState<MainLayout> {
                                 context,
                                 index: 1,
                                 //icon: Icons.add_circle_outline,
+                                icon:
                                 selectedIcon: Icons.add_circle,
                                 label: 'Add',
                                 isSelected: widget.initialTab == 1,
@@ -203,6 +206,7 @@ class _MainLayoutState extends ConsumerState<MainLayout> {
                                 context,
                                 index: 3,
                                 //icon: Icons.receipt_long_outlined,
+                                icon:
                                 selectedIcon: Icons.receipt_long,
                                 label: 'Expenses',
                                 isSelected: widget.initialTab == 3,
@@ -212,6 +216,7 @@ class _MainLayoutState extends ConsumerState<MainLayout> {
                                 context,
                                 index: 4,
                                 //icon: Icons.person_outline,
+                                icon:
                                 selectedIcon: Icons.person,
                                 label: 'Profile',
                                 isSelected: widget.initialTab == 4,
