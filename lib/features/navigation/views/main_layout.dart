@@ -175,7 +175,7 @@ class _MainLayoutState extends ConsumerState<MainLayout> {
                               _buildNavItem(
                                 context,
                                 index: 0,
-                                icon: Icons.home_outlined,
+                                //icon: Icons.home_outlined,
                                 selectedIcon: Icons.home,
                                 label: 'Home',
                                 isSelected: widget.initialTab == 0,
@@ -184,7 +184,7 @@ class _MainLayoutState extends ConsumerState<MainLayout> {
                               _buildNavItem(
                                 context,
                                 index: 2,
-                                icon: Icons.bar_chart_outlined,
+                                //icon: Icons.bar_chart_outlined,
                                 selectedIcon: Icons.bar_chart,
                                 label: 'Analytics',
                                 isSelected: widget.initialTab == 2,
@@ -193,7 +193,7 @@ class _MainLayoutState extends ConsumerState<MainLayout> {
                               _buildNavItem(
                                 context,
                                 index: 1,
-                                icon: Icons.add_circle_outline,
+                                //icon: Icons.add_circle_outline,
                                 selectedIcon: Icons.add_circle,
                                 label: 'Add',
                                 isSelected: widget.initialTab == 1,
@@ -202,7 +202,7 @@ class _MainLayoutState extends ConsumerState<MainLayout> {
                               _buildNavItem(
                                 context,
                                 index: 3,
-                                icon: Icons.receipt_long_outlined,
+                                //icon: Icons.receipt_long_outlined,
                                 selectedIcon: Icons.receipt_long,
                                 label: 'Expenses',
                                 isSelected: widget.initialTab == 3,
@@ -211,7 +211,7 @@ class _MainLayoutState extends ConsumerState<MainLayout> {
                               _buildNavItem(
                                 context,
                                 index: 4,
-                                icon: Icons.person_outline,
+                                //icon: Icons.person_outline,
                                 selectedIcon: Icons.person,
                                 label: 'Profile',
                                 isSelected: widget.initialTab == 4,
