@@ -275,14 +275,14 @@ class _MainLayoutState extends ConsumerState<MainLayout> {
         duration: const Duration(milliseconds: 200),
         curve: Curves.easeInOut,
         padding: EdgeInsets.symmetric(
-          horizontal: isAddButton ? 11.0 : (isSelected ? 8.0 : 8.0),
+          horizontal: isAddButton ? 8.0 : (isSelected ? 8.0 : 8.0),
           vertical: isAddButton ? 8.0 : 8.0,
         ),
         decoration: BoxDecoration(
           color: isAddButton
               ? colors.primary
               : (isSelected ? activeBgColor : Colors.transparent),
-          borderRadius: BorderRadius.circular(50),
+          borderRadius: BorderRadius.circular(100),
           boxShadow: isAddButton
               ? [
                   BoxShadow(
