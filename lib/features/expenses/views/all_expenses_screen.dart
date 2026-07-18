@@ -5,6 +5,7 @@ import 'package:spendly/core/providers/state_providers.dart';
 import 'package:spendly/core/widgets/shimmer_loading.dart';
 import 'package:spendly/models/expense.dart';
 import 'package:spendly/features/expenses/widgets/expense_detail_modal.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class AllExpensesScreen extends ConsumerStatefulWidget {
   const AllExpensesScreen({super.key});
@@ -18,7 +19,26 @@ class _AllExpensesScreenState extends ConsumerState<AllExpensesScreen> {
   String _selectedFilterCategory = 'All';
   String _searchQuery = '';
 
-  final List<Map<String, String>> _categories = [
+
+  final List<Map<String, dynamic>> _categories = [
+    {'name': 'All', 'emoji': '🌐', 'iconPath': 'assets/category/globe.svg'},
+    {'name': 'Food', 'emoji': '🍔', 'iconPath': 'assets/category/food.svg'},
+    {'name': 'Groceries', 'emoji': '🛒', 'iconPath': 'assets/category/groceries.svg'},
+    {'name': 'Petrol', 'emoji': '🚗', 'iconPath': 'assets/category/petrol.svg'},
+    {'name': 'Recharges', 'emoji': '📱', 'iconPath': 'assets/category/recharge.svg'},
+    {'name': 'Travel', 'emoji': '✈️', 'iconPath': 'assets/category/travel.svg'},
+    {'name': 'Gas', 'emoji': '⛽', 'iconPath': 'assets/category/gas.svg'},
+    {'name': 'Electricity', 'emoji': '⚡', 'iconPath': 'assets/category/electricity.svg'},
+    {'name': 'Medical', 'emoji': '💊', 'iconPath': 'assets/category/medical.svg'},
+    {'name': 'Insurances', 'emoji': '🛡️', 'iconPath': 'assets/category/insurances.svg'},
+    {'name': 'Rent', 'emoji': '🏠', 'iconPath': 'assets/category/rent.svg'},
+    {'name': 'Shopping', 'emoji': '🛍️', 'iconPath': 'assets/category/shopping.svg'},
+    {'name': 'Entertainment', 'emoji': '🎬', 'iconPath': 'assets/category/entertainment.svg'},
+    {'name': 'Education', 'emoji': '📚', 'iconPath': 'assets/category/education.svg'},
+    {'name': 'College', 'emoji': '🎓', 'iconPath': 'assets/category/college.svg'},
+    {'name': 'Others', 'emoji': '💰', 'iconPath': 'assets/category/others.svg'},
+  ];
+  /*final List<Map<String, String>> _categories = [
     {'name': 'All', 'emoji': '🌐'},
     {'name': 'Food', 'emoji': '🍔'},
     {'name': 'Groceries', 'emoji': '🛒'},
@@ -35,7 +55,7 @@ class _AllExpensesScreenState extends ConsumerState<AllExpensesScreen> {
     {'name': 'Education', 'emoji': '📚'},
     {'name': 'College', 'emoji': '🎓'},
     {'name': 'Others', 'emoji': '💰'},
-  ];
+  ];*/
 
   @override
   void dispose() {
@@ -119,7 +139,13 @@ class _AllExpensesScreenState extends ConsumerState<AllExpensesScreen> {
                 return Padding(
                   padding: const EdgeInsets.only(right: 8.0),
                   child: FilterChip(
-                    avatar: Text(cat['emoji'] ?? '💰'),
+                    avatar: SvgPicture.asset(
+                      cat['iconPath'] ?? 'assets/category/others.svg',
+                      
+                      width: 20, //18
+                      height: 20, //18
+                      colorFilter: ColorFilter.mode(Theme.of(context).primaryColor, BlendMode.srcIn),
+                    ),
                     label: Text(cat['name'] ?? ''),
                     selected: isSelected,
                     onSelected: (selected) {
@@ -127,6 +153,15 @@ class _AllExpensesScreenState extends ConsumerState<AllExpensesScreen> {
                         _selectedFilterCategory = cat['name']!;
                       });
                     },
+
+                    /*avatar: Text(cat['emoji'] ?? '💰'),
+                    label: Text(cat['name'] ?? ''),
+                    selected: isSelected,
+                    onSelected: (selected) {
+                      setState(() {
+                        _selectedFilterCategory = cat['name']!;
+                      });
+                    },*/
                     selectedColor: Theme.of(context).primaryColor.withOpacity(0.2),
                     checkmarkColor: Theme.of(context).primaryColor,
                   ),
@@ -285,10 +320,16 @@ class _AllExpensesScreenState extends ConsumerState<AllExpensesScreen> {
                                     leading: CircleAvatar(
                                       radius: 22,
                                       backgroundColor: getCategoryColor(exp.category).withOpacity(0.12),
-                                      child: Text(
+                                      child: SvgPicture.asset(
+                                        getCategoryIconPath(exp.category),
+                                        width: 24,
+                                        height: 24,
+                                        colorFilter: ColorFilter.mode(getCategoryColor(exp.category), BlendMode.srcIn),
+                                      ),
+                                      /*child: Text(
                                         getCategoryEmoji(exp.category),
                                         style: const TextStyle(fontSize: 20),
-                                      ),
+                                      ),*/
                                     ),
                                     title: Row(
                                       children: [

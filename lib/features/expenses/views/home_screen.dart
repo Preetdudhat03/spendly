@@ -9,6 +9,7 @@ import 'package:spendly/features/expenses/views/add_expense_screen.dart';
 import 'package:spendly/models/expense.dart';
 import 'package:spendly/core/widgets/shimmer_loading.dart';
 import 'package:spendly/features/expenses/widgets/expense_detail_modal.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
@@ -308,11 +309,17 @@ class HomeScreen extends ConsumerWidget {
                         child: ListView(
                           scrollDirection: Axis.horizontal,
                           children: [
-                            _buildQuickAddButton(context, ref, '🍔', 'Food'),
+
+                            _buildQuickAddButton(context, ref, 'assets/category/food.svg', 'Food'),
+                            _buildQuickAddButton(context, ref, 'assets/category/petrol.svg', 'Petrol'),
+                            _buildQuickAddButton(context, ref, 'assets/category/groceries.svg', 'Groceries'),
+                            _buildQuickAddButton(context, ref, 'assets/category/electricity.svg', 'Electricity'),
+                            _buildQuickAddButton(context, ref, 'assets/category/medical.svg', 'Medical'),
+                           /* _buildQuickAddButton(context, ref, '🍔', 'Food'),
                             _buildQuickAddButton(context, ref, '🚗', 'Petrol'),
                             _buildQuickAddButton(context, ref, '🛒', 'Groceries'),
                             _buildQuickAddButton(context, ref, '⚡', 'Electricity'),
-                            _buildQuickAddButton(context, ref, '💊', 'Medical'),
+                            _buildQuickAddButton(context, ref, '💊', 'Medical'),*/
                           ],
                         ),
                       ),
@@ -514,7 +521,8 @@ class HomeScreen extends ConsumerWidget {
   Widget _buildQuickAddButton(
     BuildContext context,
     WidgetRef ref,
-    String emoji,
+    //String emoji,
+    String iconpath,
     String category,
   ) {
     return Container(
@@ -535,7 +543,13 @@ class HomeScreen extends ConsumerWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(emoji, style: const TextStyle(fontSize: 28)),
+              SvgPicture.asset(
+                iconpath,
+                width: 28, //32
+                height: 28, //32
+                colorFilter: ColorFilter.mode(Theme.of(context).primaryColor, BlendMode.srcIn), // Optional: Tints the SVG to your theme color
+              ),
+              //Text(emoji, style: const TextStyle(fontSize: 28)),
               const SizedBox(height: 6),
               Text(
                 category,
@@ -571,9 +585,15 @@ class HomeScreen extends ConsumerWidget {
               color: Theme.of(context).primaryColor.withOpacity(0.1),
               shape: BoxShape.circle,
             ),
-            child: Text(
+            /*child: Text(
               _getCategoryEmoji(exp.category),
               style: const TextStyle(fontSize: 22),
+            ),*/
+            child: SvgPicture.asset(
+              _getcategoryiconpath(exp.category),
+              width: 24,
+              height: 24,
+              colorFilter: ColorFilter.mode(Theme.of(context).primaryColor, BlendMode.srcIn), // Optional: Tints the SVG to your theme color
             ),
           ),
           title: Text(
@@ -629,7 +649,47 @@ class HomeScreen extends ConsumerWidget {
     );
   }
 
-  String _getCategoryEmoji(String category) {
+  String _getcategoryiconpath(String category) {
+    switch (category.toLowerCase()) {
+      case 'food':
+        return 'assets/category/food.svg';
+      case 'groceries':
+        return 'assets/category/groceries.svg';
+      case 'transport':
+      case 'fuel':
+      case 'petrol':
+        return 'assets/category/petrol.svg';  
+      case 'recharges':
+        return 'assets/category/recharge.svg';
+      case 'travel':
+        return 'assets/category/travel.svg';
+      case 'gas':
+        return 'assets/category/gas.svg';
+      case 'electricity':
+      case 'water':
+      case 'utility':
+        return 'assets/category/electricity.svg';
+      case 'medical':
+        return 'assets/category/medical.svg';
+      case 'insurances':
+        return 'assets/category/insurances.svg';
+      case 'shopping':
+        return 'assets/category/shopping.svg';
+      case 'rent':
+        return 'assets/category/rent.svg';
+      case 'entertainment':
+        return 'assets/category/entertainment.svg';
+      case 'education':
+        return 'assets/category/education.svg';
+      case 'college':
+      case 'collage':
+        return 'assets/category/college.svg';
+      default:
+        return 'assets/category/others.svg';
+    
+  
+  
+  /*String _getCategoryEmoji(String category) {
     switch (category.toLowerCase()) {
       case 'food':
         return '🍔';
@@ -665,7 +725,11 @@ class HomeScreen extends ConsumerWidget {
       case 'collage':
         return '🎓';
       default:
-        return '💰';
+        return '💰';*/
+
+
+
+      
     }
   }
 }

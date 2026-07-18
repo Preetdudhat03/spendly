@@ -4,8 +4,46 @@ import 'package:intl/intl.dart';
 import 'package:spendly/core/providers/state_providers.dart';
 import 'package:spendly/core/utils/schema_validator.dart';
 import 'package:spendly/models/expense.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
-String getCategoryEmoji(String category) {
+String getCategoryIconPath(String category) {
+  switch (category.toLowerCase()) {
+    case 'food':
+      return 'assets/category/food.svg';
+    case 'groceries':
+      return 'assets/category/groceries.svg';
+    case 'petrol':
+    case 'fuel':
+      return 'assets/category/petrol.svg';
+    case 'recharges':
+      return 'assets/category/recharges.svg';
+    case 'travel':
+      return 'assets/category/travel.svg';
+    case 'gas':
+      return 'assets/category/gas.svg';
+    case 'electricity':
+    case 'utility':
+      return 'assets/category/electricity.svg';
+    case 'medical':
+      return 'assets/category/medical.svg';
+    case 'insurances':
+      return 'assets/category/insurances.svg';
+    case 'shopping':
+      return 'assets/category/shopping.svg';
+    case 'rent':
+      return 'assets/category/rent.svg';
+    case 'entertainment':
+      return 'assets/category/entertainment.svg';
+    case 'education':
+      return 'assets/category/education.svg';
+    case 'college':
+    case 'collage':
+      return 'assets/category/college.svg';
+    default:
+      return 'assets/category/others.svg';
+  }
+}
+/*String getCategoryEmoji(String category) {
   switch (category.toLowerCase()) {
     case 'food':
       return '🍔';
@@ -41,7 +79,7 @@ String getCategoryEmoji(String category) {
     default:
       return '💰';
   }
-}
+}*/
 
 Color getCategoryColor(String category) {
   switch (category.toLowerCase()) {
@@ -117,9 +155,15 @@ void showExpenseDetail(BuildContext context, WidgetRef ref, Expense expense) {
                   CircleAvatar(
                     radius: 30,
                     backgroundColor: getCategoryColor(expense.category).withOpacity(0.15),
-                    child: Text(
+                    /*child: Text(
                       getCategoryEmoji(expense.category),
                       style: const TextStyle(fontSize: 28),
+                    ),*/
+                    child: SvgPicture.asset(
+                      getCategoryIconPath(expense.category),
+                      width: 24,
+                      height: 24,
+                      colorFilter: ColorFilter.mode(getCategoryColor(expense.category), BlendMode.srcIn),
                     ),
                   ),
                   const SizedBox(width: 16),
