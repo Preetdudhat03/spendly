@@ -16,7 +16,7 @@ String getCategoryIconPath(String category) {
     case 'fuel':
       return 'assets/category/petrol.svg';
     case 'recharges':
-      return 'assets/category/recharges.svg';
+      return 'assets/category/recharge.svg';
     case 'travel':
       return 'assets/category/travel.svg';
     case 'gas':
