@@ -48,4 +48,4 @@ app.*.map.json
 .env
 .env.*
 *.env
-/lib/core/config.dart/
+/lib/core/config.dart
