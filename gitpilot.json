@@ -2,7 +2,7 @@
   "branch": "main",
   "remote": "origin",
   "watch": true,
-  "delay": 0,
-  "auto_push": false,
+  "delay": 1,
+  "auto_push": true,
   "max_file_size_mb": 50
 }
