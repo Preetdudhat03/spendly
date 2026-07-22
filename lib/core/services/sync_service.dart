@@ -42,12 +42,14 @@ class SyncService {
 
     // Only run initial sync if native user is already authenticated
     if (_client.auth.currentUser != null) {
-      final hasStrandedData = HiveService.families.values.any((f) => f.createdBy?.startsWith('user_') ?? false);
-      if (hasStrandedData) {
-        mergeLocalDataToCloud(_client.auth.currentUser!.id);
-      } else {
-        syncNow();
-      }
+      Future.microtask(() {
+        final hasStrandedData = HiveService.families.values.any((f) => f.createdBy?.startsWith('user_') ?? false);
+        if (hasStrandedData) {
+          mergeLocalDataToCloud(_client.auth.currentUser!.id);
+        } else {
+          syncNow();
+        }
+      });
     }
   }
 
