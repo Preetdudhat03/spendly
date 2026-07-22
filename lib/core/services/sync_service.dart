@@ -10,6 +10,7 @@ import 'package:spendly/models/hive/family_member_model.dart';
 import 'package:spendly/models/hive/budget_model.dart';
 import 'package:spendly/models/hive/pending_operation_model.dart';
 import 'package:spendly/models/hive/sync_metadata_model.dart';
+import 'package:spendly/core/providers/state_providers.dart';
 
 final syncStateProvider = StateProvider<bool>((ref) => false);
 
@@ -397,7 +398,6 @@ class SyncService {
   Future<void> mergeLocalDataToCloud(String newUserId) async {
     debugPrint('SyncService: Merging local sandbox data for new user $newUserId');
 
-    final newUserId = _client.auth.currentUser!.id;
     final strandedFamilies = HiveService.families.values.where((f) => f.createdBy != newUserId).toList();
     
     if (strandedFamilies.isEmpty) {
@@ -460,7 +460,14 @@ class SyncService {
       // Update Pending Ops (only if it was a sandbox user!)
       for (var op in HiveService.pendingOperations.values) {
          if (op.userId == oldUserId) {
-             final updatedOp = op.copyWith(userId: newUserId);
+             final updatedOp = PendingOperationModel(
+                id: op.id, 
+                type: op.type, 
+                payload: op.payload, 
+                userId: newUserId, 
+                timestamp: op.timestamp,
+                retryCount: op.retryCount,
+             );
              await HiveService.pendingOperations.put(op.id, updatedOp);
          }
       }
