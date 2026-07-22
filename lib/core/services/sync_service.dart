@@ -397,8 +397,8 @@ class SyncService {
   Future<void> mergeLocalDataToCloud(String newUserId) async {
     debugPrint('SyncService: Merging local sandbox data for new user $newUserId');
 
-    // 1. Identify guest data (any data created by a 'user_' prefixed ID)
-    final strandedFamilies = HiveService.families.values.where((f) => f.createdBy?.startsWith('user_') ?? false).toList();
+    final newUserId = _client.auth.currentUser!.id;
+    final strandedFamilies = HiveService.families.values.where((f) => f.createdBy != newUserId).toList();
     
     if (strandedFamilies.isEmpty) {
        debugPrint('SyncService: No sandbox data found to merge. Triggering pull instead.');
@@ -406,80 +406,126 @@ class SyncService {
        return;
     }
 
+    bool localDataUpdated = false;
+
     for (final family in strandedFamilies) {
       final oldUserId = family.createdBy;
-      final updatedFamily = family.toDomain().copyWith(createdBy: newUserId);
-      
-      final oldMembers = HiveService.familyMembers.values.where((m) => m.familyId == family.id && m.userId == oldUserId).toList();
-      if (oldMembers.isNotEmpty) {
-         final updatedMember = oldMembers.first.toDomain().copyWith(userId: newUserId);
-         final opId = 'local_${DateTime.now().millisecondsSinceEpoch}_fam_${family.id}';
-         final op = PendingOperationModel(
-           id: opId,
-           type: 'CREATE_FAMILY',
-           payload: {
-             'family': updatedFamily.toJson(),
-             'member': updatedMember.toJson(),
-           },
-           userId: newUserId,
-           timestamp: DateTime.now(),
-         );
-         await HiveService.pendingOperations.put(op.id, op);
+      if (oldUserId == null || oldUserId.isEmpty) continue;
+
+      bool isRealUuid = oldUserId.length > 20 && !oldUserId.startsWith('user_');
+
+      if (isRealUuid) {
+         // Attempt to transfer on backend
+         try {
+           await _client.rpc('complete_user_migration', params: {
+             'old_user_id': oldUserId,
+             'new_user_id': newUserId,
+           });
+           debugPrint('Successfully ran RPC to migrate $oldUserId to $newUserId');
+         } catch (e) {
+           debugPrint('RPC failed: $e. Cannot migrate real UUID without backend.');
+           // If it fails, they are offline. Skip this family for now.
+           continue;
+         }
       }
+
+      // Update Local Families
+      final updatedFamily = family.toDomain().copyWith(createdBy: newUserId);
+      await HiveService.families.put(family.id, FamilyModel.fromDomain(updatedFamily));
       
-      // Expenses
-      final oldExpenses = HiveService.expenses.values.where((e) => e.familyId == family.id).toList();
-      for (var expense in oldExpenses) {
-        if (expense.createdBy.startsWith('user_')) {
-          final updatedExpense = ExpenseModel(
-            id: expense.id,
-            familyId: expense.familyId,
-            createdBy: newUserId,
-            amount: expense.amount,
-            category: expense.category,
-            description: expense.description,
-            paymentMethod: expense.paymentMethod,
-            expenseDate: expense.expenseDate,
-            createdAt: expense.createdAt,
-            createdByName: expense.createdByName,
-          );
-          final opId = 'local_${DateTime.now().millisecondsSinceEpoch}_${expense.id}';
+      // Update Local Members (only for the old user)
+      final members = HiveService.familyMembers.values.where((m) => m.familyId == family.id).toList();
+      for (var m in members) {
+         if (m.userId == oldUserId) {
+             final updatedMember = m.toDomain().copyWith(userId: newUserId);
+             await HiveService.familyMembers.put(m.id, FamilyMemberModel.fromDomain(updatedMember));
+         }
+      }
+
+      // Update Local Expenses
+      final expenses = HiveService.expenses.values.where((e) => e.familyId == family.id).toList();
+      for (var e in expenses) {
+         if (e.createdBy == oldUserId) {
+             final updatedEx = e.toDomain().copyWith(createdBy: newUserId);
+             await HiveService.expenses.put(e.id, ExpenseModel.fromDomain(updatedEx));
+         }
+      }
+
+      // Update Local Budgets
+      final budgets = HiveService.budgets.values.where((b) => b.familyId == family.id).toList();
+      for (var b in budgets) {
+         // Budgets don't have createdBy, they have familyId. No changes needed.
+      }
+
+      // Update Pending Ops (only if it was a sandbox user!)
+      for (var op in HiveService.pendingOperations.values) {
+         if (op.userId == oldUserId) {
+             final updatedOp = op.copyWith(userId: newUserId);
+             await HiveService.pendingOperations.put(op.id, updatedOp);
+         }
+      }
+
+      // If it was a Sandbox user, we must ALSO QUEUE CREATION OF THE FAMILY AND ALL DATA!
+      if (!isRealUuid) {
+          // Push family creation
+          final familyOpId = 'local_${DateTime.now().millisecondsSinceEpoch}_fam_${family.id}';
+          // Find the admin member (or any member belonging to the old user)
+          final adminMember = HiveService.familyMembers.values.firstWhere(
+             (m) => m.familyId == family.id && m.userId == newUserId, 
+             orElse: () => HiveService.familyMembers.values.first,
+          ).toDomain();
+          
           final op = PendingOperationModel(
-            id: opId,
-            type: 'ADD_EXPENSE',
-            payload: updatedExpense.toDomain().toJson(),
+            id: familyOpId,
+            type: 'CREATE_FAMILY',
+            payload: {
+              'family': updatedFamily.toJson(),
+              'member': adminMember.toJson(),
+            },
             userId: newUserId,
             timestamp: DateTime.now(),
           );
           await HiveService.pendingOperations.put(op.id, op);
-        }
+
+          // Queue expenses
+          for (var e in expenses) {
+              if (e.createdBy == oldUserId) {
+                  final opId = 'local_${DateTime.now().millisecondsSinceEpoch}_${e.id}';
+                  final opEx = PendingOperationModel(
+                    id: opId,
+                    type: 'ADD_EXPENSE',
+                    payload: e.toDomain().copyWith(createdBy: newUserId).toJson(),
+                    userId: newUserId,
+                    timestamp: DateTime.now(),
+                  );
+                  await HiveService.pendingOperations.put(opEx.id, opEx);
+              }
+          }
+
+          // Queue budgets
+          for (var b in budgets) {
+              final opId = 'local_${DateTime.now().millisecondsSinceEpoch}_budget_${b.id}';
+              final opB = PendingOperationModel(
+                id: opId,
+                type: 'SET_BUDGET',
+                payload: b.toDomain().toJson(),
+                userId: newUserId,
+                timestamp: DateTime.now(),
+              );
+              await HiveService.pendingOperations.put(opB.id, opB);
+          }
       }
-      
-      // Budgets
-      final oldBudgets = HiveService.budgets.values.where((b) => b.familyId == family.id).toList();
-      for (var budget in oldBudgets) {
-        final opId = 'local_${DateTime.now().millisecondsSinceEpoch}_budget_${budget.id}';
-        final op = PendingOperationModel(
-          id: opId,
-          type: 'SET_BUDGET',
-          payload: budget.toDomain().toJson(),
-          userId: newUserId,
-          timestamp: DateTime.now(),
-        );
-        await HiveService.pendingOperations.put(op.id, op);
-      }
-      
-      // IMPORTANT: Update local models so they don't get merged again!
-      await HiveService.families.put(family.id, FamilyModel.fromDomain(updatedFamily));
-      if (oldMembers.isNotEmpty) {
-        await HiveService.familyMembers.put(oldMembers.first.id, FamilyMemberModel.fromDomain(oldMembers.first.toDomain().copyWith(userId: newUserId)));
-      }
-      for (var expense in oldExpenses) {
-        if (expense.createdBy.startsWith('user_')) {
-           final updatedEx = expense.toDomain().copyWith(createdBy: newUserId);
-           await HiveService.expenses.put(expense.id, ExpenseModel.fromDomain(updatedEx));
-        }
-      }
+      localDataUpdated = true;
+    }
+
+    if (localDataUpdated) {
+        Future.delayed(const Duration(milliseconds: 500), () {
+            try {
+              // Ignore if providers are disposed
+              _ref.read(familyProvider.notifier).loadFamily();
+              _ref.read(expenseProvider.notifier).loadExpenses();
+            } catch (_) {}
+        });
     }
 
     // 5. Cleanup
