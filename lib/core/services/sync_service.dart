@@ -44,9 +44,9 @@ class SyncService {
     if (_client.auth.currentUser != null) {
       debugPrint('--- CURRENT USER ---');
       debugPrint(_client.auth.currentUser!.id);
-      debugPrint('--- PROFILES DUMP ---');
-      for (var p in HiveService.profiles.values) {
-        debugPrint('Profile: ${p.id}, name: ${p.displayName}, email: ${p.email}');
+      debugPrint('--- PENDING OPS DUMP ---');
+      for (var op in HiveService.pendingOperations.values) {
+        debugPrint('Op: ${op.id}, type: ${op.type}, userId: ${op.userId}, retryCount: ${op.retryCount}');
       }
       debugPrint('-----------------');
 
