@@ -42,7 +42,7 @@ class SyncService {
 
     // Only run initial sync if native user is already authenticated
     if (_client.auth.currentUser != null) {
-      final hasStrandedData = HiveService.families.values.any((f) => f.createdBy.startsWith('user_'));
+      final hasStrandedData = HiveService.families.values.any((f) => f.createdBy?.startsWith('user_') ?? false);
       if (hasStrandedData) {
         mergeLocalDataToCloud(_client.auth.currentUser!.id);
       } else {
@@ -388,7 +388,7 @@ class SyncService {
     debugPrint('SyncService: Merging local sandbox data for new user $newUserId');
 
     // 1. Identify guest data (any data created by a 'user_' prefixed ID)
-    final strandedFamilies = HiveService.families.values.where((f) => f.createdBy.startsWith('user_')).toList();
+    final strandedFamilies = HiveService.families.values.where((f) => f.createdBy?.startsWith('user_') ?? false).toList();
     
     if (strandedFamilies.isEmpty) {
        debugPrint('SyncService: No sandbox data found to merge. Triggering pull instead.');
