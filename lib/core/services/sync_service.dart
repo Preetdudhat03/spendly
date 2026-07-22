@@ -42,12 +42,11 @@ class SyncService {
 
     // Only run initial sync if native user is already authenticated
     if (_client.auth.currentUser != null) {
-      debugPrint('--- HIVE DUMP ---');
-      for (var f in HiveService.families.values) {
-        debugPrint('Family: ${f.id}, createdBy: ${f.createdBy}, name: ${f.name}');
-      }
-      for (var m in HiveService.familyMembers.values) {
-        debugPrint('Member: ${m.id}, userId: ${m.userId}, familyId: ${m.familyId}');
+      debugPrint('--- CURRENT USER ---');
+      debugPrint(_client.auth.currentUser!.id);
+      debugPrint('--- PROFILES DUMP ---');
+      for (var p in HiveService.profiles.values) {
+        debugPrint('Profile: ${p.id}, name: ${p.displayName}, email: ${p.email}');
       }
       debugPrint('-----------------');
 
