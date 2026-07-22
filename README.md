@@ -47,8 +47,11 @@ Spendly is a cross-platform mobile application built with Flutter that helps fam
    ```
 
 3. **Configure Environment**
+3. **Configure Environment**
    You need to set up your Supabase backend credentials for the app to work.
-   Create a new file at `lib/core/constants/config.dart` and paste the following code into it:
+   Since the configuration file is hidden for security reasons, you must recreate it:
+   - First, create a folder named `constants` inside the `lib/core/` directory (if it doesn't exist).
+   - Next, create a new file at `lib/core/constants/config.dart` and paste the following code into it:
 
    ```dart
    class AppConfig {
