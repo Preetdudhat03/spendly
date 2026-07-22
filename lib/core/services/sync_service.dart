@@ -457,16 +457,28 @@ class SyncService {
          // Budgets don't have createdBy, they have familyId. No changes needed.
       }
 
-      // Update Pending Ops (only if it was a sandbox user!)
+      // Update Pending Ops (for ALL cases to ensure RLS passes)
       for (var op in HiveService.pendingOperations.values) {
          if (op.userId == oldUserId) {
+             Map<String, dynamic> newPayload = Map<String, dynamic>.from(op.payload);
+             
+             if (newPayload.containsKey('created_by')) {
+                 newPayload['created_by'] = newUserId;
+             }
+             if (newPayload.containsKey('family') && newPayload['family']['created_by'] != null) {
+                 newPayload['family']['created_by'] = newUserId;
+             }
+             if (newPayload.containsKey('member') && newPayload['member']['user_id'] != null) {
+                 newPayload['member']['user_id'] = newUserId;
+             }
+
              final updatedOp = PendingOperationModel(
                 id: op.id, 
                 type: op.type, 
-                payload: op.payload, 
+                payload: newPayload, 
                 userId: newUserId, 
                 timestamp: op.timestamp,
-                retryCount: op.retryCount,
+                retryCount: 0,
              );
              await HiveService.pendingOperations.put(op.id, updatedOp);
          }
