@@ -33,6 +33,7 @@ class SyncService {
 
     // Automatically trigger sync whenever a new pending operation is added
     HiveService.pendingOperations.watch().listen((event) {
+      if (_ref.read(syncStateProvider)) return; // Ignore local changes caused by sync process
       // Small delay to allow multiple rapid operations to batch together
       Future.delayed(const Duration(milliseconds: 500), () {
         syncNow();
@@ -75,7 +76,7 @@ class SyncService {
 
   Future<void> _pushPendingOperations() async {
     final ops = HiveService.pendingOperations.values
-        .where((op) => op.syncStatus != 'SYNCING')
+        .where((op) => op.syncStatus != 'SYNCING' && op.retryCount < 3)
         .toList()
       ..sort((a, b) => a.timestamp.compareTo(b.timestamp));
 
