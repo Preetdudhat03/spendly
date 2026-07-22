@@ -176,7 +176,12 @@ class _AllExpensesScreenState extends ConsumerState<AllExpensesScreen> {
             children: _categories.map((cat) {
               final isSelected = _selectedFilterCategory == cat['name'];
               return FilterChip(
-                avatar: Text(cat['emoji'] ?? '💰'),
+                avatar: SvgPicture.asset(
+                  cat['iconPath'] ?? 'assets/category/others.svg',
+                  width: 20,
+                  height: 20,
+                  colorFilter: ColorFilter.mode(Theme.of(context).primaryColor, BlendMode.srcIn),
+                ),
                 label: Text(cat['name'] ?? ''),
                 selected: isSelected,
                 onSelected: (selected) {
