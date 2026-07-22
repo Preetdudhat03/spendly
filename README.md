@@ -47,7 +47,34 @@ Spendly is a cross-platform mobile application built with Flutter that helps fam
    ```
 
 3. **Configure Environment**
-   *Note: Ensure you have your Supabase URL and Anon Key set up in your environment or configuration files (`lib/core/constants/config.dart`).*
+   You need to set up your Supabase backend credentials for the app to work.
+   Create a new file at `lib/core/constants/config.dart` and paste the following code into it:
+
+   ```dart
+   class AppConfig {
+     // 🔴 Set this to true to test the app in Offline Sandbox mode.
+     // 🟢 Set this to false to connect to your real Supabase Database.
+     static const bool forceSandboxMode = false;
+
+     static const String supabaseUrl = forceSandboxMode 
+         ? '' 
+         : String.fromEnvironment('SUPABASE_URL', defaultValue: 'your supabase_url_here'); 
+         
+     static const String supabaseAnonKey = forceSandboxMode 
+         ? '' 
+         : String.fromEnvironment('SUPABASE_ANON_KEY', defaultValue: 'your supabase_anon_key_here'); 
+
+     static bool isSupabaseInitialized = false;
+
+     static bool get isSupabaseConfigured {
+       return supabaseUrl.isNotEmpty &&
+           supabaseUrl.startsWith('http') &&
+           supabaseAnonKey.isNotEmpty &&
+           supabaseAnonKey.length > 20;
+     }
+   }
+   ```
+   *Make sure to replace `'your supabase_url_here'` and `'your supabase_anon_key_here'` with your actual Supabase project keys!*
 
 4. **Run the app**
    ```bash
