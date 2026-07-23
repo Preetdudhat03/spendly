@@ -90,6 +90,7 @@ class SpendingCalendar extends StatelessWidget {
 
       gridItems.add(
         GestureDetector(
+          behavior: HitTestBehavior.opaque,
           onTap: () => _showDayExpenses(context, date, amount),
           child: Container(
             margin: const EdgeInsets.all(4),
