@@ -233,7 +233,7 @@ class __AddExpenseFloatingButtonState
           child: Center(
             child: SvgPicture.asset(
               'assets/icons/plus.svg',
-              width: 34, //24
+              width: 38, //24
               height: 34, //24
               colorFilter: const ColorFilter.mode(
                 Colors.white,
