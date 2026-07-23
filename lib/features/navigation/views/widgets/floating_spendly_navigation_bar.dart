@@ -224,8 +224,8 @@ class __AddExpenseFloatingButtonState
       child: ScaleTransition(
         scale: _scaleAnimation,
         child: Container(
-          width: 52, //52
-          height: 52,//52
+          width: 54, //52
+          height: 54,//52
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: colors.primary,
