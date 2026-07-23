@@ -1,10 +1,10 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:spendly/features/analytics/presentation/widgets/category_donut_chart.dart';
 import 'package:spendly/features/analytics/providers/analytics_providers.dart';
+import 'drill_down_sheet.dart';
+
 import 'package:spendly/models/expense.dart';
-import 'package:spendly/features/analytics/presentation/widgets/drill_down_sheet.dart';
 
 class SpendingHeatmap extends StatelessWidget {
   final AnalyticsState state;
@@ -27,133 +27,6 @@ class SpendingHeatmap extends StatelessWidget {
     } else {
       return primary; // Dark/Full
     }
-  }
-
-  void _showDayExpenses(BuildContext context, DateTime date, double totalAmount, List<Expense> allExpenses) {
-    final currencyFmt = NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 0);
-    final dateFmt = DateFormat('EEEE, MMMM d, yyyy');
-
-    final dayExpenses = allExpenses.where((e) {
-      final d = e.expenseDate;
-      return d.year == date.year && d.month == date.month && d.day == date.day;
-    }).toList()..sort((a, b) => b.amount.compareTo(a.amount));
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-      ),
-      builder: (context) {
-        return SafeArea(
-          child: SingleChildScrollView(
-            child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const SizedBox(height: 12),
-              Container(
-                width: 36,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Daily Spend History',
-                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            dateFmt.format(date),
-                            style: TextStyle(fontSize: 12, color: Colors.grey[500]),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Text(
-                      currencyFmt.format(totalAmount),
-                      style: TextStyle(
-                        fontWeight: FontWeight.w900,
-                        fontSize: 18,
-                        color: Theme.of(context).primaryColor,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 16),
-              const Divider(),
-              dayExpenses.isEmpty
-                  ? const Padding(
-                      padding: EdgeInsets.all(32.0),
-                      child: Center(child: Text('No expenses logged on this day.')),
-                    )
-                  : ListView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                      itemCount: dayExpenses.length,
-                      itemBuilder: (context, idx) {
-                        final exp = dayExpenses[idx];
-                        final meta = getCategoryMetadata(context, exp.category);
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 8.0),
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 36,
-                                height: 36,
-                                alignment: Alignment.center,
-                                decoration: BoxDecoration(
-                                  color: meta.color.withOpacity(0.08),
-                                  shape: BoxShape.circle,
-                                ),
-                                child: Text(meta.emoji, style: const TextStyle(fontSize: 16)),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      exp.description.isEmpty ? meta.name : exp.description,
-                                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-                                    ),
-                                    const SizedBox(height: 2),
-                                    Text(
-                                      'By ${exp.createdByName} • ${exp.paymentMethod}',
-                                      style: TextStyle(fontSize: 11, color: Colors.grey[400]),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Text(
-                                currencyFmt.format(exp.amount),
-                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                    ),
-            ],
-          ),
-          ),
-        );
-      },
-    );
   }
 
   @override
@@ -286,7 +159,23 @@ class SpendingHeatmap extends StatelessWidget {
                                       message: '${dateFmt.format(day)}: ${currencyFmt.format(amount)}',
                                       child: GestureDetector(
                                         onTap: () {
-                                          _showDayExpenses(context, day, amount, allExpenses);
+                                          final dayExpenses = allExpenses.where((e) {
+                                            return e.expenseDate.year == day.year &&
+                                                e.expenseDate.month == day.month &&
+                                                e.expenseDate.day == day.day;
+                                          }).toList()
+                                            ..sort((a, b) => b.amount.compareTo(a.amount));
+
+                                          DrillDownSheet.show(
+                                            context,
+                                            title: dateFmt.format(day),
+                                            subtitle: 'Daily transaction list',
+                                            icon: Icons.calendar_today,
+                                            color: Theme.of(context).primaryColor,
+                                            totalAmount: amount,
+                                            expenses: dayExpenses,
+                                            aiSummary: 'You logged ${dayExpenses.length} transactions on this day.',
+                                          );
                                         },
                                         child: Container(
                                           height: 16,
