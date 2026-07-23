@@ -147,6 +147,9 @@ class _MainLayoutState extends ConsumerState<MainLayout> {
                         case 2:
                           context.go('/analytics');
                           break;
+                        case 3:
+                          context.go('/expenses');
+                          break;
                         case 4:
                           context.go('/profile');
                           break;
