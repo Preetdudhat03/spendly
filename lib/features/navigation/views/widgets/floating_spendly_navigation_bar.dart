@@ -250,14 +250,6 @@ class __AddExpenseFloatingButtonState
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: colors.primary,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.15),
-                blurRadius: 8,// 8
-                spreadRadius: 0,
-                offset: const Offset(0, 4),
-              ),
-            ],
           ),
           child: Center(
             child: SvgPicture.asset(
