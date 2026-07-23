@@ -130,7 +130,7 @@ class _MainLayoutState extends ConsumerState<MainLayout> {
               ),
             ],
           ),
-          if (!isWide)
+          /* if (!isWide)
             Positioned(
               left: 0,
               right: 0,
@@ -227,7 +227,7 @@ class _MainLayoutState extends ConsumerState<MainLayout> {
                   ),
                 ),
               ),
-            ),
+            ), */
         ],
       ),
     );
