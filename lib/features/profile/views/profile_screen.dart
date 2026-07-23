@@ -181,7 +181,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               alignment: WrapAlignment.center,
               children: colors.map((color) => GestureDetector(
                 onTap: () {
-                  final hex = '#${color.value.toRadixString(16).padLeft(8, '0').substring(2)}';
+                  final hex = '#${(color.value & 0xFFFFFF).toRadixString(16).padLeft(6, '0')}';
                   ref.read(authProvider.notifier).updateAvatarColor(hex);
                   Navigator.pop(context);
                 },
