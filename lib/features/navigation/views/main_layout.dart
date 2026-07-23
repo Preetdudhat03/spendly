@@ -167,7 +167,6 @@ class _MainLayoutState extends ConsumerState<MainLayout> {
     );
   }
 }
-}
 
 class _FadeIndexedStack extends StatefulWidget {
   final int index;
