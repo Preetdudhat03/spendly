@@ -136,7 +136,7 @@ class FloatingSpendlyNavigationBar extends StatelessWidget {
                     style: TextStyle(
                       color: activeColor,
                       fontWeight: FontWeight.w700,
-                      fontSize: 13, //13
+                      fontSize: 14, //13
                       letterSpacing: -0.2,
                     ),
                   ),
