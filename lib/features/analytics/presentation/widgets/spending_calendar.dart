@@ -24,6 +24,8 @@ class SpendingCalendar extends StatelessWidget {
   }
 
   void _showDayExpenses(BuildContext context, DateTime date, double totalAmount) {
+    if (totalAmount <= 0) return;
+    
     final currencyFmt = NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 0);
     final dateFmt = DateFormat('EEEE, MMMM d, yyyy');
 
