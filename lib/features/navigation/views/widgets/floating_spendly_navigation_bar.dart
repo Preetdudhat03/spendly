@@ -115,7 +115,7 @@ class FloatingSpendlyNavigationBar extends StatelessWidget {
         duration: const Duration(milliseconds: 250),
         curve: Curves.easeInOutCubic,
         padding: EdgeInsets.symmetric(
-          horizontal: isSelected ? 20.0 : 12.0,//16 ,12
+          horizontal: isSelected ? 20.0 : 14.0,//16 ,12
           vertical: 10.0,
         ),
         decoration: BoxDecoration(
