@@ -253,7 +253,7 @@ class __AddExpenseFloatingButtonState
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(0.15),
-                blurRadius: 8,
+                blurRadius: 0,// 8
                 spreadRadius: 0,
                 offset: const Offset(0, 4),
               ),
