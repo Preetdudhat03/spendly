@@ -9,6 +9,7 @@ import 'package:spendly/features/expenses/views/add_expense_screen.dart';
 import 'package:spendly/features/analytics/presentation/pages/analytics_page.dart';
 import 'package:spendly/features/expenses/views/all_expenses_screen.dart';
 import 'package:spendly/features/profile/views/profile_screen.dart';
+import 'package:spendly/features/navigation/views/widgets/floating_spendly_navigation_bar.dart';
 
 class MainLayout extends ConsumerStatefulWidget {
   final int initialTab;
