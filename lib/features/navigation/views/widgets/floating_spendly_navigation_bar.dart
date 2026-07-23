@@ -226,10 +226,10 @@ class __AddExpenseFloatingButtonState
         child: Container(
           width: 56, //52
           height: 56,//52
-          /*decoration: BoxDecoration(
+          decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: colors.primary,
-          ),*/
+          ),
           child: Center(
             child: SvgPicture.asset(
               'assets/icons/plus.svg',
