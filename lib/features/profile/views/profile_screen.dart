@@ -270,12 +270,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                     final meta = Supabase.instance.client.auth.currentUser?.userMetadata;
                                     final hex = meta?['avatar_color'] as String?;
                                     Color bgColor = Theme.of(context).primaryColor;
-                                    if (hex != null && hex.length == 7) {
-                                      bgColor = Color(int.parse(hex.substring(1, 7), radix: 16) + 0xFF000000);
+                                    if (hex != null && hex.startsWith('#') && hex.length >= 7) {
+                                      try {
+                                        bgColor = Color(int.parse(hex.substring(1, 7), radix: 16) | 0xFF000000);
+                                      } catch (_) {
+                                        // Fallback on error
+                                      }
                                     }
                                     return CircleAvatar(
                                       radius: 40,
-                                      backgroundColor: bgColor.withValues(alpha: 0.1),
+                                      backgroundColor: bgColor.withOpacity(0.1),
                                       child: Icon(Icons.person, size: 45, color: bgColor),
                                     );
                                   }
