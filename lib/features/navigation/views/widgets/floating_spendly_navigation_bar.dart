@@ -116,7 +116,7 @@ class FloatingSpendlyNavigationBar extends StatelessWidget {
         curve: Curves.easeInOutCubic,
         padding: EdgeInsets.symmetric(
           horizontal: isSelected ? 20.0 : 14.0,//16 ,12
-          vertical: 10.0, //
+          vertical: 10.0, //10
         ),
         decoration: BoxDecoration(
           color: isSelected ? activeBgColor : Colors.transparent,
