@@ -249,7 +249,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               ),
             )
           : SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(20.0, 20.0, 20.0, 100.0),
+              padding: const EdgeInsets.fromLTRB(20.0, 20.0, 20.0, 70.0), //20, 20, 20, 100
               child: Builder(
                 builder: (context) {
                   final width = MediaQuery.of(context).size.width;
