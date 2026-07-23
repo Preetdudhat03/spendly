@@ -120,7 +120,7 @@ class FloatingSpendlyNavigationBar extends StatelessWidget {
             SvgPicture.asset(
               iconPath,
               width: 22, //22
-              height: 22,
+              height: 22, //22
               colorFilter: ColorFilter.mode(
                 isSelected ? activeColor : inactiveColor,
                 BlendMode.srcIn,
