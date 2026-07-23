@@ -278,7 +278,7 @@ class _AllExpensesScreenState extends ConsumerState<AllExpensesScreen> {
                       ),
                     )
                   : ListView.builder(
-                      padding: EdgeInsets.fromLTRB(16.0, 0, 16.0, isWide ? 0.0 : 100.0),
+                      padding: EdgeInsets.fromLTRB(16.0, 0, 16.0, isWide ? 0.0 : 70.0), //100
                       itemCount: groupedKeys.length,
                       itemBuilder: (context, groupIndex) {
                         final dateKey = groupedKeys[groupIndex];
