@@ -64,6 +64,14 @@ class FloatingSpendlyNavigationBar extends StatelessWidget {
                   const SizedBox(width: 4),
                   _buildNavItem(
                     context,
+                    index: 3,
+                    label: 'Expenses',
+                    iconPath: 'assets/icons/list.svg',
+                    isSelected: currentTab == 3,
+                  ),
+                  const SizedBox(width: 4),
+                  _buildNavItem(
+                    context,
                     index: 4,
                     label: 'Profile',
                     iconPath: 'assets/icons/user.svg',
