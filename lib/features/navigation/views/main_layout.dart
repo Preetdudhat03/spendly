@@ -131,214 +131,42 @@ class _MainLayoutState extends ConsumerState<MainLayout> {
               ),
             ],
           ),
-//           if (!isWide)
-//             Positioned(
-//               left: 0,
-//               right: 0,
-//               bottom: 0,
-//               child: SafeArea(
-//                 child: Padding(
-//                   padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
-//                   child: Align(
-//                     alignment: Alignment.bottomCenter,
-//                     child: Container(
-//                       clipBehavior: Clip.antiAlias,
-//                       decoration: BoxDecoration(
-//                         borderRadius: BorderRadius.circular(100),
-//                         boxShadow: [
-//                           BoxShadow(
-//                             color: Colors.black.withOpacity(0.15),
-//                             blurRadius: 24,
-//                             offset: const Offset(0, 8),
-//                           ),
-//                         ],
-//                       ),
-//                       child: BackdropFilter(
-//                         filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-//                         child: Container(
-//                           padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
-//                           decoration: BoxDecoration(
-//                             color: Theme.of(context).brightness == Brightness.dark
-//                                 ? context.spendly.colors.neutral900.withOpacity(0.8)
-//                                 : Colors.white.withOpacity(0.85),
-//                             borderRadius: BorderRadius.circular(100),
-//                             border: Border.all(
-//                               color: Theme.of(context).brightness == Brightness.dark
-//                                   ? context.spendly.colors.neutral800.withOpacity(0.4)
-//                                   : context.spendly.colors.neutral200.withOpacity(0.4),
-//                               width: 1.5,
-//                             ),
-//                           ),
-//                           child: Row(
-//                             mainAxisSize: MainAxisSize.min,
-//                             mainAxisAlignment: MainAxisAlignment.center,
-//                             crossAxisAlignment: CrossAxisAlignment.center,
-//                             children: [
-//                               const SizedBox(width: 3),
-//                                 _buildNavItem(
-//                                   context,
-//                                   index: 0,
-//                                   //icon: Icons.home_outlined,
-//                                   iconPath: 'assets/icons/home.svg',
-//                                   label: 'Home',
-//                                   isSelected: widget.initialTab == 0,
-//                                 ),
-//                               const SizedBox(width: 5),
-//                                 _buildNavItem(
-//                                   context,
-//                                   index: 2,
-//                                   //icon: Icons.bar_chart_outlined,
-//                                   iconPath: 'assets/icons/chart.svg',
-//                                   label: 'Analytics',
-//                                   isSelected: widget.initialTab == 2,
-//                                 ),
-//                               const SizedBox(width: 15),
-//                                 _buildNavItem(
-//                                   context,
-//                                   index: 1,
-//                                   //icon: Icons.add_circle_outline,
-//                                   iconPath: 'assets/icons/plus.svg',
-//                                   label: 'Add',
-//                                   isSelected: widget.initialTab == 1,
-//                                 ),
-//                               const SizedBox(width: 15),
-//                                 _buildNavItem(
-//                                   context,
-//                                   index: 3,
-//                                   //icon: Icons.receipt_long_outlined,
-//                                   iconPath: 'assets/icons/list.svg',
-//                                   label: 'Expenses',
-//                                   isSelected: widget.initialTab == 3,
-//                                 ),
-//                               const SizedBox(width: 5),
-//                                 _buildNavItem(
-//                                   context,
-//                                   index: 4,
-//                                   //icon: Icons.person_outline,
-//                                   iconPath: 'assets/icons/user.svg',
-//                                   label: 'Profile',
-//                                   isSelected: widget.initialTab == 4,
-//                                 ),
-//                               const SizedBox(width: 3),
-//                             ],
-//                           ),
-//                         ),
-//                       ),
-//                     ),
-//                   ),
-//                 ),
-//               ),
-//             ),
+          if (!isWide)
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: SafeArea(
+                bottom: true,
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: FloatingSpendlyNavigationBar(
+                    currentTab: widget.initialTab,
+                    onTabSelected: (index) {
+                      switch (index) {
+                        case 0:
+                          context.go('/home');
+                          break;
+                        case 2:
+                          context.go('/analytics');
+                          break;
+                        case 4:
+                          context.go('/profile');
+                          break;
+                      }
+                    },
+                    onAddTap: () {
+                      context.go('/add');
+                    },
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
     );
   }
-
-//   Widget _buildNavItem(
-//     BuildContext context, {
-//     required int index,
-//     required String iconPath,
-//     required String label,
-//     required bool isSelected,
-//   }) {
-//     final colors = context.spendly.colors;
-//     final isDark = Theme.of(context).brightness == Brightness.dark;
-//     final isAddButton = index == 1;
-
-//     final activeBgColor = isDark
-//         ? colors.primary.withOpacity(0.2)
-//         : colors.primary.withOpacity(0.12);
-        
-//     final activeColor = colors.primary;
-//     final inactiveColor = isDark ? colors.neutral400 : colors.neutral500;
-
-//     return GestureDetector(
-//       behavior: HitTestBehavior.opaque,
-//       onTap: () {
-//         switch (index) {
-//           case 0:
-//             context.go('/home');
-//             break;
-//           case 1:
-//             context.go('/add');
-//             break;
-//           case 2:
-//             context.go('/analytics');
-//             break;
-//           case 3:
-//             context.go('/expenses');
-//             break;
-//           case 4:
-//             context.go('/profile');
-//             break;
-//         }
-//       },
-//       child: AnimatedContainer(
-//         duration: const Duration(milliseconds: 200),
-//         curve: Curves.easeInOut,
-//         padding: EdgeInsets.symmetric(
-//           horizontal: isAddButton ? 11.0 : (isSelected ? 8.0 : 8.0),
-//           vertical: isAddButton ? 8.0 : 8.0,
-//         ),
-//         decoration: BoxDecoration(
-//           color: isAddButton
-//               ? colors.primary
-//               : (isSelected ? activeBgColor : Colors.transparent),
-//           borderRadius: BorderRadius.circular(100),
-//           boxShadow: isAddButton
-//               ? [
-//                   BoxShadow(
-//                     color: colors.primary.withOpacity(0.3),
-//                     blurRadius: 8,
-//                     offset: const Offset(0, 4),
-//                   ),
-//                 ]
-//               : null,
-//         ),
-//         child: Column(
-//           mainAxisSize: MainAxisSize.min,
-//           mainAxisAlignment: MainAxisAlignment.center,
-//           children: [
-//             TweenAnimationBuilder<Color?>(
-//               duration: const Duration(milliseconds: 200),
-//               tween: ColorTween(
-//                 begin: isAddButton
-//                     ? Colors.white
-//                     : (isSelected ? activeColor : inactiveColor),
-//                 end: isAddButton
-//                     ? Colors.white
-//                     : (isSelected ? activeColor : inactiveColor),
-//               ),
-//               builder: (context, color, child) {
-//                 return AnimatedScale(
-//                   scale: isSelected ? 1.15 : 1.0,
-//                   duration: const Duration(milliseconds: 200),
-//                   curve: Curves.easeOutBack,
-//                   child: SvgPicture.asset(
-//                     iconPath,
-//                     colorFilter: color != null ? ColorFilter.mode(color, BlendMode.srcIn) : null,
-//                     width: isAddButton ? 36 : 30,
-//                     height: isAddButton ? 36 : 30,
-//                   ),
-//                 );
-//               },
-//             ),
-//             /*const SizedBox(height: 4),
-//             Text(
-//               label,
-//               style: TextStyle(
-//                 color: isAddButton
-//                     ? Colors.white
-//                     : (isSelected ? activeColor : inactiveColor),
-//                 fontSize: isAddButton ? 15 : 14,
-//                 fontWeight: FontWeight.bold,
-//               ),
-//             ),*/
-//           ],
-//         ),
-//       ),
-//     );
-//   }
+}
 }
 
 class _FadeIndexedStack extends StatefulWidget {
