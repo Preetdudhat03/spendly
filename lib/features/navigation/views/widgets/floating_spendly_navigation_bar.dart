@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:spendly/core/theme/spendly_tokens.dart';
@@ -20,18 +19,9 @@ class FloatingSpendlyNavigationBar extends StatelessWidget {
     final colors = context.spendly.colors;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    // Theme-aware colors
-    final pillBgColor = isDark
-        ? colors.neutral900.withOpacity(0.85)
-        : Colors.white.withOpacity(0.88);
-
-    final borderColor = isDark
-        ? colors.neutral800.withOpacity(0.5)
-        : colors.neutral200.withOpacity(0.6);
-
-    final shadowColor = isDark
-        ? Colors.black.withOpacity(0.4)
-        : Colors.black.withOpacity(0.08);
+    // Solid theme-aware colors with zero blur/transparency
+    final pillBgColor = isDark ? colors.neutral900 : Colors.white;
+    final borderColor = isDark ? colors.neutral800 : colors.neutral200;
 
     return FittedBox(
       fit: BoxFit.scaleDown,
@@ -42,67 +32,48 @@ class FloatingSpendlyNavigationBar extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // Main Navigation Pill Container
+            // Main Navigation Pill Container (Solid, crisp, zero blur)
             Container(
+              padding: const EdgeInsets.all(6),
               decoration: BoxDecoration(
+                color: pillBgColor,
                 borderRadius: BorderRadius.circular(100),
-                boxShadow: [
-                  BoxShadow(
-                    color: shadowColor,
-                    blurRadius: 20,
-                    spreadRadius: 1,
-                    offset: const Offset(0, 8),
+                border: Border.all(
+                  color: borderColor,
+                  width: 1.5,
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _buildNavItem(
+                    context,
+                    index: 0,
+                    label: 'Home',
+                    iconPath: 'assets/icons/home.svg',
+                    isSelected: currentTab == 0,
+                  ),
+                  const SizedBox(width: 4),
+                  _buildNavItem(
+                    context,
+                    index: 2,
+                    label: 'Analytics',
+                    iconPath: 'assets/icons/chart.svg',
+                    isSelected: currentTab == 2,
+                  ),
+                  const SizedBox(width: 4),
+                  _buildNavItem(
+                    context,
+                    index: 4,
+                    label: 'Profile',
+                    iconPath: 'assets/icons/user.svg',
+                    isSelected: currentTab == 4,
                   ),
                 ],
               ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(100),
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
-                  child: Container(
-                    padding: const EdgeInsets.all(6),
-                    decoration: BoxDecoration(
-                      color: pillBgColor,
-                      borderRadius: BorderRadius.circular(100),
-                      border: Border.all(
-                        color: borderColor,
-                        width: 1.2,
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        _buildNavItem(
-                          context,
-                          index: 0,
-                          label: 'Home',
-                          iconPath: 'assets/icons/home.svg',
-                          isSelected: currentTab == 0,
-                        ),
-                        const SizedBox(width: 4),
-                        _buildNavItem(
-                          context,
-                          index: 2,
-                          label: 'Analytics',
-                          iconPath: 'assets/icons/chart.svg',
-                          isSelected: currentTab == 2,
-                        ),
-                        const SizedBox(width: 4),
-                        _buildNavItem(
-                          context,
-                          index: 4,
-                          label: 'Profile',
-                          iconPath: 'assets/icons/user.svg',
-                          isSelected: currentTab == 4,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
             ),
             const SizedBox(width: 12),
-            // Floating Circular Add Button
+            // Floating Circular Add Button (Solid, crisp, zero blur)
             _AddExpenseFloatingButton(
               onTap: onAddTap,
             ),
@@ -136,7 +107,7 @@ class FloatingSpendlyNavigationBar extends StatelessWidget {
         duration: const Duration(milliseconds: 250),
         curve: Curves.easeInOutCubic,
         padding: EdgeInsets.symmetric(
-          horizontal: isSelected ? 16.0 : 12.0, //16 :12
+          horizontal: isSelected ? 16.0 : 12.0,
           vertical: 10.0,
         ),
         decoration: BoxDecoration(
@@ -148,8 +119,8 @@ class FloatingSpendlyNavigationBar extends StatelessWidget {
           children: [
             SvgPicture.asset(
               iconPath,
-              width: 26, //22
-              height: 26, // 22
+              width: 22,
+              height: 22,
               colorFilter: ColorFilter.mode(
                 isSelected ? activeColor : inactiveColor,
                 BlendMode.srcIn,
@@ -165,7 +136,7 @@ class FloatingSpendlyNavigationBar extends StatelessWidget {
                     style: TextStyle(
                       color: activeColor,
                       fontWeight: FontWeight.w700,
-                      fontSize: 13, // 13
+                      fontSize: 13,
                       letterSpacing: -0.2,
                     ),
                   ),
