@@ -1,10 +1,10 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:spendly/features/analytics/presentation/widgets/category_donut_chart.dart';
 import 'package:spendly/features/analytics/providers/analytics_providers.dart';
-import 'drill_down_sheet.dart';
-
 import 'package:spendly/models/expense.dart';
+import 'package:spendly/features/analytics/presentation/widgets/drill_down_sheet.dart';
 
 class SpendingHeatmap extends StatelessWidget {
   final AnalyticsState state;
@@ -159,23 +159,7 @@ class SpendingHeatmap extends StatelessWidget {
                                       message: '${dateFmt.format(day)}: ${currencyFmt.format(amount)}',
                                       child: GestureDetector(
                                         onTap: () {
-                                          final dayExpenses = allExpenses.where((e) {
-                                            return e.expenseDate.year == day.year &&
-                                                e.expenseDate.month == day.month &&
-                                                e.expenseDate.day == day.day;
-                                          }).toList()
-                                            ..sort((a, b) => b.amount.compareTo(a.amount));
-
-                                          DrillDownSheet.show(
-                                            context,
-                                            title: dateFmt.format(day),
-                                            subtitle: 'Daily transaction list',
-                                            icon: Icons.calendar_today,
-                                            color: Theme.of(context).primaryColor,
-                                            totalAmount: amount,
-                                            expenses: dayExpenses,
-                                            aiSummary: 'You logged ${dayExpenses.length} transactions on this day.',
-                                          );
+                                          _showDayExpenses(context, day, amount, allExpenses);
                                         },
                                         child: Container(
                                           height: 16,
