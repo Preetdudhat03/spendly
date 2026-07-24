@@ -78,7 +78,7 @@ class _MainLayoutState extends ConsumerState<MainLayout> {
                         context.go('/profile');
                         break;
                       case 4:
-                        context.go('/add');
+                        context.go('/expenses');
                         break;
                     }
                   },
