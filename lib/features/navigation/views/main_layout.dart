@@ -43,9 +43,9 @@ class _MainLayoutState extends ConsumerState<MainLayout> {
       case 3:
         return 4; // Expenses
       case 4:
-        return 3; // Profile
+        return 2; // Profile
       case 1:
-        return 2; // Add
+        return 3; // Add
       default:
         return 0;
     }
