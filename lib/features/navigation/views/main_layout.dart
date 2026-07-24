@@ -230,7 +230,7 @@ class _FadeIndexedStackState extends State<_FadeIndexedStack>
 
   @override
   Widget build(BuildContext context) {
-    final lastVisualIndex = _getVisualOrderIndex(widget.lastIndex);
+   /* final lastVisualIndex = _getVisualOrderIndex(widget.lastIndex);
     final currentVisualIndex = _getVisualOrderIndex(widget.index);
     final isForward = currentVisualIndex >= lastVisualIndex;
 
@@ -294,6 +294,12 @@ class _FadeIndexedStackState extends State<_FadeIndexedStack>
           );
         }
       }),
-    );
+    );*/
+
+
+
+
+
+    
   }
 }
