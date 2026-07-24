@@ -679,7 +679,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          'Developed by Preet Du',
+                          'Developed by Preet Dud',
                           style: TextStyle(
                             fontSize: 13,
                             color: Colors.grey[500],
