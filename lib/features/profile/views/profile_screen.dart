@@ -659,7 +659,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
                   final packageInfoAsync = ref.watch(packageInfoProvider);
                   final versionStr = packageInfoAsync.when(
-                    data: (info) => 'Version ${info.version} (${info.buildNumber})',
+                    data: (info) => 'Version ${info.version} + ${info.buildNumber}',
                     loading: () => 'Version loading...',
                     error: (e, s) => 'Version unknown',
                   );
