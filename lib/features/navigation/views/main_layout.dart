@@ -218,11 +218,11 @@ class _FadeIndexedStackState extends State<_FadeIndexedStack>
       case 2:
         return 1; // Analytics
       case 1:
-        return 4; // Add
+        return 2; // Add
       case 3:
         return 3; // Expenses
       case 4:
-        return 2; // Profile
+        return 4; // Profile
       default:
         return 0;
     }
