@@ -218,7 +218,7 @@ class _FadeIndexedStackState extends State<_FadeIndexedStack>
       case 2:
         return 1; // Analytics
       case 1:
-        return 2; // Add
+        return 4; // Add
       case 3:
         return 3; // Expenses
       case 4:
