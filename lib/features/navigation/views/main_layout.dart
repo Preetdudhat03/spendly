@@ -53,7 +53,7 @@ class _MainLayoutState extends ConsumerState<MainLayout> {
 
   @override
   Widget build(BuildContext context) {
-    final isWide = MediaQuery.of(context).size.width > 720;
+    /*final isWide = MediaQuery.of(context).size.width > 720;
 
     return Scaffold(
       body: Stack(
@@ -164,7 +164,67 @@ class _MainLayoutState extends ConsumerState<MainLayout> {
             ),
         ],
       ),
+    );*/
+
+
+
+
+
+
+    return Scaffold(
+      body: Stack(
+        children: [
+          // 1. The main content screens
+          _FadeIndexedStack(
+            index: widget.initialTab,
+            lastIndex: _lastTab,
+            children: const [
+              HomeScreen(),
+              AddExpenseScreen(),
+              AnalyticsPage(),
+              AllExpensesScreen(),
+              ProfileScreen(),
+            ],
+          ),
+          
+          // 2. The Floating Navigation Bar (Now shows unconditionally on all screen sizes)
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: SafeArea(
+              bottom: true,
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 24), // Added a bit more padding so it floats nicely
+                child: FloatingSpendlyNavigationBar(
+                  currentTab: widget.initialTab,
+                  onTabSelected: (index) {
+                    switch (index) {
+                      case 0:
+                        context.go('/home');
+                        break;
+                      case 2:
+                        context.go('/analytics');
+                        break;
+                      case 3:
+                        context.go('/expenses');
+                        break;
+                      case 4:
+                        context.go('/profile');
+                        break;
+                    }
+                  },
+                  onAddTap: () {
+                    context.go('/add');
+                  },
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
+  
   }
 }
 
