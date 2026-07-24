@@ -220,7 +220,7 @@ class _FadeIndexedStackState extends State<_FadeIndexedStack>
       case 1:
         return 4; // Add
       case 3:
-        return 3; // Expenses
+        return 2; // Expenses
       case 4:
         return 2; // Profile
       default:
