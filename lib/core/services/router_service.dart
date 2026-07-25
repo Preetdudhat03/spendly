@@ -101,9 +101,15 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/family-setup',
         builder: (context, state) => const FamilySetupScreen(),
       ),
-      StatefulShellRoute.indexedStack(
+      StatefulShellRoute(
         builder: (context, state, navigationShell) {
           return MainLayout(navigationShell: navigationShell);
+        },
+        navigatorContainerBuilder: (context, navigationShell, children) {
+          return PersistentStack(
+            index: navigationShell.currentIndex,
+            children: children,
+          );
         },
         branches: [
           StatefulShellBranch(
