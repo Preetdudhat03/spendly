@@ -63,53 +63,33 @@ class PersistentStack extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Generate children with keys to maintain their state properly in the Stack
-    final childrenWithKeys = List.generate(children.length, (i) {
-      return KeyedSubtree(
-        key: ValueKey(i),
-        child: children[i],
-      );
-    });
-
-    final inactiveChildren = <Widget>[];
-    for (int i = 0; i < childrenWithKeys.length; i++) {
-      if (i != index) {
-        inactiveChildren.add(
-          Positioned.fill(
-            child: TickerMode(
-              enabled: false,
-              child: IgnorePointer(
-                child: RepaintBoundary(
-                  child: childrenWithKeys[i],
+    return Stack(
+      children: List.generate(children.length, (i) {
+        final isCurrent = i == index;
+        
+        return Positioned.fill(
+          // Static key ensures Flutter never unmounts this branch
+          key: ValueKey('persistent_branch_$i'),
+          child: TickerMode(
+            // Disable animations when not active
+            enabled: isCurrent,
+            child: IgnorePointer(
+              // Prevent touches from hitting inactive layers
+              ignoring: !isCurrent,
+              child: RepaintBoundary(
+                // Cache the heavy widget tree (SVGs, Charts) to GPU memory
+                child: Opacity(
+                  // 1.0 is fully visible. 
+                  // 0.001 forces Flutter to paint and cache it, but it's invisible to the eye.
+                  // This completely avoids the layout/paint freeze of Offstage.
+                  opacity: isCurrent ? 1.0 : 0.001,
+                  child: children[i],
                 ),
               ),
             ),
           ),
         );
-      }
-    }
-
-    return Stack(
-      children: [
-        // 1. Render all inactive tabs at the absolute bottom.
-        // They will be fully painted and rasterized (cached in memory) but hidden.
-        ...inactiveChildren,
-
-        // 2. An opaque barrier to prevent inactive tabs from bleeding through 
-        // if the active tab has any transparent areas.
-        Positioned.fill(
-          child: Container(
-            color: Theme.of(context).scaffoldBackgroundColor,
-          ),
-        ),
-
-        // 3. The active tab on top.
-        Positioned.fill(
-          child: RepaintBoundary(
-            child: childrenWithKeys[index],
-          ),
-        ),
-      ],
+      }),
     );
   }
 }
