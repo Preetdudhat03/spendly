@@ -131,7 +131,9 @@ class _FadeIndexedStackState extends State<FadeIndexedStack>
           );
         }
 
-        final child = widget.children[i];
+        final child = RepaintBoundary(
+          child: widget.children[i],
+        );
 
         if (isCurrent) {
           final slideOffset = isForward ? const Offset(0.06, 0.0) : const Offset(-0.06, 0.0);
