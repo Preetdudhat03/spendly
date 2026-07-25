@@ -170,23 +170,8 @@ class AnalyticsPage extends ConsumerWidget {
   }
 
   Widget _buildDashboardContent(BuildContext context, AnalyticsState state, List<Expense> allExpenses, bool isWide) {
-    // Wrap items in a FadeIn animation wrapper
     Widget animatedItem(Widget child, int index) {
-      return TweenAnimationBuilder<double>(
-        tween: Tween<double>(begin: 0.0, end: 1.0),
-        duration: Duration(milliseconds: 400 + (index * 60)),
-        curve: Curves.easeOutCubic,
-        builder: (context, val, child) {
-          return Opacity(
-            opacity: val,
-            child: Transform.translate(
-              offset: Offset(0, 16 * (1.0 - val)),
-              child: child,
-            ),
-          );
-        },
-        child: child,
-      );
+      return child;
     }
 
     if (isWide) {
