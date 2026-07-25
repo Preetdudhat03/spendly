@@ -127,7 +127,10 @@ class _FadeIndexedStackState extends State<FadeIndexedStack>
         if (!isCurrent && !isLast) {
           return Offstage(
             offstage: true,
-            child: widget.children[i],
+            child: TickerMode(
+              enabled: false,
+              child: widget.children[i],
+            ),
           );
         }
 
