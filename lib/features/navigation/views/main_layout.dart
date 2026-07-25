@@ -48,6 +48,7 @@ class MainLayout extends ConsumerWidget {
         ],
       ),
     );
+  }
 }
 
 class PersistentStack extends StatelessWidget {
