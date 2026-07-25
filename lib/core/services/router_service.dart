@@ -9,7 +9,11 @@ import 'package:spendly/features/auth/views/verify_email_screen.dart';
 import 'package:spendly/features/auth/views/startup_screen.dart';
 import 'package:spendly/features/family/views/family_setup_screen.dart';
 import 'package:spendly/features/navigation/views/main_layout.dart';
+import 'package:spendly/features/expenses/views/home_screen.dart';
+import 'package:spendly/features/expenses/views/add_expense_screen.dart';
+import 'package:spendly/features/analytics/presentation/pages/analytics_page.dart';
 import 'package:spendly/features/expenses/views/all_expenses_screen.dart';
+import 'package:spendly/features/profile/views/profile_screen.dart';
 import 'package:spendly/features/profile/views/account_security_screen.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -97,36 +101,68 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/family-setup',
         builder: (context, state) => const FamilySetupScreen(),
       ),
-      GoRoute(
-        path: '/expenses',
-        pageBuilder: (context, state) => const NoTransitionPage(
-          child: MainLayout(initialTab: 3),
-        ),
-      ),
-      // Shell route or sub-paths for MainLayout
-      GoRoute(
-        path: '/home',
-        pageBuilder: (context, state) => const NoTransitionPage(
-          child: MainLayout(initialTab: 0),
-        ),
-      ),
-      GoRoute(
-        path: '/add',
-        pageBuilder: (context, state) => const NoTransitionPage(
-          child: MainLayout(initialTab: 1),
-        ),
-      ),
-      GoRoute(
-        path: '/analytics',
-        pageBuilder: (context, state) => const NoTransitionPage(
-          child: MainLayout(initialTab: 2),
-        ),
-      ),
-      GoRoute(
-        path: '/profile',
-        pageBuilder: (context, state) => const NoTransitionPage(
-          child: MainLayout(initialTab: 4),
-        ),
+      StatefulShellRoute(
+        builder: (context, state, navigationShell) {
+          return MainLayout(navigationShell: navigationShell);
+        },
+        navigatorContainerBuilder: (context, navigationShell, children) {
+          return FadeIndexedStack(
+            index: navigationShell.currentIndex,
+            children: children,
+          );
+        },
+        branches: [
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/home',
+                pageBuilder: (context, state) => const NoTransitionPage(
+                  child: HomeScreen(),
+                ),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/add',
+                pageBuilder: (context, state) => const NoTransitionPage(
+                  child: AddExpenseScreen(),
+                ),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/analytics',
+                pageBuilder: (context, state) => const NoTransitionPage(
+                  child: AnalyticsPage(),
+                ),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/expenses',
+                pageBuilder: (context, state) => const NoTransitionPage(
+                  child: AllExpensesScreen(),
+                ),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/profile',
+                pageBuilder: (context, state) => const NoTransitionPage(
+                  child: ProfileScreen(),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
       GoRoute(
         path: '/account-security',
