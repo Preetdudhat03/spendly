@@ -69,6 +69,7 @@ class _FadeIndexedStackState extends State<FadeIndexedStack>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late int _lastIndex;
+  bool _isTransitioning = false;
 
   @override
   void initState() {
@@ -76,9 +77,9 @@ class _FadeIndexedStackState extends State<FadeIndexedStack>
     _lastIndex = widget.index;
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 300),
+      duration: const Duration(milliseconds: 250),
     );
-    _controller.forward();
+    _controller.value = 1.0;
   }
 
   @override
@@ -86,7 +87,20 @@ class _FadeIndexedStackState extends State<FadeIndexedStack>
     super.didUpdateWidget(oldWidget);
     if (oldWidget.index != widget.index) {
       _lastIndex = oldWidget.index;
-      _controller.forward(from: 0.0);
+      _isTransitioning = true;
+      
+      // Force layout in current frame, start animation in next frame
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          _controller.forward(from: 0.0).then((_) {
+            if (mounted) {
+              setState(() {
+                _isTransitioning = false;
+              });
+            }
+          });
+        }
+      });
     }
   }
 
@@ -98,18 +112,12 @@ class _FadeIndexedStackState extends State<FadeIndexedStack>
 
   int _getVisualOrderIndex(int tabIndex) {
     switch (tabIndex) {
-      case 0:
-        return 0; // Home
-      case 2:
-        return 1; // Analytics
-      case 1:
-        return 2; // Add
-      case 3:
-        return 3; // Expenses
-      case 4:
-        return 4; // Profile
-      default:
-        return 0;
+      case 0: return 0; // Home
+      case 2: return 1; // Analytics
+      case 1: return 2; // Add
+      case 3: return 3; // Expenses
+      case 4: return 4; // Profile
+      default: return 0;
     }
   }
 
@@ -124,6 +132,7 @@ class _FadeIndexedStackState extends State<FadeIndexedStack>
         final isCurrent = i == widget.index;
         final isLast = i == _lastIndex;
 
+        // 1. Hide irrelevant tabs immediately
         if (!isCurrent && !isLast) {
           return Offstage(
             offstage: true,
@@ -134,12 +143,23 @@ class _FadeIndexedStackState extends State<FadeIndexedStack>
           );
         }
 
+        // 2. If not transitioning, just show the current tab normally with zero overhead
+        if (!_isTransitioning) {
+          if (isCurrent) return widget.children[i];
+          return const Offstage(offstage: true);
+        }
+
+        // 3. During transition, wrap in RepaintBoundary to cache paint
         final child = RepaintBoundary(
-          child: widget.children[i],
+          child: IgnorePointer(
+            ignoring: !isCurrent,
+            child: widget.children[i],
+          ),
         );
 
+        // 4. Apply slide and fade animations
         if (isCurrent) {
-          final slideOffset = isForward ? const Offset(0.06, 0.0) : const Offset(-0.06, 0.0);
+          final slideOffset = isForward ? const Offset(0.04, 0.0) : const Offset(-0.04, 0.0);
           final slide = Tween<Offset>(
             begin: slideOffset,
             end: Offset.zero,
@@ -156,7 +176,7 @@ class _FadeIndexedStackState extends State<FadeIndexedStack>
             ),
           );
         } else {
-          final slideOffset = isForward ? const Offset(-0.06, 0.0) : const Offset(0.06, 0.0);
+          final slideOffset = isForward ? const Offset(-0.04, 0.0) : const Offset(0.04, 0.0);
           final slide = Tween<Offset>(
             begin: Offset.zero,
             end: slideOffset,
@@ -177,9 +197,7 @@ class _FadeIndexedStackState extends State<FadeIndexedStack>
             position: slide,
             child: FadeTransition(
               opacity: fade,
-              child: IgnorePointer(
-                child: child,
-              ),
+              child: child,
             ),
           );
         }
