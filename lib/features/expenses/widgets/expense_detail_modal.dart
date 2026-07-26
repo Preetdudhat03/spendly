@@ -205,7 +205,7 @@ void showExpenseDetail(BuildContext context, WidgetRef ref, Expense expense) {
                   Expanded(
                     child: OutlinedButton.icon(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors(0xFF4F46E5)[50],
+                        backgroundColor: cColors(0xFF4F46E5)[50],
                         foregroundColor: Colors(0xFF4F46E5),
                         elevation: 0,
                       ),
