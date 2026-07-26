@@ -342,21 +342,21 @@ class _EditExpenseFormState extends State<_EditExpenseForm> {
   late DateTime _selectedDate;
 
   final List<Map<String, String>> _categories = [
-    {'name': 'Food', 'emoji': '🍔'},
-    {'name': 'Groceries', 'emoji': '🛒'},
-    {'name': 'Petrol', 'emoji': '🚗'},
-    {'name': 'Recharges', 'emoji': '📱'},
-    {'name': 'Travel', 'emoji': '✈️'},
-    {'name': 'Gas', 'emoji': '⛽'},
-    {'name': 'Electricity', 'emoji': '⚡'},
-    {'name': 'Medical', 'emoji': '💊'},
-    {'name': 'Insurances', 'emoji': '🛡️'},
-    {'name': 'Rent', 'emoji': '🏠'},
-    {'name': 'Shopping', 'emoji': '🛍️'},
-    {'name': 'Entertainment', 'emoji': '🎬'},
-    {'name': 'Education', 'emoji': '📚'},
-    {'name': 'College', 'emoji': '🎓'},
-    {'name': 'Others', 'emoji': '💰'},
+    {'name': 'Food', 'iconPath': 'assets/category/food.svg'},
+    {'name': 'Groceries', 'iconPath': 'assets/category/groceries.svg'},
+    {'name': 'Petrol', 'iconPath': 'assets/category/petrol.svg'},
+    {'name': 'Recharges', 'iconPath': 'assets/category/recharge.svg'},
+    {'name': 'Travel', 'iconPath': 'assets/category/travel.svg'},
+    {'name': 'Gas', 'iconPath': 'assets/category/gas.svg'},
+    {'name': 'Electricity', 'iconPath': 'assets/category/electricity.svg'},
+    {'name': 'Medical', 'iconPath': 'assets/category/medical.svg'},
+    {'name': 'Insurances', 'iconPath': 'assets/category/insurances.svg'},
+    {'name': 'Rent', 'iconPath': 'assets/category/rent.svg'},
+    {'name': 'Shopping', 'iconPath': 'assets/category/shopping.svg'},
+    {'name': 'Entertainment', 'iconPath': 'assets/category/entertainment.svg'},
+    {'name': 'Education', 'iconPath': 'assets/category/education.svg'},
+    {'name': 'College', 'iconPath': 'assets/category/college.svg'},
+    {'name': 'Others', 'iconPath': 'assets/category/others.svg'},
   ];
 
   @override
@@ -490,7 +490,15 @@ class _EditExpenseFormState extends State<_EditExpenseForm> {
                     children: _categories.map((cat) {
                       final isSelected = _selectedCategory.toLowerCase() == cat['name']!.toLowerCase();
                       return ChoiceChip(
-                        avatar: Text(cat['emoji']!),
+                        avatar: SvgPicture.asset(
+                          getCategoryIconPath(cat['name']!),
+                          width: 18,
+                          height: 18,
+                          colorFilter: ColorFilter.mode(
+                            isSelected ? Theme.of(context).primaryColor : Colors.grey[700]!,
+                            BlendMode.srcIn,
+                          ),
+                        ),
                         label: Text(cat['name']!),
                         selected: isSelected,
                         onSelected: (selected) {
