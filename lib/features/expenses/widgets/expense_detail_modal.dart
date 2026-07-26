@@ -230,6 +230,7 @@ void showExpenseDetail(BuildContext context, WidgetRef ref, Expense expense) {
                   ),
                 ],
               ),
+              const SizedBox(height: 80), // Padding to account for the floating navigation bar
             ],
           ),
           ),
