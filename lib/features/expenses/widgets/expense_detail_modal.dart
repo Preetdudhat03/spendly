@@ -554,7 +554,7 @@ class _EditExpenseFormState extends State<_EditExpenseForm> {
                     onPressed: _submit,
                     child: const Text('SAVE CHANGES'),
                   ),
-                  const SizedBox(height: 70),
+                  const SizedBox(height: 80),
                 ],
                 
               ),
