@@ -204,17 +204,12 @@ void showExpenseDetail(BuildContext context, WidgetRef ref, Expense expense) {
                 children: [
                   Expanded(
                     child: OutlinedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF4F46E5).withOpacity(0.1), //10% opacity for the light background
-                        foregroundColor: const Color(0xFF4F46E5), // The solid text/icon color
-                        elevation: 0,
-                      ),
+                      
                       onPressed: () {
                         Navigator.pop(context);
                         _showEditExpenseSheet(context, ref, expense);
                       },
-                      icon: const Icon(Icons.edit_outlined),
-                      //icon: const Icon(Icons.edit),
+                      icon: const Icon(Icons.edit),
                       label: const FittedBox(fit: BoxFit.scaleDown, child: Text('EDIT')),
                     ),
                   ),
