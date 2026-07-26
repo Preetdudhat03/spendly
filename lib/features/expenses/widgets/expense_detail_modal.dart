@@ -204,6 +204,11 @@ void showExpenseDetail(BuildContext context, WidgetRef ref, Expense expense) {
                 children: [
                   Expanded(
                     child: OutlinedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red[50],
+                        foregroundColor: Colors.red,
+                        elevation: 0,
+                      ),
                       onPressed: () {
                         Navigator.pop(context);
                         _showEditExpenseSheet(context, ref, expense);
