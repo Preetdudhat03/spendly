@@ -213,6 +213,7 @@ void showExpenseDetail(BuildContext context, WidgetRef ref, Expense expense) {
                         Navigator.pop(context);
                         _showEditExpenseSheet(context, ref, expense);
                       },
+                      icon: const Icon(Icons.edit_outlined),
                       //icon: const Icon(Icons.edit),
                       label: const FittedBox(fit: BoxFit.scaleDown, child: Text('EDIT')),
                     ),
