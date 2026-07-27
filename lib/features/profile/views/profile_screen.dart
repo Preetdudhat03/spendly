@@ -23,16 +23,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
 
-  void _copyFamilyCode(String code) {
-    Clipboard.setData(ClipboardData(text: code));
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Family Code copied to clipboard! Share it with your family.'),
-        duration: Duration(seconds: 2),
-      ),
-    );
-  }
-
   void _showEditBudgetDialog(double currentBudget) {
     _budgetController.text = currentBudget.toStringAsFixed(0);
     showDialog(
