@@ -307,12 +307,8 @@ class _AllExpensesScreenState extends ConsumerState<AllExpensesScreen> {
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(16),
                               ),
-                              child: ListView.separated(
-                                shrinkWrap: true,
-                                physics: const NeverScrollableScrollPhysics(),
-                                itemCount: groupItems.length,
-                                separatorBuilder: (context, index) => const Divider(height: 1, indent: 70),
-                                itemBuilder: (context, index) {
+                              child: Column(
+                                children: List.generate(groupItems.length, (index) {
                                   final exp = groupItems[index];
                                   final amtStr = NumberFormat.currency(
                                     locale: 'en_IN',
@@ -320,54 +316,57 @@ class _AllExpensesScreenState extends ConsumerState<AllExpensesScreen> {
                                     symbol: '₹',
                                   ).format(exp.amount);
 
-                                  return ListTile(
-                                    contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
-                                    leading: CircleAvatar(
-                                      radius: 22,
-                                      backgroundColor: getCategoryColor(exp.category).withOpacity(0.12),
-                                      child: SvgPicture.asset(
-                                        getCategoryIconPath(exp.category),
-                                        width: 24,
-                                        height: 24,
-                                        colorFilter: ColorFilter.mode(getCategoryColor(exp.category), BlendMode.srcIn),
+                                  final isLast = index == groupItems.length - 1;
+
+                                  return Column(
+                                    children: [
+                                      ListTile(
+                                        contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
+                                        leading: CircleAvatar(
+                                          radius: 22,
+                                          backgroundColor: getCategoryColor(exp.category).withOpacity(0.12),
+                                          child: SvgPicture.asset(
+                                            getCategoryIconPath(exp.category),
+                                            width: 24,
+                                            height: 24,
+                                            colorFilter: ColorFilter.mode(getCategoryColor(exp.category), BlendMode.srcIn),
+                                          ),
+                                        ),
+                                        title: Row(
+                                          children: [
+                                            Text(
+                                              exp.category,
+                                              style: const TextStyle(fontWeight: FontWeight.bold),
+                                            ),
+                                            const SizedBox(width: 8),
+                                            Container(
+                                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                              decoration: BoxDecoration(
+                                                color: Colors.grey[200],
+                                                borderRadius: BorderRadius.circular(6),
+                                              ),
+                                              child: Text(
+                                                exp.createdByName,
+                                                style: TextStyle(fontSize: 10, color: Colors.grey[700]),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        subtitle: Text(
+                                          exp.description.isNotEmpty ? exp.description : 'Logged via ${exp.paymentMethod}',
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        trailing: Text(
+                                          amtStr,
+                                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                                        ),
+                                        onTap: () => showExpenseDetail(context, ref, exp),
                                       ),
-                                      /*child: Text(
-                                        getCategoryEmoji(exp.category),
-                                        style: const TextStyle(fontSize: 20),
-                                      ),*/
-                                    ),
-                                    title: Row(
-                                      children: [
-                                        Text(
-                                          exp.category,
-                                          style: const TextStyle(fontWeight: FontWeight.bold),
-                                        ),
-                                        const SizedBox(width: 8),
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                          decoration: BoxDecoration(
-                                            color: Colors.grey[200],
-                                            borderRadius: BorderRadius.circular(6),
-                                          ),
-                                          child: Text(
-                                            exp.createdByName,
-                                            style: TextStyle(fontSize: 10, color: Colors.grey[700]),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    subtitle: Text(
-                                      exp.description.isNotEmpty ? exp.description : 'Logged via ${exp.paymentMethod}',
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                    trailing: Text(
-                                      amtStr,
-                                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                                    ),
-                                    onTap: () => showExpenseDetail(context, ref, exp),
+                                      if (!isLast) const Divider(height: 1, indent: 70),
+                                    ],
                                   );
-                                },
+                                }),
                               ),
                             ),
                             const SizedBox(height: 8),
