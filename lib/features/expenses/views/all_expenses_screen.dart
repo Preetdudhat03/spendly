@@ -253,7 +253,7 @@ class _AllExpensesScreenState extends ConsumerState<AllExpensesScreen> {
             ),
           );
 
-          Widget expensesListView = expenseState.isLoading
+          Widget expensesListView = (expenseState.isLoading && expenseState.expenses.isEmpty)
               ? ShimmerLoading(
                   isLoading: true,
                   child: Padding(
