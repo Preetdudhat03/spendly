@@ -24,8 +24,9 @@ final routerProvider = Provider<GoRouter>((ref) {
     redirect: (context, state) {
       final auth = ref.read(authProvider);
       final family = ref.read(familyProvider);
+      final splashFinished = ref.read(splashFinishedProvider);
 
-      if (auth.isInitializing) {
+      if (auth.isInitializing || !splashFinished) {
         return '/splash';
       }
 
