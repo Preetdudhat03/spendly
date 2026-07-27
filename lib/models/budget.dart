@@ -48,4 +48,18 @@ class Budget {
       year: year ?? this.year,
     );
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is Budget &&
+        other.id == id &&
+        other.familyId == familyId &&
+        other.monthlyBudget == monthlyBudget &&
+        other.month == month &&
+        other.year == year;
+  }
+
+  @override
+  int get hashCode => Object.hash(id, familyId, monthlyBudget, month, year);
 }
