@@ -112,11 +112,13 @@ class _StackedChartConsumer extends ConsumerWidget {
       legendCategories.removeRange(8, legendCategories.length);
     }
 
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Card(
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(28),
-        side: const BorderSide(color: Color(0xFFF1F5F9)),
+        side: BorderSide(color: colorScheme.outline),
       ),
       child: Padding(
         padding: const EdgeInsets.all(20.0),
@@ -134,16 +136,17 @@ class _StackedChartConsumer extends ConsumerWidget {
                       'Monthly Distribution',
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                             fontWeight: FontWeight.bold,
+                            color: colorScheme.onSurface,
                           ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       'Category splits over the last 6 months',
-                      style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                      style: TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant),
                     ),
                   ],
                 ),
-                Icon(Icons.bar_chart, size: 20, color: Theme.of(context).primaryColor),
+                Icon(Icons.bar_chart, size: 20, color: colorScheme.primary),
               ],
             ),
             const SizedBox(height: 24),
@@ -157,7 +160,7 @@ class _StackedChartConsumer extends ConsumerWidget {
                   maxY: maxMonthTotal,
                   barTouchData: BarTouchData(
                     touchTooltipData: BarTouchTooltipData(
-                      getTooltipColor: (group) => Colors.black.withOpacity(0.85),
+                      getTooltipColor: (group) => colorScheme.surfaceContainerHigh.withOpacity(0.95),
                       getTooltipItem: (group, groupIndex, rod, rodIndex) {
                         final monthIdx = group.x.toInt();
                         if (monthIdx < 0 || monthIdx >= months.length) return null;
@@ -179,7 +182,7 @@ class _StackedChartConsumer extends ConsumerWidget {
 
                         return BarTooltipItem(
                           '${DateFormat('MMMM yyyy').format(month)}\nTotal: ${currencyFmt.format(rod.toY)}\n\n$listLines',
-                          const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                          TextStyle(color: colorScheme.onSurface, fontSize: 10, fontWeight: FontWeight.bold),
                         );
                       },
                     ),
@@ -204,7 +207,7 @@ class _StackedChartConsumer extends ConsumerWidget {
                             axisSide: meta.axisSide,
                             child: Text(
                               formatted,
-                              style: TextStyle(color: Colors.grey[500], fontSize: 10, fontWeight: FontWeight.bold),
+                              style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 10, fontWeight: FontWeight.bold),
                             ),
                           );
                         },
@@ -221,7 +224,7 @@ class _StackedChartConsumer extends ConsumerWidget {
                               axisSide: meta.axisSide,
                               child: Text(
                                 monthFormat.format(months[idx]),
-                                style: TextStyle(color: Colors.grey[600], fontSize: 11, fontWeight: FontWeight.bold),
+                                style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 11, fontWeight: FontWeight.bold),
                               ),
                             );
                           }
@@ -234,7 +237,7 @@ class _StackedChartConsumer extends ConsumerWidget {
                     show: true,
                     drawVerticalLine: false,
                     getDrawingHorizontalLine: (value) => FlLine(
-                      color: const Color(0xFFF1F5F9),
+                      color: colorScheme.outlineVariant.withOpacity(0.3),
                       strokeWidth: 1,
                     ),
                   ),
@@ -265,7 +268,7 @@ class _StackedChartConsumer extends ConsumerWidget {
                     const SizedBox(width: 4),
                     Text(
                       meta.name,
-                      style: TextStyle(fontSize: 10.5, color: Colors.grey[600], fontWeight: FontWeight.w600),
+                      style: TextStyle(fontSize: 10.5, color: colorScheme.onSurfaceVariant, fontWeight: FontWeight.w600),
                     ),
                   ],
                 );
