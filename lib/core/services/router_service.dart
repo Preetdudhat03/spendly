@@ -172,10 +172,22 @@ final routerProvider = Provider<GoRouter>((ref) {
   );
 });
 
-// A simple Listenable that merges riverpod states to notify GoRouter when Auth/Family changes.
 class _ProviderListenable extends ChangeNotifier {
   _ProviderListenable(Ref ref) {
-    ref.listen(authProvider, (_, __) => notifyListeners());
-    ref.listen(familyProvider, (_, __) => notifyListeners());
+    ref.listen(authProvider, (previous, next) {
+      if (previous?.userId != next.userId ||
+          previous?.isInitializing != next.isInitializing ||
+          previous?.isLoading != next.isLoading ||
+          previous?.isMigrationPending != next.isMigrationPending) {
+        notifyListeners();
+      }
+    });
+    ref.listen(familyProvider, (previous, next) {
+      if (previous?.family?.id != next.family?.id ||
+          previous?.hasLoaded != next.hasLoaded ||
+          previous?.isLoading != next.isLoading) {
+        notifyListeners();
+      }
+    });
   }
 }
