@@ -34,11 +34,13 @@ class FamilyMemberLeaderboard extends StatelessWidget {
     // Sum of all member spending to compute percentages
     final membersTotal = state.memberShares.fold<double>(0, (sum, m) => sum + m.totalSpent);
 
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Card(
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(28),
-        side: const BorderSide(color: Color(0xFFF1F5F9)),
+        side: BorderSide(color: colorScheme.outline),
       ),
       child: Padding(
         padding: const EdgeInsets.all(20.0),
@@ -56,12 +58,13 @@ class FamilyMemberLeaderboard extends StatelessWidget {
                       'Family Leaderboard',
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                             fontWeight: FontWeight.bold,
+                            color: colorScheme.onSurface,
                           ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       'Ranked by contribution this period',
-                      style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                      style: TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant),
                     ),
                   ],
                 ),
@@ -113,7 +116,7 @@ class FamilyMemberLeaderboard extends StatelessWidget {
                             children: [
                               CircleAvatar(
                                 radius: 20,
-                                backgroundColor: color.withOpacity(0.12),
+                                backgroundColor: color.withOpacity(0.15),
                                 child: Text(
                                   initial,
                                   style: TextStyle(fontWeight: FontWeight.bold, color: color, fontSize: 16),
@@ -124,13 +127,13 @@ class FamilyMemberLeaderboard extends StatelessWidget {
                                 bottom: -2,
                                 child: CircleAvatar(
                                   radius: 8,
-                                  backgroundColor: Colors.white,
+                                  backgroundColor: colorScheme.surface,
                                   child: CircleAvatar(
                                     radius: 7,
-                                    backgroundColor: idx == 0 ? Colors.amber : Colors.grey[300],
+                                    backgroundColor: idx == 0 ? Colors.amber : colorScheme.surfaceContainerHigh,
                                     child: Text(
                                       '${idx + 1}',
-                                      style: const TextStyle(fontSize: 8, fontWeight: FontWeight.bold, color: Colors.black),
+                                      style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold, color: idx == 0 ? Colors.black : colorScheme.onSurface),
                                     ),
                                   ),
                                 ),
@@ -149,23 +152,23 @@ class FamilyMemberLeaderboard extends StatelessWidget {
                                   children: [
                                     Text(
                                       member.name,
-                                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: colorScheme.onSurface),
                                     ),
                                     Text(
                                       currencyFmt.format(member.totalSpent),
-                                      style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 14),
+                                      style: TextStyle(fontWeight: FontWeight.w900, fontSize: 14, color: colorScheme.onSurface),
                                     ),
                                   ],
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
                                   '${member.count} Expenses • Avg ${currencyFmt.format(member.average)} • Max ${currencyFmt.format(member.largest)}',
-                                  style: TextStyle(fontSize: 11, color: Colors.grey[500]),
+                                  style: TextStyle(fontSize: 11, color: colorScheme.onSurfaceVariant),
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
                                   'Top Category: ${member.favoriteCategory} • Prefers ${member.preferredPaymentMethod}',
-                                  style: TextStyle(fontSize: 11, color: Colors.grey[500], fontStyle: FontStyle.italic),
+                                  style: TextStyle(fontSize: 11, color: colorScheme.onSurfaceVariant, fontStyle: FontStyle.italic),
                                 ),
                                 const SizedBox(height: 8),
                                 // Progress bar
@@ -175,7 +178,7 @@ class FamilyMemberLeaderboard extends StatelessWidget {
                                     value: progress,
                                     minHeight: 4,
                                     color: color,
-                                    backgroundColor: const Color(0xFFF1F5F9),
+                                    backgroundColor: colorScheme.surfaceContainerHigh,
                                   ),
                                 ),
                               ],
