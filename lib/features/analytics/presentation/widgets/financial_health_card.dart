@@ -168,9 +168,6 @@ class _GaugePainter extends CustomPainter {
       ..strokeCap = StrokeCap.round
       ..style = PaintingStyle.stroke
       ..strokeWidth = 14;
-      ..strokeCap = StrokeCap.round
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 14;
 
     canvas.drawArc(
       Rect.fromCircle(center: center, radius: radius),
