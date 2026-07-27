@@ -389,6 +389,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     ),
                   );
 
+                  final isCurrentUserAdmin = familyState.members.any((m) => m.userId == authState.userId && m.role == 'admin');
+
                   final analyticsState = ref.watch(analyticsProvider);
                   final totalSpent = analyticsState.totalSpent;
                   final budgetProgress = currentBudget > 0 ? (totalSpent / currentBudget).clamp(0.0, 1.0) : 0.0;
@@ -712,7 +714,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.stretch,
                                 children: [
-                                  budgetCard,
+                                  familyBudgetCard,
                                   const SizedBox(height: 16),
                                   familyMembersCard,
                                   const SizedBox(height: 16),
@@ -733,7 +735,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         const SizedBox(height: 16),
                         familyCodeCard,
                         const SizedBox(height: 16),
-                        budgetCard,
+                        familyBudgetCard,
                         const SizedBox(height: 16),
                         familyMembersCard,
                         const SizedBox(height: 16),
