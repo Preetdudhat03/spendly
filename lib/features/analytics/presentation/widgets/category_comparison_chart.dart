@@ -23,11 +23,13 @@ class CategoryComparisonChart extends StatelessWidget {
     // The maximum category amount represents 100% width of the bars
     final maxAmount = sortedShares.isNotEmpty ? sortedShares.first.amount : 1.0;
 
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Card(
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(28),
-        side: const BorderSide(color: Color(0xFFF1F5F9)),
+        side: BorderSide(color: colorScheme.outline),
       ),
       child: Padding(
         padding: const EdgeInsets.all(20.0),
@@ -45,16 +47,17 @@ class CategoryComparisonChart extends StatelessWidget {
                       'Category Comparison',
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                             fontWeight: FontWeight.bold,
+                            color: colorScheme.onSurface,
                           ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       'Compare spending limits and trends',
-                      style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                      style: TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant),
                     ),
                   ],
                 ),
-                Icon(Icons.align_horizontal_left, size: 20, color: Theme.of(context).primaryColor),
+                Icon(Icons.align_horizontal_left, size: 20, color: colorScheme.primary),
               ],
             ),
             const SizedBox(height: 20),
@@ -95,9 +98,10 @@ class CategoryComparisonChart extends StatelessWidget {
                               const SizedBox(width: 8),
                               Text(
                                 meta.name,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 14,
+                                  color: colorScheme.onSurface,
                                 ),
                               ),
                             ],
@@ -106,9 +110,10 @@ class CategoryComparisonChart extends StatelessWidget {
                             children: [
                               Text(
                                 currencyFmt.format(share.amount),
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 14,
+                                  color: colorScheme.onSurface,
                                 ),
                               ),
                               const SizedBox(width: 6),
@@ -116,7 +121,7 @@ class CategoryComparisonChart extends StatelessWidget {
                                 '${share.percentage.toStringAsFixed(0)}%',
                                 style: TextStyle(
                                   fontSize: 11,
-                                  color: Colors.grey[500],
+                                  color: colorScheme.onSurfaceVariant,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
@@ -136,7 +141,7 @@ class CategoryComparisonChart extends StatelessWidget {
                               Container(
                                 height: 8,
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFFF1F5F9),
+                                  color: colorScheme.surfaceContainerHigh,
                                   borderRadius: BorderRadius.circular(4),
                                 ),
                               ),
@@ -179,7 +184,7 @@ class CategoryComparisonChart extends StatelessWidget {
                               'Prev: ${currencyFmt.format(share.prevAmount)}',
                               style: TextStyle(
                                 fontSize: 10,
-                                color: Colors.grey[400],
+                                color: colorScheme.onSurfaceVariant,
                               ),
                             ),
                         ],
