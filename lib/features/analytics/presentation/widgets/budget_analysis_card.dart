@@ -45,11 +45,13 @@ class BudgetAnalysisCard extends StatelessWidget {
       progressColor = Colors.orange;
     }
 
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Card(
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(28),
-        side: const BorderSide(color: Color(0xFFF1F5F9)),
+        side: BorderSide(color: colorScheme.outline),
       ),
       child: Padding(
         padding: const EdgeInsets.all(20.0),
@@ -67,12 +69,13 @@ class BudgetAnalysisCard extends StatelessWidget {
                       'Budget Analysis',
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                             fontWeight: FontWeight.bold,
+                            color: colorScheme.onSurface,
                           ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       'Adherence and monthly forecasting',
-                      style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                      style: TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant),
                     ),
                   ],
                 ),
@@ -88,11 +91,11 @@ class BudgetAnalysisCard extends StatelessWidget {
                 Expanded(
                   child: Column(
                     children: [
-                      _buildInfoRow(context, 'Monthly Budget', currencyFmt.format(budget), Colors.grey[800]!),
+                      _buildInfoRow(context, 'Monthly Budget', currencyFmt.format(budget), colorScheme.onSurface),
                       const SizedBox(height: 10),
                       _buildInfoRow(context, 'Total Spent', currencyFmt.format(spent), progressColor),
                       const SizedBox(height: 10),
-                      _buildInfoRow(context, 'Remaining', currencyFmt.format(remaining), remaining > 0 ? Colors.green : Colors.grey),
+                      _buildInfoRow(context, 'Remaining', currencyFmt.format(remaining), remaining > 0 ? Colors.green : colorScheme.onSurfaceVariant),
                     ],
                   ),
                 ),
@@ -111,7 +114,7 @@ class BudgetAnalysisCard extends StatelessWidget {
                           child: CircularProgressIndicator(
                             value: progress,
                             strokeWidth: 10,
-                            backgroundColor: const Color(0xFFF1F5F9),
+                            backgroundColor: colorScheme.surfaceContainerHigh,
                             color: progressColor,
                           ),
                         ),
@@ -132,7 +135,7 @@ class BudgetAnalysisCard extends StatelessWidget {
                               'spent',
                               style: TextStyle(
                                 fontSize: 10,
-                                color: Colors.grey[500],
+                                color: colorScheme.onSurfaceVariant,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -180,6 +183,7 @@ class BudgetAnalysisCard extends StatelessWidget {
   }
 
   Widget _buildInfoRow(BuildContext context, String label, String value, Color valueColor) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -188,7 +192,7 @@ class BudgetAnalysisCard extends StatelessWidget {
           style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w600,
-            color: Colors.grey[500],
+            color: colorScheme.onSurfaceVariant,
           ),
         ),
         Text(
