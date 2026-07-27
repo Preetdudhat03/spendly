@@ -63,6 +63,7 @@ class _AllExpensesScreenState extends ConsumerState<AllExpensesScreen> {
     super.dispose();
   }
 
+  @override
   Widget build(BuildContext context) {
     final expenseState = ref.watch(expenseProvider);
 
