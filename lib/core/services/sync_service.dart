@@ -18,25 +18,35 @@ class SyncService {
   final Ref _ref;
   final SupabaseClient _client = Supabase.instance.client;
   StreamSubscription? _connectivitySubscription;
+  Timer? _syncDebounceTimer;
+  DateTime? _lastSyncFailureTime;
 
   SyncService(this._ref);
 
   void initialize() {
     _connectivitySubscription = Connectivity().onConnectivityChanged.listen((results) {
-      // In connectivity_plus >= 6.0, onConnectivityChanged returns List<ConnectivityResult>
       final result = results.first;
       if (result == ConnectivityResult.mobile || 
           result == ConnectivityResult.wifi || 
           result == ConnectivityResult.ethernet) {
+        _lastSyncFailureTime = null; // Reset failure timer on network change
         syncNow();
       }
     });
 
     // Automatically trigger sync whenever a new pending operation is added
     HiveService.pendingOperations.watch().listen((event) {
+      if (event.deleted) return; // Ignore deletion events
       if (_ref.read(syncStateProvider)) return; // Ignore local changes caused by sync process
-      // Small delay to allow multiple rapid operations to batch together
-      Future.delayed(const Duration(milliseconds: 500), () {
+
+      // Cool-down: If last sync failed within 15s due to network issue, back off
+      if (_lastSyncFailureTime != null &&
+          DateTime.now().difference(_lastSyncFailureTime!) < const Duration(seconds: 15)) {
+        return;
+      }
+
+      _syncDebounceTimer?.cancel();
+      _syncDebounceTimer = Timer(const Duration(milliseconds: 500), () {
         syncNow();
       });
     });
@@ -64,6 +74,16 @@ class SyncService {
 
   void dispose() {
     _connectivitySubscription?.cancel();
+    _syncDebounceTimer?.cancel();
+  }
+
+  bool _isNetworkError(Object error) {
+    final str = error.toString().toLowerCase();
+    return str.contains('socketexception') ||
+           str.contains('failed host lookup') ||
+           str.contains('clientexception') ||
+           str.contains('connection failed') ||
+           str.contains('timeout');
   }
 
   Future<void> syncNow() async {
@@ -82,8 +102,10 @@ class SyncService {
       debugPrint('SyncService: Starting synchronization');
       await _pushPendingOperations();
       await _pullLatestData();
+      _lastSyncFailureTime = null;
       debugPrint('SyncService: Synchronization complete');
     } catch (e) {
+      _lastSyncFailureTime = DateTime.now();
       debugPrint('SyncService: Synchronization failed: $e');
     } finally {
       _ref.read(syncStateProvider.notifier).state = false;
@@ -126,6 +148,12 @@ class SyncService {
         op.retryCount += 1;
         await op.save();
         debugPrint('SyncService: Failed to process operation ${op.id}: $e');
+
+        if (_isNetworkError(e)) {
+          _lastSyncFailureTime = DateTime.now();
+          debugPrint('SyncService: Network error detected. Aborting sync queue to prevent loop.');
+          break;
+        }
       }
     }
   }
@@ -135,10 +163,8 @@ class SyncService {
       case 'ADD_EXPENSE':
         final payload = op.payload;
         final tempId = payload['id'] as String;
-        // Check if we already synced this by chance (e.g. if the local ID was already replaced)
         final localExpense = HiveService.expenses.get(tempId);
         
-        // To Supabase
         final response = await _client.from('expenses').insert({
           'family_id': payload['family_id'],
           'created_by': payload['created_by'],
@@ -152,7 +178,6 @@ class SyncService {
         final newId = response['id'] as String;
         final createdAt = DateTime.parse(response['created_at']);
 
-        // Update local database if it still exists with tempId
         if (localExpense != null) {
           final updatedExpense = ExpenseModel(
             id: newId,
@@ -170,7 +195,6 @@ class SyncService {
           await HiveService.expenses.put(newId, updatedExpense);
         }
 
-        // Propagate the new ID to any pending update/delete operations
         final pendingOps = HiveService.pendingOperations.values
             .where((p) => p.payload != null && p.payload['id'] == tempId);
         for (final p in pendingOps) {
@@ -190,8 +214,7 @@ class SyncService {
         }).eq('id', payload['id']).select();
         
         if (updateResponse.isEmpty) {
-          debugPrint('SyncService: UPDATE_EXPENSE failed (0 rows) for id ${payload['id']} - Check RLS or if ID exists.');
-          // Don't throw if it doesn't exist, just drop it so we don't get stuck in a loop forever
+          debugPrint('SyncService: UPDATE_EXPENSE failed (0 rows) for id ${payload['id']}');
         }
         break;
 
@@ -200,10 +223,9 @@ class SyncService {
         if (!(id as String).startsWith('local_')) {
           final deleteResponse = await _client.from('expenses').delete().eq('id', id).select();
           if (deleteResponse.isEmpty) {
-             debugPrint('SyncService: DELETE_EXPENSE failed (0 rows) for id $id - Check RLS or if ID exists.');
+             debugPrint('SyncService: DELETE_EXPENSE failed (0 rows) for id $id');
           }
         } else {
-          // If it's a local_ ID, it means the ADD_EXPENSE might still be pending. We should remove the ADD_EXPENSE.
           final addOps = HiveService.pendingOperations.values
               .where((p) => p.type == 'ADD_EXPENSE' && p.payload['id'] == id);
           for (final p in addOps) {
@@ -226,7 +248,6 @@ class SyncService {
         final newFamilyId = response['id'] as String;
         final createdAt = DateTime.parse(response['created_at']);
         
-        // Update local family ID
         final localFamily = HiveService.families.get(tempFamilyId);
         if (localFamily != null) {
           final updatedFamily = FamilyModel(
@@ -240,22 +261,18 @@ class SyncService {
           await HiveService.families.put(newFamilyId, updatedFamily);
         }
 
-        // Insert admin member
         await _client.from('family_members').insert({
           'family_id': newFamilyId,
           'user_id': memberPayload['user_id'],
           'role': memberPayload['role'],
         });
 
-        // Auto-heal any pending operations that were referencing this local family ID
         for (var pendingOp in HiveService.pendingOperations.values) {
           if (pendingOp.payload is Map && pendingOp.payload['family_id'] == tempFamilyId) {
             pendingOp.payload['family_id'] = newFamilyId;
             await pendingOp.save();
           }
         }
-        
-        // Instead of replacing the member local ID properly, we will just rely on the upcoming pull to sync it
         break;
 
       case 'SET_BUDGET':
@@ -280,7 +297,6 @@ class SyncService {
     if (nativeUser == null) return;
     final userId = nativeUser.id;
 
-    // Get current family
     final memberData = await _client.from('family_members').select().eq('user_id', userId).maybeSingle();
     if (memberData == null) return;
 
@@ -296,10 +312,8 @@ class SyncService {
       createdAt: DateTime.parse(familyData['created_at']),
     ));
 
-    // Pull Members
+    // Pull Members (Batch updates into putAll)
     final membersList = await _client.from('family_members').select().eq('family_id', familyId);
-    
-    // Create map for display names
     final userIds = membersList.map((m) => m['user_id'] as String).toList();
     final Map<String, String> nameCache = {};
     if (userIds.isNotEmpty) {
@@ -310,59 +324,75 @@ class SyncService {
     }
 
     final remoteMemberIds = membersList.map((m) => m['id'] as String).toSet();
+    final Map<String, FamilyMemberModel> memberUpdates = {};
     for (var m in membersList) {
       final mUserId = m['user_id'];
-      await HiveService.familyMembers.put(m['id'], FamilyMemberModel(
+      memberUpdates[m['id']] = FamilyMemberModel(
         id: m['id'],
         familyId: m['family_id'],
         userId: mUserId,
         role: m['role'],
         joinedAt: DateTime.parse(m['joined_at']),
         displayName: nameCache[mUserId] ?? 'Family Member',
-      ));
+      );
     }
-    // Reconcile: delete local members that were removed on server
+    if (memberUpdates.isNotEmpty) {
+      await HiveService.familyMembers.putAll(memberUpdates);
+    }
+
     final localMemberIds = HiveService.familyMembers.keys.cast<String>().toList();
+    final memberDeletions = <String>[];
     for (final id in localMemberIds) {
       final m = HiveService.familyMembers.get(id);
       if (m != null && m.familyId == familyId && !remoteMemberIds.contains(id) && !id.startsWith('local_')) {
-        await HiveService.familyMembers.delete(id);
+        memberDeletions.add(id);
       }
     }
+    if (memberDeletions.isNotEmpty) {
+      await HiveService.familyMembers.deleteAll(memberDeletions);
+    }
 
-    // Pull Budgets
+    // Pull Budgets (Batch updates into putAll)
     final budgetsList = await _client.from('budgets').select().eq('family_id', familyId);
     final remoteBudgetIds = budgetsList.map((b) => b['id'] as String).toSet();
+    final Map<String, BudgetModel> budgetUpdates = {};
     for (var b in budgetsList) {
-      await HiveService.budgets.put(b['id'], BudgetModel(
+      budgetUpdates[b['id']] = BudgetModel(
         id: b['id'],
         familyId: b['family_id'],
         monthlyBudget: (b['monthly_budget'] as num).toDouble(),
         month: b['month'],
         year: b['year'],
-      ));
+      );
     }
-    // Reconcile: delete local budgets that were removed on server
+    if (budgetUpdates.isNotEmpty) {
+      await HiveService.budgets.putAll(budgetUpdates);
+    }
+
     final localBudgetIds = HiveService.budgets.keys.cast<String>().toList();
+    final budgetDeletions = <String>[];
     for (final id in localBudgetIds) {
       final b = HiveService.budgets.get(id);
       if (b != null && b.familyId == familyId && !remoteBudgetIds.contains(id) && !id.startsWith('local_')) {
-        await HiveService.budgets.delete(id);
+        budgetDeletions.add(id);
       }
     }
+    if (budgetDeletions.isNotEmpty) {
+      await HiveService.budgets.deleteAll(budgetDeletions);
+    }
 
-    // Pull Expenses
+    // Pull Expenses (Batch updates into putAll)
     final expensesList = await _client.from('expenses').select().eq('family_id', familyId);
     final remoteExpenseIds = expensesList.map((e) => e['id'] as String).toSet();
+    final Map<String, ExpenseModel> expenseUpdates = {};
     for (var e in expensesList) {
-      // Check if we shouldn't overwrite if there's a pending operation for this
       final hasPendingOps = HiveService.pendingOperations.values.any((op) {
         return op.type == 'UPDATE_EXPENSE' && op.payload['id'] == e['id'];
       });
 
       if (!hasPendingOps) {
         final createdBy = e['created_by'];
-        await HiveService.expenses.put(e['id'], ExpenseModel(
+        expenseUpdates[e['id']] = ExpenseModel(
           id: e['id'],
           familyId: e['family_id'],
           createdBy: createdBy,
@@ -373,19 +403,25 @@ class SyncService {
           expenseDate: DateTime.parse(e['expense_date']),
           createdAt: DateTime.parse(e['created_at']),
           createdByName: nameCache[createdBy] ?? 'Family Member',
-        ));
+        );
       }
     }
-    // Reconcile: delete local expenses that were removed on server
+    if (expenseUpdates.isNotEmpty) {
+      await HiveService.expenses.putAll(expenseUpdates);
+    }
+
     final localExpenseIds = HiveService.expenses.keys.cast<String>().toList();
+    final expenseDeletions = <String>[];
     for (final id in localExpenseIds) {
       final e = HiveService.expenses.get(id);
       if (e != null && e.familyId == familyId && !remoteExpenseIds.contains(id) && !id.startsWith('local_')) {
-        await HiveService.expenses.delete(id);
+        expenseDeletions.add(id);
       }
     }
+    if (expenseDeletions.isNotEmpty) {
+      await HiveService.expenses.deleteAll(expenseDeletions);
+    }
 
-    // Update sync timestamp
     final syncMeta = SyncMetadataModel(
       key: 'last_sync_timestamp',
       value: DateTime.now(),
@@ -393,8 +429,6 @@ class SyncService {
     await HiveService.syncMetadata.put('last_sync_timestamp', syncMeta);
   }
 
-  /// Merges guest/sandbox data into the new Supabase cloud account by replacing
-  /// the old local guest IDs with the new real user ID and queueing them for sync.
   Future<void> mergeLocalDataToCloud(String newUserId) async {
     debugPrint('SyncService: Merging local sandbox data for new user $newUserId');
 
@@ -415,7 +449,6 @@ class SyncService {
       bool isRealUuid = oldUserId.length > 20 && !oldUserId.startsWith('user_');
 
       if (isRealUuid) {
-         // Attempt to transfer on backend
          try {
            await _client.rpc('complete_user_migration', params: {
              'old_user_id': oldUserId,
@@ -424,16 +457,13 @@ class SyncService {
            debugPrint('Successfully ran RPC to migrate $oldUserId to $newUserId');
          } catch (e) {
            debugPrint('RPC failed: $e. Cannot migrate real UUID without backend.');
-           // If it fails, they are offline. Skip this family for now.
            continue;
          }
       }
 
-      // Update Local Families
       final updatedFamily = family.toDomain().copyWith(createdBy: newUserId);
       await HiveService.families.put(family.id, FamilyModel.fromDomain(updatedFamily));
       
-      // Update Local Members (only for the old user)
       final members = HiveService.familyMembers.values.where((m) => m.familyId == family.id).toList();
       for (var m in members) {
          if (m.userId == oldUserId) {
@@ -442,7 +472,6 @@ class SyncService {
          }
       }
 
-      // Update Local Expenses
       final expenses = HiveService.expenses.values.where((e) => e.familyId == family.id).toList();
       for (var e in expenses) {
          if (e.createdBy == oldUserId) {
@@ -451,13 +480,8 @@ class SyncService {
          }
       }
 
-      // Update Local Budgets
       final budgets = HiveService.budgets.values.where((b) => b.familyId == family.id).toList();
-      for (var b in budgets) {
-         // Budgets don't have createdBy, they have familyId. No changes needed.
-      }
 
-      // Update Pending Ops (only if it was a sandbox user!)
       for (var op in HiveService.pendingOperations.values) {
          if (op.userId == oldUserId) {
              final updatedOp = PendingOperationModel(
@@ -472,11 +496,8 @@ class SyncService {
          }
       }
 
-      // If it was a Sandbox user, we must ALSO QUEUE CREATION OF THE FAMILY AND ALL DATA!
       if (!isRealUuid) {
-          // Push family creation
           final familyOpId = 'local_${DateTime.now().millisecondsSinceEpoch}_fam_${family.id}';
-          // Find the admin member (or any member belonging to the old user)
           final adminMember = HiveService.familyMembers.values.firstWhere(
              (m) => m.familyId == family.id && m.userId == newUserId, 
              orElse: () => HiveService.familyMembers.values.first,
@@ -494,7 +515,6 @@ class SyncService {
           );
           await HiveService.pendingOperations.put(op.id, op);
 
-          // Queue expenses
           for (var e in expenses) {
               if (e.createdBy == oldUserId) {
                   final opId = 'local_${DateTime.now().millisecondsSinceEpoch}_${e.id}';
@@ -509,7 +529,6 @@ class SyncService {
               }
           }
 
-          // Queue budgets
           for (var b in budgets) {
               final opId = 'local_${DateTime.now().millisecondsSinceEpoch}_budget_${b.id}';
               final opB = PendingOperationModel(
@@ -528,18 +547,14 @@ class SyncService {
     if (localDataUpdated) {
         Future.delayed(const Duration(milliseconds: 500), () {
             try {
-              // Ignore if providers are disposed
               _ref.read(familyProvider.notifier).loadFamily();
               _ref.read(expenseProvider.notifier).loadExpenses();
             } catch (_) {}
         });
     }
 
-    // 5. Cleanup
     await HiveService.settings.put('active_user_id', newUserId);
     debugPrint('SyncService: Sandbox data queued for upload. Triggering sync...');
-    
-    // 6. Trigger background sync
     syncNow();
   }
 }

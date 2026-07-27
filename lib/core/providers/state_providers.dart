@@ -670,10 +670,22 @@ class FamilyState {
 class FamilyNotifier extends StateNotifier<FamilyState> {
   final FamilyRepository _familyRepo;
   final Ref _ref;
+  Timer? _debounceTimer;
 
   FamilyNotifier(this._familyRepo, this._ref) : super(FamilyState.initial()) {
-    HiveService.families.watch().listen((_) => loadFamily());
-    HiveService.familyMembers.watch().listen((_) => loadFamily());
+    HiveService.families.watch().listen((_) => _onHiveChanged());
+    HiveService.familyMembers.watch().listen((_) => _onHiveChanged());
+  }
+
+  void _onHiveChanged() {
+    _debounceTimer?.cancel();
+    _debounceTimer = Timer(const Duration(milliseconds: 150), () => loadFamily());
+  }
+
+  @override
+  void dispose() {
+    _debounceTimer?.cancel();
+    super.dispose();
   }
 
   void reset() {
@@ -881,9 +893,19 @@ class ExpenseNotifier extends StateNotifier<ExpenseState> {
   final ExpenseRepository _expenseRepo;
   final FamilyRepository _familyRepo;
   final Ref _ref;
+  Timer? _debounceTimer;
 
   ExpenseNotifier(this._expenseRepo, this._familyRepo, this._ref) : super(ExpenseState.initial()) {
-    HiveService.expenses.watch().listen((_) => loadExpenses());
+    HiveService.expenses.watch().listen((_) {
+      _debounceTimer?.cancel();
+      _debounceTimer = Timer(const Duration(milliseconds: 150), () => loadExpenses());
+    });
+  }
+
+  @override
+  void dispose() {
+    _debounceTimer?.cancel();
+    super.dispose();
   }
 
   void reset() {
@@ -1029,9 +1051,19 @@ class BudgetState {
 class BudgetNotifier extends StateNotifier<BudgetState> {
   final BudgetRepository _budgetRepo;
   final FamilyRepository _familyRepo;
+  Timer? _debounceTimer;
 
   BudgetNotifier(this._budgetRepo, this._familyRepo) : super(BudgetState.initial()) {
-    HiveService.budgets.watch().listen((_) => loadBudget());
+    HiveService.budgets.watch().listen((_) {
+      _debounceTimer?.cancel();
+      _debounceTimer = Timer(const Duration(milliseconds: 150), () => loadBudget());
+    });
+  }
+
+  @override
+  void dispose() {
+    _debounceTimer?.cancel();
+    super.dispose();
   }
 
   void reset() {
@@ -1099,8 +1131,8 @@ class ConnectionNotifier extends StateNotifier<ConnectionStatus> {
 
   ConnectionNotifier(this._dbService) : super(ConnectionStatus.checking) {
     checkConnection();
-    // Run connection checks every 10 seconds
-    _timer = Timer.periodic(const Duration(seconds: 10), (_) => checkConnection());
+    // Run connection checks every 30 seconds to reduce overhead
+    _timer = Timer.periodic(const Duration(seconds: 30), (_) => checkConnection());
   }
 
   @override
@@ -1114,8 +1146,15 @@ class ConnectionNotifier extends StateNotifier<ConnectionStatus> {
       state = ConnectionStatus.sandbox;
       return;
     }
-    
+
     try {
+      final results = await Connectivity().checkConnectivity();
+      final result = results.isNotEmpty ? results.first : ConnectivityResult.none;
+      if (result == ConnectivityResult.none) {
+        state = ConnectionStatus.offline;
+        return;
+      }
+
       // Try to query users table
       await Supabase.instance.client.from('users').select('id').limit(1);
       state = ConnectionStatus.online;

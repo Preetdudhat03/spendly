@@ -51,7 +51,7 @@ class MainLayout extends ConsumerWidget {
   }
 }
 
-class PersistentStack extends StatelessWidget {
+class PersistentStack extends StatefulWidget {
   final int index;
   final List<Widget> children;
 
@@ -62,33 +62,40 @@ class PersistentStack extends StatelessWidget {
   });
 
   @override
+  State<PersistentStack> createState() => _PersistentStackState();
+}
+
+class _PersistentStackState extends State<PersistentStack> {
+  late final List<bool> _visited;
+
+  @override
+  void initState() {
+    super.initState();
+    _visited = List.generate(widget.children.length, (i) => i == widget.index);
+  }
+
+  @override
+  void didUpdateWidget(PersistentStack oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!_visited[widget.index]) {
+      setState(() {
+        _visited[widget.index] = true;
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: List.generate(children.length, (i) {
-        final isCurrent = i == index;
-        
-        return Positioned.fill(
-          // Static key ensures Flutter never unmounts this branch
-          key: ValueKey('persistent_branch_$i'),
-          child: TickerMode(
-            // Disable animations when not active
-            enabled: isCurrent,
-            child: IgnorePointer(
-              // Prevent touches from hitting inactive layers
-              ignoring: !isCurrent,
-              child: RepaintBoundary(
-                // Cache the heavy widget tree (SVGs, Charts) to GPU memory
-                child: Opacity(
-                  // 1.0 is fully visible. 
-                  // 0.001 forces Flutter to paint and cache it, but it's invisible to the eye.
-                  // This completely avoids the layout/paint freeze of Offstage.
-                  opacity: isCurrent ? 1.0 : 0.001,
-                  child: children[i],
-                ),
-              ),
-            ),
-          ),
-        );
+    return IndexedStack(
+      index: widget.index,
+      children: List.generate(widget.children.length, (i) {
+        if (_visited[i]) {
+          return RepaintBoundary(
+            key: ValueKey('persistent_branch_$i'),
+            child: widget.children[i],
+          );
+        }
+        return const SizedBox.shrink();
       }),
     );
   }

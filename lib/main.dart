@@ -8,7 +8,6 @@ import 'package:spendly/core/constants/config.dart';
 import 'package:spendly/core/services/db_provider.dart';
 import 'package:spendly/core/services/router_service.dart';
 import 'package:spendly/core/theme/app_theme.dart';
-import 'package:spendly/core/providers/state_providers.dart';
 import 'package:spendly/core/providers/auth_providers.dart';
 import 'package:spendly/core/providers/settings_provider.dart';
 import 'package:spendly/core/services/hive_service.dart';
@@ -39,13 +38,15 @@ class LoggerObserver extends ProviderObserver {
     Object? newValue,
     ProviderContainer container,
   ) {
-    final typeName = provider.runtimeType.toString();
-    if (typeName.contains('Auth') || 
-        typeName.contains('Family') || 
-        typeName.contains('Expense') || 
-        typeName.contains('Budget') ||
-        typeName.contains('Profile')) {
-      debugPrint('Riverpod Logger: [$typeName] updated to: $newValue');
+    if (kDebugMode && previousValue != newValue) {
+      final typeName = provider.runtimeType.toString();
+      if (typeName.contains('Auth') || 
+          typeName.contains('Family') || 
+          typeName.contains('Expense') || 
+          typeName.contains('Budget') ||
+          typeName.contains('Profile')) {
+        debugPrint('Riverpod Logger: [$typeName] updated');
+      }
     }
   }
 }
