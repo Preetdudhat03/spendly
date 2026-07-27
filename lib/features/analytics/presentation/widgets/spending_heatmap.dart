@@ -17,15 +17,16 @@ class SpendingHeatmap extends StatelessWidget {
   });
 
   Color _getCellColor(BuildContext context, double amount) {
-    final primary = Theme.of(context).primaryColor;
+    final colorScheme = Theme.of(context).colorScheme;
+    final primary = colorScheme.primary;
     if (amount <= 0) {
-      return const Color(0xFFF1F5F9); // Empty state grey
+      return colorScheme.surfaceContainerHigh.withOpacity(0.5);
     } else if (amount <= 500) {
-      return primary.withOpacity(0.20); // Light
+      return primary.withOpacity(0.30);
     } else if (amount <= 2000) {
-      return primary.withOpacity(0.55); // Medium
+      return primary.withOpacity(0.65);
     } else {
-      return primary; // Dark/Full
+      return primary;
     }
   }
 
@@ -33,6 +34,7 @@ class SpendingHeatmap extends StatelessWidget {
   Widget build(BuildContext context) {
     final currencyFmt = NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 0);
     final dateFmt = DateFormat('EEE, MMM d');
+    final colorScheme = Theme.of(context).colorScheme;
 
     // Retrieve heatmap sorted keys
     final days = state.heatmapData.keys.toList()..sort();
@@ -52,7 +54,7 @@ class SpendingHeatmap extends StatelessWidget {
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(28),
-        side: const BorderSide(color: Color(0xFFF1F5F9)),
+        side: BorderSide(color: colorScheme.outline),
       ),
       child: Padding(
         padding: const EdgeInsets.all(20.0),
@@ -70,16 +72,17 @@ class SpendingHeatmap extends StatelessWidget {
                       'Spending Heatmap',
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                             fontWeight: FontWeight.bold,
+                            color: colorScheme.onSurface,
                           ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       'Identify spending frequency patterns',
-                      style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                      style: TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant),
                     ),
                   ],
                 ),
-                Icon(Icons.grid_on, size: 20, color: Theme.of(context).primaryColor.withOpacity(0.7)),
+                Icon(Icons.grid_on, size: 20, color: colorScheme.primary),
               ],
             ),
             const SizedBox(height: 20),
@@ -88,13 +91,11 @@ class SpendingHeatmap extends StatelessWidget {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Left Labels for Weeks (Optional, e.g. "W12", "W1" or "Month" indicators)
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const SizedBox(height: 24), // Offset for day headers
+                    const SizedBox(height: 24),
                     ...List.generate(weeks.length, (idx) {
-                      // Show month indicator for first day of week
                       if (weeks[idx].isNotEmpty) {
                         final firstDay = weeks[idx].first;
                         if (firstDay.day <= 7) {
@@ -103,7 +104,7 @@ class SpendingHeatmap extends StatelessWidget {
                             alignment: Alignment.centerLeft,
                             child: Text(
                               DateFormat('MMM').format(firstDay),
-                              style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Colors.grey[400]),
+                              style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: colorScheme.onSurfaceVariant),
                             ),
                           );
                         }
@@ -118,7 +119,7 @@ class SpendingHeatmap extends StatelessWidget {
                 Expanded(
                   child: Column(
                     children: [
-                      // Weekday Headers (Columns)
+                      // Weekday Headers
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: weekdayNames.map((name) {
@@ -126,10 +127,10 @@ class SpendingHeatmap extends StatelessWidget {
                             child: Center(
                               child: Text(
                                 name,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 11,
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.grey,
+                                  color: colorScheme.onSurfaceVariant,
                                 ),
                               ),
                             ),
@@ -171,7 +172,7 @@ class SpendingHeatmap extends StatelessWidget {
                                             title: dateFmt.format(day),
                                             subtitle: 'Daily transaction list',
                                             icon: Icons.calendar_today,
-                                            color: Theme.of(context).primaryColor,
+                                            color: colorScheme.primary,
                                             totalAmount: amount,
                                             expenses: dayExpenses,
                                             aiSummary: 'You logged ${dayExpenses.length} transactions on this day.',
@@ -183,6 +184,10 @@ class SpendingHeatmap extends StatelessWidget {
                                           decoration: BoxDecoration(
                                             color: _getCellColor(context, amount),
                                             borderRadius: BorderRadius.circular(4),
+                                            border: Border.all(
+                                              color: colorScheme.outline.withOpacity(0.3),
+                                              width: 0.5,
+                                            ),
                                           ),
                                         ),
                                       ),
@@ -207,17 +212,17 @@ class SpendingHeatmap extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                Text('Less', style: TextStyle(fontSize: 11, color: Colors.grey[500])),
+                Text('Less', style: TextStyle(fontSize: 11, color: colorScheme.onSurfaceVariant)),
                 const SizedBox(width: 4),
-                Container(width: 12, height: 12, decoration: BoxDecoration(color: const Color(0xFFF1F5F9), borderRadius: BorderRadius.circular(3))),
+                Container(width: 12, height: 12, decoration: BoxDecoration(color: colorScheme.surfaceContainerHigh.withOpacity(0.5), borderRadius: BorderRadius.circular(3), border: Border.all(color: colorScheme.outline.withOpacity(0.3), width: 0.5))),
                 const SizedBox(width: 3),
-                Container(width: 12, height: 12, decoration: BoxDecoration(color: Theme.of(context).primaryColor.withOpacity(0.20), borderRadius: BorderRadius.circular(3))),
+                Container(width: 12, height: 12, decoration: BoxDecoration(color: colorScheme.primary.withOpacity(0.30), borderRadius: BorderRadius.circular(3))),
                 const SizedBox(width: 3),
-                Container(width: 12, height: 12, decoration: BoxDecoration(color: Theme.of(context).primaryColor.withOpacity(0.55), borderRadius: BorderRadius.circular(3))),
+                Container(width: 12, height: 12, decoration: BoxDecoration(color: colorScheme.primary.withOpacity(0.65), borderRadius: BorderRadius.circular(3))),
                 const SizedBox(width: 3),
-                Container(width: 12, height: 12, decoration: BoxDecoration(color: Theme.of(context).primaryColor, borderRadius: BorderRadius.circular(3))),
+                Container(width: 12, height: 12, decoration: BoxDecoration(color: colorScheme.primary, borderRadius: BorderRadius.circular(3))),
                 const SizedBox(width: 4),
-                Text('More', style: TextStyle(fontSize: 11, color: Colors.grey[500])),
+                Text('More', style: TextStyle(fontSize: 11, color: colorScheme.onSurfaceVariant)),
               ],
             ),
           ],
