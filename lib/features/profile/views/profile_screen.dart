@@ -286,7 +286,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                 ),
                                 Container(
                                   padding: const EdgeInsets.all(4),
-                                  decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+                                  decoration: BoxDecoration(color: Theme.of(context).colorScheme.surface, shape: BoxShape.circle),
                                   child: Icon(Icons.palette, size: 16, color: Theme.of(context).primaryColor),
                                 ),
                               ],
@@ -301,7 +301,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                 style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                               ),
                               IconButton(
-                                icon: const Icon(Icons.edit, size: 16, color: Colors.grey),
+                                icon: Icon(Icons.edit, size: 16, color: Theme.of(context).colorScheme.onSurfaceVariant),
                                 onPressed: () => _showEditNameDialog(authState.displayName ?? ''),
                                 constraints: const BoxConstraints(),
                                 padding: const EdgeInsets.only(left: 8),
@@ -313,10 +313,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                             children: [
                               Text(
                                 authState.email ?? '',
-                                style: const TextStyle(color: Colors.grey, fontSize: 14),
+                                style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 14),
                               ),
                               IconButton(
-                                icon: const Icon(Icons.edit, size: 14, color: Colors.grey),
+                                icon: Icon(Icons.edit, size: 14, color: Theme.of(context).colorScheme.onSurfaceVariant),
                                 onPressed: () => _showEditEmailDialog(authState.email ?? ''),
                                 constraints: const BoxConstraints(),
                                 padding: const EdgeInsets.only(left: 8),
@@ -334,15 +334,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('Family Group',
-                              style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold, fontSize: 13)),
+                          Text('Family Group',
+                              style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontWeight: FontWeight.bold, fontSize: 13)),
                           const SizedBox(height: 4),
                           Text(familyName, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                           const SizedBox(height: 16),
                           Container(
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFF1F5F9),
+                              color: Theme.of(context).colorScheme.surfaceContainerHigh,
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Row(
@@ -351,8 +351,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                 Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    const Text('Invite Family Code',
-                                        style: TextStyle(fontSize: 12, color: Colors.grey)),
+                                    Text('Invite Family Code',
+                                        style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurfaceVariant)),
                                     Text(
                                       familyCode,
                                       style: TextStyle(
@@ -368,18 +368,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                   children: [
                                     IconButton(
                                       onPressed: () => _showQrCodeDialog(familyCode),
-                                      icon: const Icon(Icons.qr_code, size: 20),
-                                      color: Theme.of(context).primaryColor,
-                                      tooltip: 'Show QR Code',
+                                      icon: Icon(Icons.qr_code, color: Theme.of(context).primaryColor),
                                     ),
-                                    ElevatedButton.icon(
-                                      onPressed: () => _copyFamilyCode(familyCode),
-                                      icon: const Icon(Icons.copy, size: 16),
-                                      label: const Text('COPY'),
-                                      style: ElevatedButton.styleFrom(
-                                        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
-                                        textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-                                      ),
+                                    IconButton(
+                                      onPressed: () {
+                                        Clipboard.setData(ClipboardData(text: familyCode));
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          const SnackBar(content: Text('Family Code copied to clipboard')),
+                                        );
+                                      },
+                                      icon: Icon(Icons.copy, color: Theme.of(context).primaryColor),
                                     ),
                                   ],
                                 )
@@ -395,7 +393,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   final totalSpent = analyticsState.totalSpent;
                   final budgetProgress = currentBudget > 0 ? (totalSpent / currentBudget).clamp(0.0, 1.0) : 0.0;
 
-                  Widget budgetCard = Card(
+                  Widget familyBudgetCard = Card(
                     child: Padding(
                       padding: const EdgeInsets.all(20.0),
                       child: Column(
@@ -404,46 +402,41 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text('Monthly Budget',
-                                      style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold, fontSize: 13)),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    currencyFormat.format(currentBudget),
-                                    style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                                  ),
-                                ],
-                              ),
-                              ElevatedButton.icon(
-                                onPressed: () => _showEditBudgetDialog(currentBudget),
-                                icon: const Icon(Icons.tune, size: 18),
-                                label: const Text('SET BUDGET'),
-                                style: ElevatedButton.styleFrom(
-                                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
-                                  textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                              Text('Monthly Family Budget',
+                                  style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontWeight: FontWeight.bold, fontSize: 13)),
+                              if (isCurrentUserAdmin)
+                                InkWell(
+                                  onTap: () => _showEditBudgetDialog(currentBudget),
+                                  child: Text('SET BUDGET',
+                                      style: TextStyle(
+                                          color: Theme.of(context).primaryColor,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 13)),
                                 ),
-                              )
-                            ],
-                          ),
-                          const SizedBox(height: 16),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text('Spent: ${currencyFormat.format(totalSpent)}', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey)),
-                              Text('${(budgetProgress * 100).toStringAsFixed(1)}%', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: budgetProgress >= 1.0 ? Colors.red : Colors.grey)),
                             ],
                           ),
                           const SizedBox(height: 8),
-                          LinearProgressIndicator(
-                            value: budgetProgress,
-                            minHeight: 8,
-                            backgroundColor: Theme.of(context).primaryColor.withValues(alpha: 0.1),
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              budgetProgress >= 1.0 ? Colors.red : (budgetProgress >= 0.8 ? Colors.orange : Theme.of(context).primaryColor),
-                            ),
+                          Text(currencyFormat.format(currentBudget),
+                              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900)),
+                          const SizedBox(height: 12),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text('Spent: ${currencyFormat.format(totalSpent)}', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurfaceVariant)),
+                              Text('${(budgetProgress * 100).toStringAsFixed(1)}%', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: budgetProgress >= 1.0 ? Colors.red : Theme.of(context).colorScheme.onSurfaceVariant)),
+                            ],
+                          ),
+                          const SizedBox(height: 6),
+                          ClipRRect(
                             borderRadius: BorderRadius.circular(4),
+                            child: LinearProgressIndicator(
+                              value: budgetProgress.clamp(0.0, 1.0),
+                              backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
+                              color: budgetProgress >= 1.0
+                                  ? Colors.red
+                                  : (budgetProgress >= 0.8 ? Colors.orange : Theme.of(context).primaryColor),
+                              minHeight: 8,
+                            ),
                           ),
                         ],
                       ),
@@ -456,8 +449,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Family Members', style: Theme.of(context).textTheme.titleMedium),
-                          const Divider(height: 20),
+                          Text('Family Members (${familyState.members.length})', style: Theme.of(context).textTheme.titleMedium),
+                          const Divider(height: 24),
                           ListView.builder(
                             shrinkWrap: true,
                             physics: const NeverScrollableScrollPhysics(),
@@ -465,13 +458,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                             itemBuilder: (context, index) {
                               final member = familyState.members[index];
                               final isAdmin = member.role == 'admin';
-                              final isCurrentUserAdmin = familyState.members.any((m) => m.userId == authState.userId && m.role == 'admin');
                               return ListTile(
                                 contentPadding: EdgeInsets.zero,
                                 leading: CircleAvatar(
-                                  backgroundColor: Theme.of(context).primaryColor.withValues(alpha: 0.1),
+                                  backgroundColor: Theme.of(context).primaryColor.withValues(alpha: 0.15),
                                   child: Text(
-                                      member.displayName.isNotEmpty ? member.displayName[0].toUpperCase() : 'M'),
+                                      member.displayName.isNotEmpty ? member.displayName[0].toUpperCase() : 'M', style: TextStyle(color: Theme.of(context).primaryColor, fontWeight: FontWeight.bold)),
                                 ),
                                 title: Text(member.displayName, style: const TextStyle(fontWeight: FontWeight.bold)),
                                 trailing: Row(
@@ -480,7 +472,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                     Container(
                                       padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
                                       decoration: BoxDecoration(
-                                        color: isAdmin ? const Color(0xFFFEF3C7) : const Color(0xFFE2E8F0),
+                                        color: isAdmin ? const Color(0xFFFEF3C7) : Theme.of(context).colorScheme.surfaceContainerHigh,
                                         borderRadius: BorderRadius.circular(6),
                                       ),
                                       child: Text(
@@ -488,7 +480,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                         style: TextStyle(
                                           fontSize: 12,
                                           fontWeight: FontWeight.bold,
-                                          color: isAdmin ? const Color(0xFFD97706) : Colors.black54,
+                                          color: isAdmin ? const Color(0xFFD97706) : Theme.of(context).colorScheme.onSurfaceVariant,
                                         ),
                                       ),
                                     ),
@@ -538,8 +530,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         children: [
                           Text('Family Reports', style: Theme.of(context).textTheme.titleMedium),
                           const SizedBox(height: 4),
-                          const Text('Generate and share expense history directly.',
-                              style: TextStyle(color: Colors.grey, fontSize: 13)),
+                          Text('Generate and share expense history directly.',
+                              style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 13)),
                           const Divider(height: 24),
                           Row(
                             children: [
@@ -583,10 +575,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
 
                   Widget accountSecurityCard = Card(
-                    color: Theme.of(context).cardColor,
+                    color: Theme.of(context).cardTheme.color,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
-                      side: BorderSide(color: Colors.grey.withValues(alpha: 0.2)),
+                      side: BorderSide(color: Theme.of(context).colorScheme.outline),
                     ),
                     child: ListTile(
                       leading: const Icon(Icons.security),
@@ -622,10 +614,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                             trailing: DropdownButton<String>(
                               value: currentSettings.currencySymbol,
                               underline: const SizedBox(),
+                              dropdownColor: Theme.of(context).colorScheme.surface,
                               items: ['₹', '\$', '€', '£'].map((String value) {
                                 return DropdownMenuItem<String>(
                                   value: value,
-                                  child: Text(value, style: const TextStyle(fontWeight: FontWeight.bold)),
+                                  child: Text(value, style: TextStyle(fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface)),
                                 );
                               }).toList(),
                               onChanged: (val) {
@@ -649,8 +642,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       icon: const Icon(Icons.logout),
                       label: const Text('LOGOUT FROM APP'),
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: Colors.grey[800],
-                        side: BorderSide(color: Colors.grey[300]!),
+                        foregroundColor: Theme.of(context).colorScheme.onSurface,
+                        side: BorderSide(color: Theme.of(context).colorScheme.outline),
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         textStyle: const TextStyle(fontWeight: FontWeight.bold),
                       ),
@@ -673,7 +666,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           versionStr,
                           style: TextStyle(
                             fontSize: 13,
-                            color: Colors.grey[500],
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -682,7 +675,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           'Developed by Preet Dudhat',
                           style: TextStyle(
                             fontSize: 13,
-                            color: Colors.grey[500],
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
