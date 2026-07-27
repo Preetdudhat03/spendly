@@ -10,6 +10,7 @@ class AiInsightCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final insights = state.aiInsights;
     final recommendations = state.aiRecommendations;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -19,7 +20,7 @@ class AiInsightCard extends StatelessWidget {
           elevation: 0,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(28),
-            side: const BorderSide(color: Color(0xFFF1F5F9)),
+            side: BorderSide(color: colorScheme.outline),
           ),
           child: Padding(
             padding: const EdgeInsets.all(20.0),
@@ -36,22 +37,23 @@ class AiInsightCard extends StatelessWidget {
                           'AI Spending Insights',
                           style: Theme.of(context).textTheme.titleLarge?.copyWith(
                                 fontWeight: FontWeight.bold,
+                                color: colorScheme.onSurface,
                               ),
                         ),
                         const SizedBox(height: 2),
                         Text(
                           'Automated observations on spending habits',
-                          style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                          style: TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant),
                         ),
                       ],
                     ),
-                    Icon(Icons.auto_awesome, size: 20, color: Colors.indigo[400]),
+                    Icon(Icons.auto_awesome, size: 20, color: colorScheme.primary),
                   ],
                 ),
                 const SizedBox(height: 16),
                 
                 if (insights.isEmpty)
-                  const Center(child: Text('Insufficient historical records to build AI insights.'))
+                  Center(child: Text('Insufficient historical records to build AI insights.', style: TextStyle(color: colorScheme.onSurfaceVariant)))
                 else
                   ListView.builder(
                     shrinkWrap: true,
@@ -62,14 +64,14 @@ class AiInsightCard extends StatelessWidget {
                         margin: const EdgeInsets.symmetric(vertical: 5.0),
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFEFF6FF), // Soft blue bg
+                          color: Colors.blue.withOpacity(0.12),
                           borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: const Color(0xFFDBEAFE)),
+                          border: Border.all(color: Colors.blue.withOpacity(0.2)),
                         ),
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Icon(Icons.info_outline, size: 16, color: Colors.blue[700]),
+                            const Icon(Icons.info_outline, size: 16, color: Colors.blue),
                             const SizedBox(width: 10),
                             Expanded(
                               child: Text(
@@ -77,7 +79,7 @@ class AiInsightCard extends StatelessWidget {
                                 style: TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w600,
-                                  color: Colors.blue[900],
+                                  color: colorScheme.onSurface,
                                   height: 1.3,
                                 ),
                               ),
@@ -99,7 +101,7 @@ class AiInsightCard extends StatelessWidget {
           elevation: 0,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(28),
-            side: const BorderSide(color: Color(0xFFF1F5F9)),
+            side: BorderSide(color: colorScheme.outline),
           ),
           child: Padding(
             padding: const EdgeInsets.all(20.0),
@@ -116,22 +118,23 @@ class AiInsightCard extends StatelessWidget {
                           'AI Recommendations',
                           style: Theme.of(context).textTheme.titleLarge?.copyWith(
                                 fontWeight: FontWeight.bold,
+                                color: colorScheme.onSurface,
                               ),
                         ),
                         const SizedBox(height: 2),
                         Text(
                           'Actionable tasks to improve health scores',
-                          style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                          style: TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant),
                         ),
                       ],
                     ),
-                    Icon(Icons.tips_and_updates_outlined, size: 20, color: Colors.green[600]),
+                    const Icon(Icons.tips_and_updates_outlined, size: 20, color: Colors.green),
                   ],
                 ),
                 const SizedBox(height: 16),
                 
                 if (recommendations.isEmpty)
-                  const Center(child: Text('Everything looks perfect! No new tips today.'))
+                  Center(child: Text('Everything looks perfect! No new tips today.', style: TextStyle(color: colorScheme.onSurfaceVariant)))
                 else
                   ListView.builder(
                     shrinkWrap: true,
@@ -142,14 +145,14 @@ class AiInsightCard extends StatelessWidget {
                         margin: const EdgeInsets.symmetric(vertical: 5.0),
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFECFDF5), // Soft emerald bg
+                          color: Colors.green.withOpacity(0.12),
                           borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: const Color(0xFFD1FAE5)),
+                          border: Border.all(color: Colors.green.withOpacity(0.2)),
                         ),
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Icon(Icons.check_circle_outline_rounded, size: 16, color: Colors.green[700]),
+                            const Icon(Icons.check_circle_outline_rounded, size: 16, color: Colors.green),
                             const SizedBox(width: 10),
                             Expanded(
                               child: Text(
@@ -157,7 +160,7 @@ class AiInsightCard extends StatelessWidget {
                                 style: TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w600,
-                                  color: Colors.green[900],
+                                  color: colorScheme.onSurface,
                                   height: 1.3,
                                 ),
                               ),
