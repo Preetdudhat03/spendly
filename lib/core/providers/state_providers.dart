@@ -900,6 +900,18 @@ class ExpenseState {
       error: error,
     );
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is ExpenseState &&
+        other.isLoading == isLoading &&
+        listEquals(other.expenses, expenses) &&
+        other.error == error;
+  }
+
+  @override
+  int get hashCode => Object.hash(isLoading, Object.hashAll(expenses), error);
 }
 
 class ExpenseNotifier extends StateNotifier<ExpenseState> {
@@ -928,21 +940,14 @@ class ExpenseNotifier extends StateNotifier<ExpenseState> {
   Future<void> loadExpenses() async {
     if (state.isLoading) return;
 
-    final isAlreadyLoaded = state.expenses.isNotEmpty;
-    if (isAlreadyLoaded) {
-      try {
-        final expenses = await Future.value(_expenseRepo.getExpenses(_familyRepo.getCurrentFamily(HiveService.settings.get('active_user_id') ?? '')?.id ?? ''));
-        state = ExpenseState(isLoading: false, expenses: expenses);
-      } catch (e) {
-        state = state.copyWith(error: ErrorHelper.getReadableErrorMessage(e));
-      }
-      return;
-    }
-
-    state = state.copyWith(isLoading: true, error: null);
     try {
-      final expenses = await Future.value(_expenseRepo.getExpenses(_familyRepo.getCurrentFamily(HiveService.settings.get('active_user_id') ?? '')?.id ?? ''));
-      state = ExpenseState(isLoading: false, expenses: expenses);
+      final activeUserId = HiveService.settings.get('active_user_id') ?? '';
+      final familyId = _familyRepo.getCurrentFamily(activeUserId)?.id ?? '';
+      final expenses = _expenseRepo.getExpenses(familyId);
+      final newState = ExpenseState(isLoading: false, expenses: expenses);
+      if (state != newState) {
+        state = newState;
+      }
     } catch (e) {
       state = state.copyWith(isLoading: false, error: ErrorHelper.getReadableErrorMessage(e));
     }
