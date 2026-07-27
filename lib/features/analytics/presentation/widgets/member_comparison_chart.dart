@@ -53,13 +53,15 @@ class MemberComparisonChart extends StatelessWidget {
       );
     }
 
+    final colorScheme = Theme.of(context).colorScheme;
+
     maxSpending = maxSpending * 1.15;
 
     return Card(
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(28),
-        side: const BorderSide(color: Color(0xFFF1F5F9)),
+        side: BorderSide(color: colorScheme.outline),
       ),
       child: Padding(
         padding: const EdgeInsets.all(20.0),
@@ -77,16 +79,17 @@ class MemberComparisonChart extends StatelessWidget {
                       'Member Spend Chart',
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                             fontWeight: FontWeight.bold,
+                            color: colorScheme.onSurface,
                           ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       'Compare totals and usage patterns',
-                      style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                      style: TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant),
                     ),
                   ],
                 ),
-                Icon(Icons.bar_chart, size: 20, color: Theme.of(context).primaryColor),
+                Icon(Icons.bar_chart, size: 20, color: colorScheme.primary),
               ],
             ),
             const SizedBox(height: 24),
@@ -100,14 +103,14 @@ class MemberComparisonChart extends StatelessWidget {
                   maxY: maxSpending,
                   barTouchData: BarTouchData(
                     touchTooltipData: BarTouchTooltipData(
-                      getTooltipColor: (group) => Colors.black.withOpacity(0.85),
+                      getTooltipColor: (group) => colorScheme.surfaceContainerHigh.withOpacity(0.95),
                       getTooltipItem: (group, groupIndex, rod, rodIndex) {
                         final idx = group.x.toInt();
                         if (idx < 0 || idx >= state.memberShares.length) return null;
                         final member = state.memberShares[idx];
                         return BarTooltipItem(
                           '${member.name}\nTotal: ${currencyFmt.format(member.totalSpent)}\nAvg: ${currencyFmt.format(member.average)}\nEntries: ${member.count}',
-                          const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+                          TextStyle(color: colorScheme.onSurface, fontSize: 11, fontWeight: FontWeight.bold),
                         );
                       },
                     ),
@@ -132,7 +135,7 @@ class MemberComparisonChart extends StatelessWidget {
                             axisSide: meta.axisSide,
                             child: Text(
                               formatted,
-                              style: TextStyle(color: Colors.grey[500], fontSize: 10, fontWeight: FontWeight.bold),
+                              style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 10, fontWeight: FontWeight.bold),
                             ),
                           );
                         },
@@ -151,7 +154,7 @@ class MemberComparisonChart extends StatelessWidget {
                               axisSide: meta.axisSide,
                               child: Text(
                                 shortName,
-                                style: const TextStyle(color: Colors.grey, fontSize: 11, fontWeight: FontWeight.bold),
+                                style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 11, fontWeight: FontWeight.bold),
                               ),
                             );
                           }
@@ -164,7 +167,7 @@ class MemberComparisonChart extends StatelessWidget {
                     show: true,
                     drawVerticalLine: false,
                     getDrawingHorizontalLine: (value) => FlLine(
-                      color: const Color(0xFFF1F5F9),
+                      color: colorScheme.outlineVariant.withOpacity(0.3),
                       strokeWidth: 1,
                     ),
                   ),
