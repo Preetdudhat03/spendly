@@ -54,4 +54,19 @@ class FamilyMember {
       displayName: displayName ?? this.displayName,
     );
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is FamilyMember &&
+        other.id == id &&
+        other.familyId == familyId &&
+        other.userId == userId &&
+        other.role == role &&
+        other.joinedAt == joinedAt &&
+        other.displayName == displayName;
+  }
+
+  @override
+  int get hashCode => Object.hash(id, familyId, userId, role, joinedAt, displayName);
 }
