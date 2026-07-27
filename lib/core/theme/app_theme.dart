@@ -142,7 +142,7 @@ class AppTheme {
     final elevation = isPremium ? _premiumElevation : _legacyElevation;
     final chartTheme = isPremium ? _premiumChartThemeLight : _premiumChartThemeLight;
     
-    final bg = isPremium ? const Color(0xFFF8FAFC) : const Color(0xFFF8FAFC);
+    final bg = const Color(0xFFF8FAFC);
     final cardBg = Colors.white;
     final borderCol = isPremium ? const Color(0xFFE5E7EB) : const Color(0xFFE2E8F0);
 
@@ -150,12 +150,27 @@ class AppTheme {
     
     return ThemeData(
       useMaterial3: true,
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: colors.primary,
+      colorScheme: ColorScheme(
+        brightness: Brightness.light,
         primary: colors.primary,
+        onPrimary: Colors.white,
+        primaryContainer: const Color(0xFFEEF2FF),
+        onPrimaryContainer: const Color(0xFF312E81),
         secondary: colors.secondary,
+        onSecondary: Colors.white,
+        secondaryContainer: const Color(0xFFE0E7FF),
+        onSecondaryContainer: const Color(0xFF1E1B4B),
+        surface: cardBg,
+        onSurface: colors.neutral900,
+        surfaceContainer: const Color(0xFFF1F5F9),
+        surfaceContainerHigh: const Color(0xFFE2E8F0),
+        onSurfaceVariant: colors.neutral500,
+        outline: borderCol,
+        outlineVariant: const Color(0xFFCBD5E1),
         error: colors.error,
+        onError: Colors.white,
         background: bg,
+        onBackground: colors.neutral900,
       ),
       scaffoldBackgroundColor: bg,
       extensions: [
@@ -176,6 +191,34 @@ class AppTheme {
           borderRadius: radius.large,
           side: BorderSide(color: borderCol, width: 1),
         ),
+      ),
+      bottomSheetTheme: BottomSheetThemeData(
+        backgroundColor: Colors.white,
+        modalBackgroundColor: Colors.white,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+        ),
+      ),
+      dialogTheme: DialogThemeData(
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(
+          borderRadius: radius.large,
+        ),
+      ),
+      dividerTheme: const DividerThemeData(
+        color: Color(0xFFE2E8F0),
+        thickness: 1,
+      ),
+      chipTheme: ChipThemeData(
+        backgroundColor: const Color(0xFFF1F5F9),
+        selectedColor: const Color(0xFFEEF2FF),
+        secondarySelectedColor: colors.primary,
+        labelStyle: TextStyle(color: colors.neutral900),
+        secondaryLabelStyle: const TextStyle(color: Colors.white),
+        side: const BorderSide(color: Color(0xFFE2E8F0)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
@@ -209,6 +252,9 @@ class AppTheme {
           color: colors.neutral500,
           fontWeight: FontWeight.w500,
         ),
+        hintStyle: baseTextTheme.bodyMedium?.copyWith(
+          color: colors.neutral400,
+        ),
       ),
       appBarTheme: AppBarTheme(
         backgroundColor: Colors.transparent,
@@ -239,21 +285,35 @@ class AppTheme {
     final elevation = isPremium ? _premiumElevation : _legacyElevation;
     final chartTheme = isPremium ? _premiumChartThemeDark : _premiumChartThemeDark;
 
-    final bg = isPremium ? const Color(0xFF0F172A) : const Color(0xFF0F172A);
-    final cardBg = isPremium ? const Color(0xFF111827) : const Color(0xFF1E293B);
+    final bg = const Color(0xFF0F172A);
+    final cardBg = const Color(0xFF1E293B);
     final borderCol = const Color(0xFF334155);
 
     final baseTextTheme = isPremium ? GoogleFonts.interTextTheme(ThemeData.dark().textTheme) : ThemeData.dark().textTheme;
 
     return ThemeData(
       useMaterial3: true,
-      colorScheme: ColorScheme.fromSeed(
+      colorScheme: ColorScheme(
         brightness: Brightness.dark,
-        seedColor: colors.primary,
         primary: colors.primary,
+        onPrimary: Colors.white,
+        primaryContainer: const Color(0xFF312E81),
+        onPrimaryContainer: const Color(0xFFE0E7FF),
         secondary: colors.secondary,
+        onSecondary: Colors.white,
+        secondaryContainer: const Color(0xFF1E1B4B),
+        onSecondaryContainer: const Color(0xFFC7D2FE),
+        surface: cardBg,
+        onSurface: const Color(0xFFF8FAFC),
+        surfaceContainer: const Color(0xFF111827),
+        surfaceContainerHigh: const Color(0xFF334155),
+        onSurfaceVariant: const Color(0xFF94A3B8),
+        outline: borderCol,
+        outlineVariant: const Color(0xFF475569),
         error: colors.error,
+        onError: Colors.white,
         background: bg,
+        onBackground: const Color(0xFFF8FAFC),
       ),
       scaffoldBackgroundColor: bg,
       extensions: [
@@ -275,6 +335,34 @@ class AppTheme {
           side: BorderSide(color: borderCol, width: 1),
         ),
       ),
+      bottomSheetTheme: BottomSheetThemeData(
+        backgroundColor: cardBg,
+        modalBackgroundColor: cardBg,
+        surfaceTintColor: Colors.transparent,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+        ),
+      ),
+      dialogTheme: DialogThemeData(
+        backgroundColor: cardBg,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(
+          borderRadius: radius.large,
+        ),
+      ),
+      dividerTheme: const DividerThemeData(
+        color: Color(0xFF334155),
+        thickness: 1,
+      ),
+      chipTheme: ChipThemeData(
+        backgroundColor: const Color(0xFF1E293B),
+        selectedColor: const Color(0xFF312E81),
+        secondarySelectedColor: colors.primary,
+        labelStyle: const TextStyle(color: Color(0xFFF8FAFC)),
+        secondaryLabelStyle: const TextStyle(color: Colors.white),
+        side: const BorderSide(color: Color(0xFF334155)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: colors.primary,
@@ -293,7 +381,7 @@ class AppTheme {
         contentPadding: EdgeInsets.symmetric(vertical: spacing.x5, horizontal: spacing.x6),
         border: OutlineInputBorder(
           borderRadius: radius.small,
-          borderSide: BorderSide.none,
+          borderSide: BorderSide(color: borderCol, width: 1.5),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: radius.small,
@@ -304,8 +392,11 @@ class AppTheme {
           borderSide: BorderSide(color: colors.primary, width: 2),
         ),
         labelStyle: baseTextTheme.bodyMedium?.copyWith(
-          color: colors.neutral400,
+          color: const Color(0xFF94A3B8),
           fontWeight: FontWeight.w500,
+        ),
+        hintStyle: baseTextTheme.bodyMedium?.copyWith(
+          color: const Color(0xFF64748B),
         ),
       ),
       appBarTheme: AppBarTheme(
@@ -322,9 +413,9 @@ class AppTheme {
         headlineLarge: baseTextTheme.headlineLarge?.copyWith(fontWeight: FontWeight.bold, color: Colors.white),
         headlineMedium: baseTextTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold, color: Colors.white),
         titleLarge: baseTextTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold, color: Colors.white),
-        titleMedium: baseTextTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600, color: colors.neutral300),
-        bodyLarge: baseTextTheme.bodyLarge?.copyWith(color: colors.neutral200),
-        bodyMedium: baseTextTheme.bodyMedium?.copyWith(color: colors.neutral400),
+        titleMedium: baseTextTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600, color: const Color(0xFFCBD5E1)),
+        bodyLarge: baseTextTheme.bodyLarge?.copyWith(color: const Color(0xFFE2E8F0)),
+        bodyMedium: baseTextTheme.bodyMedium?.copyWith(color: const Color(0xFF94A3B8)),
       ),
     );
   }
