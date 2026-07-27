@@ -20,6 +20,8 @@ class FinancialSummaryCards extends StatelessWidget {
       budgetProgressColor = Colors.orange;
     }
 
+    final colorScheme = Theme.of(context).colorScheme;
+
     return SizedBox(
       height: 142,
       child: ListView(
@@ -33,8 +35,8 @@ class FinancialSummaryCards extends StatelessWidget {
             title: 'Total Spent',
             value: currencyFmt.format(state.totalSpent),
             icon: Icons.account_balance_wallet_outlined,
-            iconColor: Theme.of(context).primaryColor,
-            cardBg: Theme.of(context).primaryColor.withOpacity(0.06),
+            iconColor: colorScheme.primary,
+            cardBg: colorScheme.primary.withOpacity(0.12),
             bottomWidget: Row(
               children: [
                 Icon(
@@ -62,7 +64,7 @@ class FinancialSummaryCards extends StatelessWidget {
             value: '${currencyFmt.format(state.dailyAverage)}/day',
             icon: Icons.analytics_outlined,
             iconColor: Colors.blue,
-            cardBg: Colors.blue.withOpacity(0.06),
+            cardBg: Colors.blue.withOpacity(0.12),
             bottomWidget: Row(
               children: [
                 Icon(
@@ -75,7 +77,7 @@ class FinancialSummaryCards extends StatelessWidget {
                   'Compared with previous period',
                   style: TextStyle(
                     fontSize: 11,
-                    color: Colors.grey[600],
+                    color: colorScheme.onSurfaceVariant,
                   ),
                 ),
               ],
@@ -89,7 +91,7 @@ class FinancialSummaryCards extends StatelessWidget {
             value: currencyFmt.format(state.budgetRemaining),
             icon: Icons.pie_chart_outline,
             iconColor: budgetProgressColor,
-            cardBg: budgetProgressColor.withOpacity(0.06),
+            cardBg: budgetProgressColor.withOpacity(0.12),
             bottomWidget: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
@@ -99,7 +101,7 @@ class FinancialSummaryCards extends StatelessWidget {
                   children: [
                     Text(
                       '₹${state.budgetLimit.toStringAsFixed(0)} Limit',
-                      style: TextStyle(fontSize: 10, color: Colors.grey[600]),
+                      style: TextStyle(fontSize: 10, color: colorScheme.onSurfaceVariant),
                     ),
                     Text(
                       '${(progress * 100).toStringAsFixed(0)}%',
@@ -114,7 +116,7 @@ class FinancialSummaryCards extends StatelessWidget {
                     value: progress,
                     minHeight: 6,
                     color: budgetProgressColor,
-                    backgroundColor: Colors.grey[200],
+                    backgroundColor: colorScheme.surfaceContainerHigh,
                   ),
                 ),
               ],
@@ -128,10 +130,10 @@ class FinancialSummaryCards extends StatelessWidget {
             value: '${state.totalTransactions} Entries',
             icon: Icons.receipt_long_outlined,
             iconColor: Colors.orange,
-            cardBg: Colors.orange.withOpacity(0.06),
+            cardBg: Colors.orange.withOpacity(0.12),
             bottomWidget: Text(
               '${state.prevTotalTransactions} in last period',
-              style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+              style: TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant),
             ),
           ),
 
@@ -142,10 +144,10 @@ class FinancialSummaryCards extends StatelessWidget {
             value: '${state.activeMembersCount} Members',
             icon: Icons.people_outline,
             iconColor: Colors.purple,
-            cardBg: Colors.purple.withOpacity(0.06),
+            cardBg: Colors.purple.withOpacity(0.12),
             bottomWidget: Text(
               'Family Shared Account',
-              style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+              style: TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant),
             ),
           ),
         ],
@@ -162,14 +164,15 @@ class FinancialSummaryCards extends StatelessWidget {
     required Color cardBg,
     required Widget bottomWidget,
   }) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       width: 200,
       margin: const EdgeInsets.only(right: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
+        color: Theme.of(context).cardTheme.color ?? colorScheme.surface,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFFF1F5F9)),
+        border: Border.all(color: colorScheme.outline),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.015),
@@ -199,7 +202,7 @@ class FinancialSummaryCards extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
-                    color: Colors.grey[600],
+                    color: colorScheme.onSurfaceVariant,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -211,10 +214,11 @@ class FinancialSummaryCards extends StatelessWidget {
           // Row 2: Value
           Text(
             value,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
               letterSpacing: -0.5,
+              color: colorScheme.onSurface,
             ),
           ),
           const Spacer(),
