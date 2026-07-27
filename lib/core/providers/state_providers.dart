@@ -1064,6 +1064,18 @@ class BudgetState {
       error: error,
     );
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is BudgetState &&
+        other.isLoading == isLoading &&
+        other.currentBudget == currentBudget &&
+        other.error == error;
+  }
+
+  @override
+  int get hashCode => Object.hash(isLoading, currentBudget, error);
 }
 
 class BudgetNotifier extends StateNotifier<BudgetState> {
@@ -1091,23 +1103,15 @@ class BudgetNotifier extends StateNotifier<BudgetState> {
   Future<void> loadBudget() async {
     if (state.isLoading) return;
 
-    final isAlreadyLoaded = state.currentBudget != null;
-    if (isAlreadyLoaded) {
-      try {
-        final now = DateTime.now();
-        final budget = await Future.value(_budgetRepo.getBudget(_familyRepo.getCurrentFamily(HiveService.settings.get('active_user_id') ?? '')?.id ?? '', now.month, now.year));
-        state = BudgetState(isLoading: false, currentBudget: budget);
-      } catch (e) {
-        state = state.copyWith(error: ErrorHelper.getReadableErrorMessage(e));
-      }
-      return;
-    }
-
-    state = state.copyWith(isLoading: true, error: null);
     try {
       final now = DateTime.now();
-      final budget = await Future.value(_budgetRepo.getBudget(_familyRepo.getCurrentFamily(HiveService.settings.get('active_user_id') ?? '')?.id ?? '', now.month, now.year));
-      state = BudgetState(isLoading: false, currentBudget: budget);
+      final activeUserId = HiveService.settings.get('active_user_id') ?? '';
+      final familyId = _familyRepo.getCurrentFamily(activeUserId)?.id ?? '';
+      final budget = _budgetRepo.getBudget(familyId, now.month, now.year);
+      final newState = BudgetState(isLoading: false, currentBudget: budget);
+      if (state != newState) {
+        state = newState;
+      }
     } catch (e) {
       state = state.copyWith(isLoading: false, error: ErrorHelper.getReadableErrorMessage(e));
     }
