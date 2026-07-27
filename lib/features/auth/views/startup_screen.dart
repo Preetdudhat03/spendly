@@ -59,8 +59,15 @@ class _StartupScreenState extends ConsumerState<StartupScreen>
 
     _controller.forward();
 
-    // Slow startup fallback timer (triggers if session check takes > 1.2 seconds)
-    _slowStartupTimer = Timer(const Duration(milliseconds: 1200), () {
+    // Minimum branded splash display duration (~1000ms) for smooth entrance & transition
+    Future.delayed(const Duration(milliseconds: 1000), () {
+      if (mounted) {
+        ref.read(splashFinishedProvider.notifier).state = true;
+      }
+    });
+
+    // Slow startup fallback timer (triggers if session check takes > 1.5 seconds)
+    _slowStartupTimer = Timer(const Duration(milliseconds: 1500), () {
       if (mounted) {
         setState(() {
           _showSlowFallback = true;
