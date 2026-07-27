@@ -72,11 +72,13 @@ class SpendingPatternsCard extends StatelessWidget {
       }
     }
 
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Card(
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(28),
-        side: const BorderSide(color: Color(0xFFF1F5F9)),
+        side: BorderSide(color: colorScheme.outline),
       ),
       child: Padding(
         padding: const EdgeInsets.all(20.0),
@@ -94,16 +96,17 @@ class SpendingPatternsCard extends StatelessWidget {
                       'Smart Patterns',
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                             fontWeight: FontWeight.bold,
+                            color: colorScheme.onSurface,
                           ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       'Automated behavioral expense analysis',
-                      style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                      style: TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant),
                     ),
                   ],
                 ),
-                Icon(Icons.psychology_outlined, size: 22, color: Theme.of(context).primaryColor),
+                Icon(Icons.psychology_outlined, size: 22, color: colorScheme.primary),
               ],
             ),
             const SizedBox(height: 20),
@@ -145,12 +148,13 @@ class SpendingPatternsCard extends StatelessWidget {
     required String title,
     required String value,
   }) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: iconColor.withOpacity(0.04),
+        color: iconColor.withOpacity(0.08),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: iconColor.withOpacity(0.12)),
+        border: Border.all(color: iconColor.withOpacity(0.18)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -158,7 +162,7 @@ class SpendingPatternsCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: iconColor.withOpacity(0.1),
+              color: iconColor.withOpacity(0.15),
               shape: BoxShape.circle,
             ),
             child: Icon(icon, size: 18, color: iconColor),
@@ -170,9 +174,10 @@ class SpendingPatternsCard extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 13,
+                    color: colorScheme.onSurface,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -180,7 +185,7 @@ class SpendingPatternsCard extends StatelessWidget {
                   value,
                   style: TextStyle(
                     fontSize: 11.5,
-                    color: Colors.grey[600],
+                    color: colorScheme.onSurfaceVariant,
                     height: 1.4,
                   ),
                 ),
