@@ -64,11 +64,13 @@ class SpendingTrendChart extends StatelessWidget {
     final screenWidth = MediaQuery.of(context).size.width;
     final chartContentWidth = max(screenWidth - 48, state.trendSpots.length * 36.0);
 
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Card(
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(28),
-        side: const BorderSide(color: Color(0xFFF1F5F9)),
+        side: BorderSide(color: colorScheme.outline),
       ),
       child: Padding(
         padding: const EdgeInsets.all(20.0),
@@ -86,22 +88,23 @@ class SpendingTrendChart extends StatelessWidget {
                       'Spending Trend',
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                             fontWeight: FontWeight.bold,
+                            color: colorScheme.onSurface,
                           ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       'Cumulative spending trajectory',
-                      style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                      style: TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant),
                     ),
                   ],
                 ),
                 // Legend indicators
                 Row(
                   children: [
-                    _buildLegendItem(context, 'This Period', Theme.of(context).primaryColor, false),
+                    _buildLegendItem(context, 'This Period', colorScheme.primary, false),
                     const SizedBox(width: 12),
                     if (prevSpots.isNotEmpty)
-                      _buildLegendItem(context, 'Last Period', Colors.grey[400]!, true),
+                      _buildLegendItem(context, 'Last Period', colorScheme.onSurfaceVariant, true),
                   ],
                 ),
               ],
@@ -121,7 +124,7 @@ class SpendingTrendChart extends StatelessWidget {
                       show: true,
                       drawVerticalLine: false,
                       getDrawingHorizontalLine: (value) => FlLine(
-                        color: const Color(0xFFF1F5F9),
+                        color: colorScheme.outlineVariant.withOpacity(0.3),
                         strokeWidth: 1,
                       ),
                     ),
@@ -141,7 +144,7 @@ class SpendingTrendChart extends StatelessWidget {
                                 axisSide: meta.axisSide,
                                 child: Text(
                                   dateFmt.format(state.trendSpots[idx].date),
-                                  style: TextStyle(color: Colors.grey[500], fontSize: 10, fontWeight: FontWeight.bold),
+                                  style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 10, fontWeight: FontWeight.bold),
                                 ),
                               );
                             }
@@ -166,7 +169,7 @@ class SpendingTrendChart extends StatelessWidget {
                               axisSide: meta.axisSide,
                               child: Text(
                                 formatted,
-                                style: TextStyle(color: Colors.grey[500], fontSize: 10, fontWeight: FontWeight.bold),
+                                style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 10, fontWeight: FontWeight.bold),
                               ),
                             );
                           },
@@ -180,7 +183,7 @@ class SpendingTrendChart extends StatelessWidget {
                     maxY: maxAmount,
                     lineTouchData: LineTouchData(
                       touchTooltipData: LineTouchTooltipData(
-                        getTooltipColor: (touchedSpot) => Colors.black.withOpacity(0.85),
+                        getTooltipColor: (touchedSpot) => colorScheme.surfaceContainerHigh.withOpacity(0.95),
                         tooltipRoundedRadius: 12,
                         getTooltipItems: (touchedSpots) {
                           return touchedSpots.map((barSpot) {
@@ -212,7 +215,7 @@ class SpendingTrendChart extends StatelessWidget {
                             final title = isPrev ? 'Last Period' : 'This Period';
                             return LineTooltipItem(
                               '$title\n${dateFmt.format(date)}\nCum: ${currencyFmt.format(totalAmt)}\nDaily: ${currencyFmt.format(dailyAmt)}',
-                              const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+                              TextStyle(color: colorScheme.onSurface, fontSize: 11, fontWeight: FontWeight.bold),
                             );
                           }).toList();
                         },
@@ -223,7 +226,7 @@ class SpendingTrendChart extends StatelessWidget {
                       LineChartBarData(
                         spots: currentSpots,
                         isCurved: true,
-                        color: Theme.of(context).primaryColor,
+                        color: colorScheme.primary,
                         barWidth: 4,
                         isStrokeCapRound: true,
                         dotData: const FlDotData(show: false),
@@ -231,8 +234,8 @@ class SpendingTrendChart extends StatelessWidget {
                           show: true,
                           gradient: LinearGradient(
                             colors: [
-                              Theme.of(context).primaryColor.withOpacity(0.16),
-                              Theme.of(context).primaryColor.withOpacity(0.0),
+                              colorScheme.primary.withOpacity(0.24),
+                              colorScheme.primary.withOpacity(0.0),
                             ],
                             begin: Alignment.topCenter,
                             end: Alignment.bottomCenter,
@@ -244,7 +247,7 @@ class SpendingTrendChart extends StatelessWidget {
                         LineChartBarData(
                           spots: prevSpots,
                           isCurved: true,
-                          color: Colors.grey[400],
+                          color: colorScheme.onSurfaceVariant.withOpacity(0.5),
                           barWidth: 2,
                           dashArray: [6, 6],
                           dotData: const FlDotData(show: false),
@@ -257,7 +260,7 @@ class SpendingTrendChart extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 24),
-            const Divider(color: Color(0xFFF1F5F9)),
+            Divider(color: colorScheme.outline),
             const SizedBox(height: 12),
             
             // Statistics Grid below
@@ -309,6 +312,7 @@ class SpendingTrendChart extends StatelessWidget {
   }
 
   Widget _buildLegendItem(BuildContext context, String label, Color color, bool isDotted) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Row(
       children: [
         if (isDotted)
@@ -338,7 +342,7 @@ class SpendingTrendChart extends StatelessWidget {
           style: TextStyle(
             fontSize: 11,
             fontWeight: FontWeight.w600,
-            color: Colors.grey[600],
+            color: colorScheme.onSurfaceVariant,
           ),
         ),
       ],
@@ -346,6 +350,7 @@ class SpendingTrendChart extends StatelessWidget {
   }
 
   Widget _buildStatItem(BuildContext context, {required String label, required String value, required String subtext}) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -354,15 +359,16 @@ class SpendingTrendChart extends StatelessWidget {
           style: TextStyle(
             fontSize: 10,
             fontWeight: FontWeight.w600,
-            color: Colors.grey[500],
+            color: colorScheme.onSurfaceVariant,
           ),
         ),
         const SizedBox(height: 4),
         Text(
           value,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.bold,
+            color: colorScheme.onSurface,
           ),
         ),
         const SizedBox(height: 2),
@@ -370,10 +376,11 @@ class SpendingTrendChart extends StatelessWidget {
           subtext,
           style: TextStyle(
             fontSize: 10,
-            color: Colors.grey[400],
+            color: colorScheme.onSurfaceVariant,
           ),
         ),
       ],
     );
   }
+}
 }
