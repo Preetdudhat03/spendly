@@ -495,7 +495,7 @@ class AnalyticsNotifier extends StateNotifier<AnalyticsState> {
     DateTimeRange? customRange,
     String? selectedMemberId,
   ) async {
-    if (expenseState.isLoading && expenseState.expenses.isEmpty) {
+    if (expenseState.isLoading) {
       state = state.copyWith(isLoading: true);
       return;
     }

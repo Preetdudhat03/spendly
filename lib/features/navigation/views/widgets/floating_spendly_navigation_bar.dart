@@ -112,11 +112,11 @@ class FloatingSpendlyNavigationBar extends StatelessWidget {
       behavior: HitTestBehavior.opaque,
       onTap: () => onTabSelected(index),
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        curve: Curves.easeOutCubic,
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeInOutCubic,
         padding: EdgeInsets.symmetric(
-          horizontal: isSelected ? 18.0 : 12.0,
-          vertical: 9.0,
+          horizontal: isSelected ? 20.0 : 14.0,//16 ,12
+          vertical: 10.0, //10
         ),
         decoration: BoxDecoration(
           color: isSelected ? activeBgColor : Colors.transparent,
@@ -127,25 +127,36 @@ class FloatingSpendlyNavigationBar extends StatelessWidget {
           children: [
             SvgPicture.asset(
               iconPath,
-              width: 24,
-              height: 24,
+              width: 26, //22
+              height: 26, //22
               colorFilter: ColorFilter.mode(
                 isSelected ? activeColor : inactiveColor,
                 BlendMode.srcIn,
               ),
             ),
-            if (isSelected) ...[
-              const SizedBox(width: 6),
-              Text(
-                label,
-                style: TextStyle(
-                  color: activeColor,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 13,
-                  letterSpacing: -0.2,
-                ),
+            AnimatedCrossFade(
+              firstChild: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const SizedBox(width: 8),
+                  Text(
+                    label,
+                    style: TextStyle(
+                      color: activeColor,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 14, //13
+                      letterSpacing: -0.2,
+                    ),
+                  ),
+                ],
               ),
-            ],
+              secondChild: const SizedBox.shrink(),
+              crossFadeState: isSelected
+                  ? CrossFadeState.showFirst
+                  : CrossFadeState.showSecond,
+              duration: const Duration(milliseconds: 220),
+              sizeCurve: Curves.easeInOutCubic,
+            ),
           ],
         ),
       ),
