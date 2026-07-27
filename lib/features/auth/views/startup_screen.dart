@@ -6,6 +6,21 @@ class StartupScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    return const Scaffold(
+      backgroundColor: Colors.white,
+      body: SizedBox.shrink(),
+    );
+  }
+}
+
+/*
+Original StartupScreen Implementation (Preserved):
+
+class _OriginalStartupScreen extends ConsumerWidget {
+  const _OriginalStartupScreen();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     
     return Scaffold(
@@ -82,3 +97,4 @@ class StartupScreen extends ConsumerWidget {
     );
   }
 }
+*/
