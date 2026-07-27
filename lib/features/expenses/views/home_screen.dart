@@ -86,7 +86,7 @@ class HomeScreen extends ConsumerWidget {
           ],
         ),
       ),
-      body: expenseState.isLoading || familyState.isLoading
+      body: (expenseState.isLoading && expenseState.expenses.isEmpty) || (familyState.isLoading && familyState.family == null)
           ? ShimmerLoading(
               isLoading: true,
               child: SingleChildScrollView(
