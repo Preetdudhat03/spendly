@@ -140,11 +140,13 @@ class ReportsExportCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Card(
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(28),
-        side: const BorderSide(color: Color(0xFFF1F5F9)),
+        side: BorderSide(color: colorScheme.outline),
       ),
       child: Padding(
         padding: const EdgeInsets.all(20.0),
@@ -162,16 +164,17 @@ class ReportsExportCard extends StatelessWidget {
                       'Export & Share',
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                             fontWeight: FontWeight.bold,
+                            color: colorScheme.onSurface,
                           ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       'Distribute financial intelligence reports',
-                      style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                      style: TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant),
                     ),
                   ],
                 ),
-                Icon(Icons.ios_share_outlined, size: 20, color: Theme.of(context).primaryColor),
+                Icon(Icons.ios_share_outlined, size: 20, color: colorScheme.primary),
               ],
             ),
             const SizedBox(height: 20),
@@ -236,9 +239,9 @@ class ReportsExportCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.06),
+          color: color.withOpacity(0.10),
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: color.withOpacity(0.12)),
+          border: Border.all(color: color.withOpacity(0.20)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -247,7 +250,7 @@ class ReportsExportCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(6),
               decoration: BoxDecoration(
-                color: color.withOpacity(0.12),
+                color: color.withOpacity(0.15),
                 shape: BoxShape.circle,
               ),
               child: Icon(icon, size: 18, color: color),
