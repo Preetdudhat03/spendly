@@ -144,6 +144,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     );
   }
 
+  @override
   void dispose() {
     _budgetController.dispose();
     _nameController.dispose();
