@@ -9,12 +9,13 @@ class SavingsOpportunitiesCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final opportunities = state.savingsOpportunities;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Card(
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(28),
-        side: const BorderSide(color: Color(0xFFF1F5F9)),
+        side: BorderSide(color: colorScheme.outline),
       ),
       child: Padding(
         padding: const EdgeInsets.all(20.0),
@@ -32,12 +33,13 @@ class SavingsOpportunitiesCard extends StatelessWidget {
                       'Savings Opportunities',
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                             fontWeight: FontWeight.bold,
+                            color: colorScheme.onSurface,
                           ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       'AI-detected avenues to optimize family savings',
-                      style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                      style: TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant),
                     ),
                   ],
                 ),
@@ -52,22 +54,22 @@ class SavingsOpportunitiesCard extends StatelessWidget {
                 margin: const EdgeInsets.symmetric(vertical: 6.0),
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFFFBEB), // Soft warm amber bg
+                  color: Colors.amber.withOpacity(0.12),
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: const Color(0xFFFEF3C7)),
+                  border: Border.all(color: Colors.amber.withOpacity(0.25)),
                 ),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Icon(Icons.savings_outlined, size: 18, color: Color(0xFFD97706)),
+                    const Icon(Icons.savings_outlined, size: 18, color: Colors.amber),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
                         tip,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
-                          color: Color(0xFF92400E),
+                          color: colorScheme.onSurface,
                           height: 1.4,
                         ),
                       ),
