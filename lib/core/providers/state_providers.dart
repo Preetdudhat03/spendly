@@ -693,6 +693,20 @@ class FamilyState {
       error: error,
     );
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is FamilyState &&
+        other.isLoading == isLoading &&
+        other.hasLoaded == hasLoaded &&
+        other.family == family &&
+        listEquals(other.members, members) &&
+        other.error == error;
+  }
+
+  @override
+  int get hashCode => Object.hash(isLoading, hasLoaded, family, Object.hashAll(members), error);
 }
 
 class FamilyNotifier extends StateNotifier<FamilyState> {
@@ -723,53 +737,24 @@ class FamilyNotifier extends StateNotifier<FamilyState> {
   Future<void> loadFamily() async {
     if (state.isLoading) return;
 
-    // Background refresh if already loaded
-    final isAlreadyLoaded = state.family != null;
-    if (isAlreadyLoaded) {
-      try {
-        final family = await Future.value(_familyRepo.getCurrentFamily(HiveService.settings.get('active_user_id') ?? ''));
-        if (family != null) {
-          final members = await Future.value(_familyRepo.getFamilyMembers(_familyRepo.getCurrentFamily(HiveService.settings.get('active_user_id') ?? '')?.id ?? ''));
-          state = FamilyState(
-            isLoading: false,
-            hasLoaded: true,
-            family: family,
-            members: members,
-          );
-          _ref.read(expenseProvider.notifier).loadExpenses();
-          _ref.read(budgetProvider.notifier).loadBudget();
-        } else {
-          state = FamilyState.initial().copyWith(hasLoaded: true);
-        }
-      } catch (e) {
-        state = state.copyWith(error: ErrorHelper.getReadableErrorMessage(e));
-      }
-      return;
-    }
+    final activeUserId = HiveService.settings.get('active_user_id') ?? '';
+    final family = _familyRepo.getCurrentFamily(activeUserId);
+    final members = family != null ? _familyRepo.getFamilyMembers(family.id) : <FamilyMember>[];
+    
+    final newState = FamilyState(
+      isLoading: false,
+      hasLoaded: true,
+      family: family,
+      members: members,
+    );
 
-    state = state.copyWith(isLoading: true, error: null);
-    try {
-      final family = await Future.value(_familyRepo.getCurrentFamily(HiveService.settings.get('active_user_id') ?? ''));
-      if (family != null) {
-        final members = await Future.value(_familyRepo.getFamilyMembers(_familyRepo.getCurrentFamily(HiveService.settings.get('active_user_id') ?? '')?.id ?? ''));
-        state = FamilyState(
-          isLoading: false,
-          hasLoaded: true,
-          family: family,
-          members: members,
-        );
-        // Automatically load expenses and budgets
+    if (state != newState) {
+      final wasFamilyNull = state.family == null;
+      state = newState;
+      if (family != null && wasFamilyNull) {
         _ref.read(expenseProvider.notifier).loadExpenses();
         _ref.read(budgetProvider.notifier).loadBudget();
-      } else {
-        state = FamilyState.initial().copyWith(hasLoaded: true);
       }
-    } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        hasLoaded: true,
-        error: ErrorHelper.getReadableErrorMessage(e),
-      );
     }
   }
 
