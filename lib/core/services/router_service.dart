@@ -189,5 +189,6 @@ class _ProviderListenable extends ChangeNotifier {
   _ProviderListenable(Ref ref) {
     ref.listen(authProvider, (_, __) => notifyListeners());
     ref.listen(familyProvider, (_, __) => notifyListeners());
+    ref.listen(splashFinishedProvider, (_, __) => notifyListeners());
   }
 }
