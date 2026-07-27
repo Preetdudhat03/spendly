@@ -120,11 +120,13 @@ class _CategoryDonutChartState extends State<CategoryDonutChart> {
       },
     );
 
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Card(
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(28),
-        side: const BorderSide(color: Color(0xFFF1F5F9)),
+        side: BorderSide(color: colorScheme.outline),
       ),
       child: Padding(
         padding: const EdgeInsets.all(20.0),
@@ -142,16 +144,17 @@ class _CategoryDonutChartState extends State<CategoryDonutChart> {
                       'Category Breakdown',
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                             fontWeight: FontWeight.bold,
+                            color: colorScheme.onSurface,
                           ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       'Share of monthly budget expenditures',
-                      style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                      style: TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant),
                     ),
                   ],
                 ),
-                Icon(Icons.donut_large, size: 20, color: Theme.of(context).primaryColor),
+                Icon(Icons.donut_large, size: 20, color: colorScheme.primary),
               ],
             ),
             const SizedBox(height: 24),
@@ -197,17 +200,18 @@ class _CategoryDonutChartState extends State<CategoryDonutChart> {
                             style: TextStyle(
                               fontSize: 10,
                               fontWeight: FontWeight.w800,
-                              color: Colors.grey[500],
+                              color: colorScheme.onSurfaceVariant,
                               letterSpacing: 1.0,
                             ),
                           ),
                           const SizedBox(height: 4),
                           Text(
                             totalText,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.w900,
                               letterSpacing: -0.5,
+                              color: colorScheme.onSurface,
                             ),
                           ),
                         ],
@@ -242,7 +246,7 @@ class _CategoryDonutChartState extends State<CategoryDonutChart> {
                             height: 32,
                             alignment: Alignment.center,
                             decoration: BoxDecoration(
-                              color: meta.color.withOpacity(0.08),
+                              color: meta.color.withOpacity(0.12),
                               shape: BoxShape.circle,
                             ),
                             child: Text(meta.emoji, style: const TextStyle(fontSize: 16)),
@@ -251,7 +255,7 @@ class _CategoryDonutChartState extends State<CategoryDonutChart> {
                           Expanded(
                             child: Text(
                               meta.name,
-                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: colorScheme.onSurface),
                             ),
                           ),
                           Column(
@@ -259,17 +263,17 @@ class _CategoryDonutChartState extends State<CategoryDonutChart> {
                             children: [
                               Text(
                                 currencyFmt.format(share.amount),
-                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: colorScheme.onSurface),
                               ),
                               const SizedBox(height: 2),
                               Text(
                                 '${share.percentage.toStringAsFixed(0)}%',
-                                style: TextStyle(fontSize: 11, color: Colors.grey[500], fontWeight: FontWeight.w600),
+                                style: TextStyle(fontSize: 11, color: colorScheme.onSurfaceVariant, fontWeight: FontWeight.w600),
                               ),
                             ],
                           ),
                           const SizedBox(width: 4),
-                          Icon(Icons.chevron_right, size: 16, color: Colors.grey[400]),
+                          Icon(Icons.chevron_right, size: 16, color: colorScheme.onSurfaceVariant),
                         ],
                       ),
                     ),
