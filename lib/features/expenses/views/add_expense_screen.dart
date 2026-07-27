@@ -269,6 +269,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
                       itemBuilder: (context, index) {
                         final cat = _categoriesList[index];
                         final isSelected = _selectedCategory == cat['name'];
+                        final colorScheme = Theme.of(context).colorScheme;
                         return InkWell(
                           onTap: () {
                             setState(() {
@@ -278,16 +279,16 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
                           borderRadius: BorderRadius.circular(16),
                           child: Container(
                             decoration: BoxDecoration(
-                              color: isSelected ? Theme.of(context).primaryColor : Colors.white,
+                              color: isSelected ? colorScheme.primaryContainer : colorScheme.surface,
                               borderRadius: BorderRadius.circular(16),
                               border: Border.all(
-                                color: isSelected ? Theme.of(context).primaryColor : const Color(0xFFE2E8F0),
+                                color: isSelected ? colorScheme.primary : colorScheme.outline,
                                 width: 2,
                               ),
                               boxShadow: isSelected
                                   ? [
                                       BoxShadow(
-                                        color: Theme.of(context).primaryColor.withOpacity(0.3),
+                                        color: colorScheme.primary.withOpacity(0.25),
                                         blurRadius: 8,
                                         offset: const Offset(0, 4),
                                       )
@@ -302,8 +303,8 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
                                   width: 32,
                                   height: 32,
                                   colorFilter: isSelected
-                                      ? const ColorFilter.mode(Colors.white, BlendMode.srcIn)
-                                      : ColorFilter.mode(Theme.of(context).primaryColor, BlendMode.srcIn),
+                                      ? ColorFilter.mode(colorScheme.primary, BlendMode.srcIn)
+                                      : ColorFilter.mode(colorScheme.primary, BlendMode.srcIn),
                                 ),
                                 const SizedBox(height: 6),
                                 Text(
@@ -311,7 +312,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
                                   style: TextStyle(
                                     fontSize: 13,
                                     fontWeight: FontWeight.bold,
-                                    color: isSelected ? Colors.white : Colors.black87,
+                                    color: isSelected ? colorScheme.onPrimaryContainer : colorScheme.onSurface,
                                   ),
                                 ),
                               ],
@@ -331,15 +332,16 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
                     Row(
                       children: ['UPI', 'Cash', 'Card'].map((method) {
                         final isSelected = _paymentMethod == method;
+                        final colorScheme = Theme.of(context).colorScheme;
                         return Expanded(
                           child: Container(
                             margin: const EdgeInsets.symmetric(horizontal: 4),
                             child: ElevatedButton(
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: isSelected ? Theme.of(context).primaryColor : Colors.white,
-                                foregroundColor: isSelected ? Colors.white : Colors.black87,
+                                backgroundColor: isSelected ? colorScheme.primaryContainer : colorScheme.surface,
+                                foregroundColor: isSelected ? colorScheme.onPrimaryContainer : colorScheme.onSurface,
                                 side: BorderSide(
-                                  color: isSelected ? Theme.of(context).primaryColor : const Color(0xFFE2E8F0),
+                                  color: isSelected ? colorScheme.primary : colorScheme.outline,
                                   width: 1.5,
                                 ),
                                 elevation: 0,
@@ -355,7 +357,11 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
                               },
                               child: Text(
                                 method,
-                                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: isSelected ? colorScheme.onPrimaryContainer : colorScheme.onSurface,
+                                ),
                               ),
                             ),
                           ),
@@ -381,20 +387,24 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
                       child: Container(
                         padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: Theme.of(context).colorScheme.surface,
                           borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: const Color(0xFFE2E8F0), width: 1.5),
+                          border: Border.all(color: Theme.of(context).colorScheme.outline, width: 1.5),
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            const Row(
+                            Row(
                               children: [
-                                Icon(Icons.calendar_today_outlined, color: Colors.grey),
-                                SizedBox(width: 12),
+                                Icon(Icons.calendar_today_outlined, color: Theme.of(context).colorScheme.onSurfaceVariant),
+                                const SizedBox(width: 12),
                                 Text(
                                   'Expense Date',
-                                  style: TextStyle(fontWeight: FontWeight.w500, fontSize: 16),
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w500,
+                                    fontSize: 16,
+                                    color: Theme.of(context).colorScheme.onSurface,
+                                  ),
                                 ),
                               ],
                             ),
@@ -402,7 +412,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
                               DateFormat('dd MMM yyyy').format(_selectedDate),
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
-                                color: Theme.of(context).primaryColor,
+                                color: Theme.of(context).colorScheme.primary,
                                 fontSize: 16,
                               ),
                             )
