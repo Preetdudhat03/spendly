@@ -383,4 +383,3 @@ class SpendingTrendChart extends StatelessWidget {
     );
   }
 }
-}
