@@ -86,7 +86,7 @@ class DrillDownSheet extends StatelessWidget {
                 width: 40,
                 height: 5,
                 decoration: BoxDecoration(
-                  color: Colors.grey[300],
+                  color: Theme.of(context).colorScheme.outlineVariant,
                   borderRadius: BorderRadius.circular(2.5),
                 ),
               ),
@@ -112,11 +112,15 @@ class DrillDownSheet extends StatelessWidget {
                         children: [
                           Text(
                             title,
-                            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                            style: TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                              color: Theme.of(context).colorScheme.onSurface,
+                            ),
                           ),
                           Text(
                             subtitle,
-                            style: TextStyle(color: Colors.grey[600], fontSize: 13),
+                            style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 13),
                           ),
                         ],
                       ),
@@ -142,9 +146,9 @@ class DrillDownSheet extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFF8FAFC),
+                          color: Theme.of(context).colorScheme.surfaceContainerHigh.withOpacity(0.5),
                           borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: Colors.blue.withOpacity(0.1)),
+                          border: Border.all(color: Colors.blue.withOpacity(0.2)),
                         ),
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -154,7 +158,11 @@ class DrillDownSheet extends StatelessWidget {
                             Expanded(
                               child: Text(
                                 aiSummary!,
-                                style: const TextStyle(fontSize: 13, height: 1.4, color: Colors.black87),
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  height: 1.4,
+                                  color: Theme.of(context).colorScheme.onSurface,
+                                ),
                               ),
                             ),
                           ],
@@ -175,25 +183,25 @@ class DrillDownSheet extends StatelessWidget {
 
                     // Top Members
                     if (sortedMembers.length > 1) ...[
-                      const Text('Spending by Member', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      Text('Spending by Member', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface)),
                       const SizedBox(height: 12),
-                      ...sortedMembers.map((e) => _buildSimpleRow(e.key, currencyFmt.format(e.value), e.value / max(1.0, totalAmount))),
+                      ...sortedMembers.map((e) => _buildSimpleRow(context, e.key, currencyFmt.format(e.value), e.value / max(1.0, totalAmount))),
                       const SizedBox(height: 24),
                     ],
 
                     // Top Payment Methods
                     if (sortedPayments.length > 1) ...[
-                      const Text('Payment Methods', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      Text('Payment Methods', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface)),
                       const SizedBox(height: 12),
-                      ...sortedPayments.map((e) => _buildSimpleRow(e.key, currencyFmt.format(e.value), e.value / max(1.0, totalAmount))),
+                      ...sortedPayments.map((e) => _buildSimpleRow(context, e.key, currencyFmt.format(e.value), e.value / max(1.0, totalAmount))),
                       const SizedBox(height: 24),
                     ],
 
                     // Recent Transactions
-                    const Text('Recent Transactions', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    Text('Recent Transactions', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface)),
                     const SizedBox(height: 12),
                     if (expenses.isEmpty)
-                      const Text('No transactions found.')
+                      Text('No transactions found.', style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant))
                     else
                       ...expenses.take(15).map((exp) {
                         return Padding(
@@ -201,11 +209,11 @@ class DrillDownSheet extends StatelessWidget {
                           child: Row(
                             children: [
                               CircleAvatar(
-                                backgroundColor: Colors.grey[100],
+                                backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
                                 radius: 20,
                                 child: Text(
                                   exp.createdByName.isNotEmpty ? exp.createdByName.substring(0, 1).toUpperCase() : 'M',
-                                  style: TextStyle(fontWeight: FontWeight.bold, color: Theme.of(context).primaryColor),
+                                  style: TextStyle(fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.primary),
                                 ),
                               ),
                               const SizedBox(width: 12),
@@ -215,19 +223,27 @@ class DrillDownSheet extends StatelessWidget {
                                   children: [
                                     Text(
                                       exp.description.isEmpty ? exp.category : exp.description,
-                                      style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 14,
+                                        color: Theme.of(context).colorScheme.onSurface,
+                                      ),
                                     ),
                                     const SizedBox(height: 2),
                                     Text(
                                       '${exp.createdByName} • ${dateFmt.format(exp.expenseDate)}',
-                                      style: TextStyle(fontSize: 11, color: Colors.grey[500]),
+                                      style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant),
                                     ),
                                   ],
                                 ),
                               ),
                               Text(
                                 currencyFmt.format(exp.amount),
-                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                  color: Theme.of(context).colorScheme.onSurface,
+                                ),
                               ),
                             ],
                           ),
@@ -248,16 +264,16 @@ class DrillDownSheet extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.05),
+          color: color.withOpacity(0.08),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: color.withOpacity(0.1)),
+          border: Border.all(color: color.withOpacity(0.15)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Icon(icon, size: 20, color: color),
             const SizedBox(height: 12),
-            Text(title, style: TextStyle(fontSize: 12, color: Colors.grey[600], fontWeight: FontWeight.bold)),
+            Text(title, style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurfaceVariant, fontWeight: FontWeight.bold)),
             const SizedBox(height: 4),
             Text(value, style: TextStyle(fontSize: 18, color: color, fontWeight: FontWeight.w900)),
           ],
@@ -266,14 +282,15 @@ class DrillDownSheet extends StatelessWidget {
     );
   }
 
-  Widget _buildSimpleRow(String title, String value, double progress) {
+  Widget _buildSimpleRow(BuildContext context, String title, String value, double progress) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.only(bottom: 12.0),
       child: Row(
         children: [
           Expanded(
             flex: 2,
-            child: Text(title, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
+            child: Text(title, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: colorScheme.onSurface)),
           ),
           Expanded(
             flex: 3,
@@ -281,8 +298,8 @@ class DrillDownSheet extends StatelessWidget {
               borderRadius: BorderRadius.circular(4),
               child: LinearProgressIndicator(
                 value: progress,
-                backgroundColor: Colors.grey[200],
-                color: Colors.blueGrey,
+                backgroundColor: colorScheme.surfaceContainerHigh,
+                color: colorScheme.primary,
                 minHeight: 6,
               ),
             ),
