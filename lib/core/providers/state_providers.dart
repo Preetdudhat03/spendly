@@ -82,6 +82,34 @@ class AuthState {
       pendingPassword: pendingPassword ?? this.pendingPassword,
     );
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is AuthState &&
+        other.isLoading == isLoading &&
+        other.isInitializing == isInitializing &&
+        other.userId == userId &&
+        other.email == email &&
+        other.displayName == displayName &&
+        other.error == error &&
+        other.isMigrationPending == isMigrationPending &&
+        other.legacyUserId == legacyUserId &&
+        other.pendingPassword == pendingPassword;
+  }
+
+  @override
+  int get hashCode => Object.hash(
+        isLoading,
+        isInitializing,
+        userId,
+        email,
+        displayName,
+        error,
+        isMigrationPending,
+        legacyUserId,
+        pendingPassword,
+      );
 }
 
 class AuthNotifier extends StateNotifier<AuthState> {
