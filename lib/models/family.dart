@@ -48,4 +48,18 @@ class Family {
       createdAt: createdAt ?? this.createdAt,
     );
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is Family &&
+        other.id == id &&
+        other.name == name &&
+        other.familyCode == familyCode &&
+        other.createdBy == createdBy &&
+        other.createdAt == createdAt;
+  }
+
+  @override
+  int get hashCode => Object.hash(id, name, familyCode, createdBy, createdAt);
 }

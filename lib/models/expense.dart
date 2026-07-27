@@ -78,4 +78,36 @@ class Expense {
       createdByName: createdByName ?? this.createdByName,
     );
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is Expense &&
+        other.id == id &&
+        other.familyId == familyId &&
+        other.createdBy == createdBy &&
+        other.amount == amount &&
+        other.category == category &&
+        other.description == description &&
+        other.paymentMethod == paymentMethod &&
+        other.expenseDate == expenseDate &&
+        other.createdAt == createdAt &&
+        other.createdByName == createdByName;
+  }
+
+  @override
+  int get hashCode {
+    return Object.hash(
+      id,
+      familyId,
+      createdBy,
+      amount,
+      category,
+      description,
+      paymentMethod,
+      expenseDate,
+      createdAt,
+      createdByName,
+    );
+  }
 }
