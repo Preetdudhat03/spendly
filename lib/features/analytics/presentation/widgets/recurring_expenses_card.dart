@@ -15,11 +15,13 @@ class RecurringExpensesCard extends StatelessWidget {
 
     final items = state.recurringExpenses;
 
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Card(
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(28),
-        side: const BorderSide(color: Color(0xFFF1F5F9)),
+        side: BorderSide(color: colorScheme.outline),
       ),
       child: Padding(
         padding: const EdgeInsets.all(20.0),
@@ -37,16 +39,17 @@ class RecurringExpensesCard extends StatelessWidget {
                       'Recurring Expenses',
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                             fontWeight: FontWeight.bold,
+                            color: colorScheme.onSurface,
                           ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       'Auto-detected subscriptions and bills',
-                      style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                      style: TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant),
                     ),
                   ],
                 ),
-                Icon(Icons.repeat_on_outlined, size: 20, color: Theme.of(context).primaryColor),
+                Icon(Icons.repeat_on_outlined, size: 20, color: colorScheme.primary),
               ],
             ),
             const SizedBox(height: 16),
@@ -58,11 +61,11 @@ class RecurringExpensesCard extends StatelessWidget {
                 child: Center(
                   child: Column(
                     children: [
-                      Icon(Icons.info_outline, size: 28, color: Colors.grey[300]),
+                      Icon(Icons.info_outline, size: 28, color: colorScheme.onSurfaceVariant),
                       const SizedBox(height: 8),
                       Text(
                         'No recurring expenses detected yet.',
-                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey[400]),
+                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: colorScheme.onSurfaceVariant),
                       ),
                       const SizedBox(height: 4),
                       Padding(
@@ -70,7 +73,7 @@ class RecurringExpensesCard extends StatelessWidget {
                         child: Text(
                           'Logging identical descriptions across multiple weeks or months will trigger automatic classification.',
                           textAlign: TextAlign.center,
-                          style: TextStyle(fontSize: 10.5, color: Colors.grey[400]),
+                          style: TextStyle(fontSize: 10.5, color: colorScheme.onSurfaceVariant),
                         ),
                       ),
                     ],
@@ -107,7 +110,7 @@ class RecurringExpensesCard extends StatelessWidget {
                           height: 38,
                           alignment: Alignment.center,
                           decoration: BoxDecoration(
-                            color: meta.color.withOpacity(0.08),
+                            color: meta.color.withOpacity(0.12),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(emoji, style: const TextStyle(fontSize: 16)),
@@ -121,14 +124,14 @@ class RecurringExpensesCard extends StatelessWidget {
                             children: [
                               Text(
                                 item.title,
-                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: colorScheme.onSurface),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
                               const SizedBox(height: 2),
                               Text(
                                 '${item.frequency} • Expected: ${dateFmt.format(item.nextExpectedDate)}',
-                                style: TextStyle(fontSize: 11, color: Colors.grey[500]),
+                                style: TextStyle(fontSize: 11, color: colorScheme.onSurfaceVariant),
                               ),
                             ],
                           ),
@@ -137,7 +140,7 @@ class RecurringExpensesCard extends StatelessWidget {
                         // Value
                         Text(
                           currencyFmt.format(item.amount),
-                          style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 14),
+                          style: TextStyle(fontWeight: FontWeight.w900, fontSize: 14, color: colorScheme.onSurface),
                         ),
                       ],
                     ),
