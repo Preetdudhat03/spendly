@@ -23,12 +23,13 @@ class _TopExpensesListState extends State<TopExpensesList> {
 
     final currencyFmt = NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 0);
     final dateFmt = DateFormat('MMM d, yyyy • h:mm a');
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Card(
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(28),
-        side: const BorderSide(color: Color(0xFFF1F5F9)),
+        side: BorderSide(color: colorScheme.outline),
       ),
       child: Padding(
         padding: const EdgeInsets.all(20.0),
@@ -46,16 +47,17 @@ class _TopExpensesListState extends State<TopExpensesList> {
                       'Top 10 Expenses',
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                             fontWeight: FontWeight.bold,
+                            color: colorScheme.onSurface,
                           ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       'Highest value transactions this period',
-                      style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                      style: TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant),
                     ),
                   ],
                 ),
-                Icon(Icons.trending_up, size: 20, color: Theme.of(context).primaryColor),
+                Icon(Icons.trending_up, size: 20, color: colorScheme.primary),
               ],
             ),
             const SizedBox(height: 16),
@@ -91,7 +93,7 @@ class _TopExpensesListState extends State<TopExpensesList> {
                               height: 40,
                               alignment: Alignment.center,
                               decoration: BoxDecoration(
-                                color: meta.color.withOpacity(0.08),
+                                color: meta.color.withOpacity(0.12),
                                 shape: BoxShape.circle,
                               ),
                               child: Text(meta.emoji, style: const TextStyle(fontSize: 18)),
@@ -105,9 +107,10 @@ class _TopExpensesListState extends State<TopExpensesList> {
                                 children: [
                                   Text(
                                     title,
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontWeight: FontWeight.bold,
                                       fontSize: 14,
+                                      color: colorScheme.onSurface,
                                     ),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
@@ -117,7 +120,7 @@ class _TopExpensesListState extends State<TopExpensesList> {
                                     'By ${exp.createdByName} • ${DateFormat('MMM d').format(exp.expenseDate)}',
                                     style: TextStyle(
                                       fontSize: 11,
-                                      color: Colors.grey[500],
+                                      color: colorScheme.onSurfaceVariant,
                                     ),
                                   ),
                                 ],
@@ -130,16 +133,17 @@ class _TopExpensesListState extends State<TopExpensesList> {
                               children: [
                                 Text(
                                   currencyFmt.format(exp.amount),
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontWeight: FontWeight.w900,
                                     fontSize: 14,
+                                    color: colorScheme.onSurface,
                                   ),
                                 ),
                                 const SizedBox(height: 2),
                                 Icon(
                                   isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
-                                  size: 14,
-                                  color: Colors.grey[400],
+                                  size: 16,
+                                  color: colorScheme.onSurfaceVariant,
                                 ),
                               ],
                             ),
