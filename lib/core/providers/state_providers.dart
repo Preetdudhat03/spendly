@@ -28,7 +28,9 @@ import 'package:spendly/models/family_member.dart';
 import 'package:spendly/models/expense.dart';
 import 'package:spendly/models/budget.dart';
 
-final splashFinishedProvider = StateProvider<bool>((ref) => false);
+// ==========================================
+// 1. Authentication State & Provider
+// ==========================================
 
 class AuthState {
   final bool isLoading;

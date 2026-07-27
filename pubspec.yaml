@@ -70,7 +70,6 @@ dev_dependencies:
   flutter_lints: ^6.0.0
   build_runner: ^2.4.13
   hive_generator: ^2.0.1
-  flutter_native_splash: ^2.4.4
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -118,21 +117,3 @@ flutter_launcher_icons:
   android: "launcher_icon"
   ios: true
   image_path: "assets/images/logo.png"
-
-flutter_native_splash:
-  color: "#F8FAFC"
-  color_dark: "#0F172A"
-  image: "assets/images/logo.png"
-  image_dark: "assets/images/logo.png"
-  branding: "assets/images/branding.png"
-  branding_dark: "assets/images/branding_dark.png"
-  android_12:
-    color: "#F8FAFC"
-    color_dark: "#0F172A"
-    image: "assets/images/logo.png"
-    branding: "assets/images/branding.png"
-    branding_dark: "assets/images/branding_dark.png"
-  android: true
-  ios: true
-  web: false
-

@@ -24,9 +24,8 @@ final routerProvider = Provider<GoRouter>((ref) {
     redirect: (context, state) {
       final auth = ref.read(authProvider);
       final family = ref.read(familyProvider);
-      final splashFinished = ref.read(splashFinishedProvider);
 
-      if (auth.isInitializing || !splashFinished) {
+      if (auth.isInitializing) {
         return '/splash';
       }
 
@@ -77,18 +76,7 @@ final routerProvider = Provider<GoRouter>((ref) {
     routes: [
       GoRoute(
         path: '/splash',
-        pageBuilder: (context, state) => CustomTransitionPage(
-          key: state.pageKey,
-          child: const StartupScreen(),
-          transitionDuration: const Duration(milliseconds: 250),
-          reverseTransitionDuration: const Duration(milliseconds: 250),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            return FadeTransition(
-              opacity: animation,
-              child: child,
-            );
-          },
-        ),
+        builder: (context, state) => const StartupScreen(),
       ),
       GoRoute(
         path: '/login',
@@ -189,6 +177,5 @@ class _ProviderListenable extends ChangeNotifier {
   _ProviderListenable(Ref ref) {
     ref.listen(authProvider, (_, __) => notifyListeners());
     ref.listen(familyProvider, (_, __) => notifyListeners());
-    ref.listen(splashFinishedProvider, (_, __) => notifyListeners());
   }
 }
