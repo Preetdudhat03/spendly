@@ -83,9 +83,9 @@ class _StartupScreenState extends ConsumerState<StartupScreen>
 
     final primaryTextColor = isDark ? Colors.white : theme.primaryColor;
     final attributionColor = isDark
-        ? Colors.white.withOpacity(0.45)
-        : theme.textTheme.bodyMedium?.color?.withOpacity(0.45) ??
-            Colors.black38;
+        ? Colors.white.withValues(alpha: 0.45)
+        : (theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.45) ??
+            Colors.black38);
 
     final disableAnimations = MediaQuery.of(context).disableAnimations;
 
@@ -126,7 +126,7 @@ class _StartupScreenState extends ConsumerState<StartupScreen>
                           width: 88,
                           height: 88,
                           decoration: BoxDecoration(
-                            color: theme.primaryColor.withOpacity(0.12),
+                            color: theme.primaryColor.withValues(alpha: 0.12),
                             shape: BoxShape.circle,
                           ),
                           child: Icon(
