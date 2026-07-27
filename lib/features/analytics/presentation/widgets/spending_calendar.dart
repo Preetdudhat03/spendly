@@ -19,8 +19,9 @@ class SpendingCalendar extends StatelessWidget {
   }
 
   Color _getDayTextColor(BuildContext context, double amount) {
+    final colorScheme = Theme.of(context).colorScheme;
     if (amount > 2000) return Colors.white;
-    return Colors.black87;
+    return colorScheme.onSurface;
   }
 
   void _showDayExpenses(BuildContext context, DateTime date, double totalAmount) {
@@ -40,7 +41,7 @@ class SpendingCalendar extends StatelessWidget {
       title: dateFmt.format(date),
       subtitle: 'Daily transaction list',
       icon: Icons.calendar_today,
-      color: Theme.of(context).primaryColor,
+      color: Theme.of(context).colorScheme.primary,
       totalAmount: totalAmount,
       expenses: dayExpenses,
       aiSummary: 'You logged ${dayExpenses.length} transactions on this day.',
@@ -49,12 +50,11 @@ class SpendingCalendar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     final now = DateTime.now();
     final firstDayOfMonth = DateTime(now.year, now.month, 1);
     final daysInMonth = DateUtils.getDaysInMonth(now.year, now.month);
     
-    // Calculate calendar grid padding (days offset)
-    // weekday is 1 (Mon) to 7 (Sun)
     final offset = firstDayOfMonth.weekday - 1;
 
     final List<Widget> gridItems = [];
@@ -66,10 +66,10 @@ class SpendingCalendar extends StatelessWidget {
         Center(
           child: Text(
             day,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.bold,
-              color: Colors.grey,
+              color: colorScheme.onSurfaceVariant,
             ),
           ),
         ),
@@ -97,10 +97,10 @@ class SpendingCalendar extends StatelessWidget {
           child: Container(
             margin: const EdgeInsets.all(4),
             decoration: BoxDecoration(
-              color: bgColor,
+              color: bgColor == Colors.transparent ? colorScheme.surfaceContainerHigh.withOpacity(0.3) : bgColor,
               shape: BoxShape.circle,
               border: date.day == now.day
-                  ? Border.all(color: Theme.of(context).primaryColor, width: 1.5)
+                  ? Border.all(color: colorScheme.primary, width: 1.5)
                   : null,
             ),
             child: Stack(
@@ -126,7 +126,7 @@ class SpendingCalendar extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 6.5,
                           fontWeight: FontWeight.bold,
-                          color: textColor.withOpacity(0.8),
+                          color: textColor.withOpacity(0.85),
                         ),
                       ),
                     ),
@@ -142,7 +142,7 @@ class SpendingCalendar extends StatelessWidget {
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(28),
-        side: const BorderSide(color: Color(0xFFF1F5F9)),
+        side: BorderSide(color: colorScheme.outline),
       ),
       child: Padding(
         padding: const EdgeInsets.all(20.0),
@@ -160,16 +160,17 @@ class SpendingCalendar extends StatelessWidget {
                       'Spending Calendar',
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                             fontWeight: FontWeight.bold,
+                            color: colorScheme.onSurface,
                           ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       'Daily expense map for ${DateFormat('MMMM yyyy').format(now)}',
-                      style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                      style: TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant),
                     ),
                   ],
                 ),
-                Icon(Icons.calendar_month, size: 20, color: Theme.of(context).primaryColor),
+                Icon(Icons.calendar_month, size: 20, color: colorScheme.primary),
               ],
             ),
             const SizedBox(height: 20),
@@ -191,19 +192,19 @@ class SpendingCalendar extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text('Intensity:', style: TextStyle(fontSize: 10.5, color: Colors.grey[500])),
+                Text('Intensity:', style: TextStyle(fontSize: 10.5, color: colorScheme.onSurfaceVariant)),
                 const SizedBox(width: 6),
-                Container(width: 8, height: 8, decoration: BoxDecoration(color: Theme.of(context).primaryColor.withOpacity(0.12), shape: BoxShape.circle)),
+                Container(width: 8, height: 8, decoration: BoxDecoration(color: colorScheme.primary.withOpacity(0.12), shape: BoxShape.circle)),
                 const SizedBox(width: 3),
-                Text('Under ₹500', style: TextStyle(fontSize: 9, color: Colors.grey[500])),
+                Text('Under ₹500', style: TextStyle(fontSize: 9, color: colorScheme.onSurfaceVariant)),
                 const SizedBox(width: 10),
-                Container(width: 8, height: 8, decoration: BoxDecoration(color: Theme.of(context).primaryColor.withOpacity(0.45), shape: BoxShape.circle)),
+                Container(width: 8, height: 8, decoration: BoxDecoration(color: colorScheme.primary.withOpacity(0.45), shape: BoxShape.circle)),
                 const SizedBox(width: 3),
-                Text('₹500 - ₹2000', style: TextStyle(fontSize: 9, color: Colors.grey[500])),
+                Text('₹500 - ₹2000', style: TextStyle(fontSize: 9, color: colorScheme.onSurfaceVariant)),
                 const SizedBox(width: 10),
-                Container(width: 8, height: 8, decoration: BoxDecoration(color: Theme.of(context).primaryColor, shape: BoxShape.circle)),
+                Container(width: 8, height: 8, decoration: BoxDecoration(color: colorScheme.primary, shape: BoxShape.circle)),
                 const SizedBox(width: 3),
-                Text('Above ₹2000', style: TextStyle(fontSize: 9, color: Colors.grey[500])),
+                Text('Above ₹2000', style: TextStyle(fontSize: 9, color: colorScheme.onSurfaceVariant)),
               ],
             ),
           ],
