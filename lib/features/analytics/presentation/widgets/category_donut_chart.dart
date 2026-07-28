@@ -6,12 +6,15 @@ import 'package:spendly/models/expense.dart';
 import 'package:spendly/core/theme/spendly_tokens.dart';
 import 'drill_down_sheet.dart';
 
+import 'package:flutter_svg/flutter_svg.dart';
+
 class CategoryMetadata {
   final String name;
   final String emoji;
   final Color color;
+  final String iconPath;
 
-  CategoryMetadata(this.name, this.emoji, this.color);
+  CategoryMetadata(this.name, this.emoji, this.color, [this.iconPath = 'assets/category/others.svg']);
 }
 
 CategoryMetadata getCategoryMetadata(BuildContext context, String category) {
@@ -20,40 +23,40 @@ CategoryMetadata getCategoryMetadata(BuildContext context, String category) {
   
   switch (category.toLowerCase()) {
     case 'food':
-      return CategoryMetadata('Food', '🍔', color);
+      return CategoryMetadata('Food', '🍔', color, 'assets/category/food.svg');
     case 'groceries':
-      return CategoryMetadata('Groceries', '🛒', color);
+      return CategoryMetadata('Groceries', '🛒', color, 'assets/category/groceries.svg');
     case 'petrol':
     case 'fuel':
-      return CategoryMetadata('Petrol/Fuel', '⛽', color);
+      return CategoryMetadata('Petrol', '🚗', color, 'assets/category/fuel.svg');
     case 'recharges':
-      return CategoryMetadata('Recharges', '📱', color);
+      return CategoryMetadata('Recharges', '📱', color, 'assets/category/recharge.svg');
     case 'travel':
-      return CategoryMetadata('Travel', '✈️', color);
+      return CategoryMetadata('Travel', '✈️', color, 'assets/category/travel.svg');
     case 'gas':
-      return CategoryMetadata('Gas', '⛽', color);
+      return CategoryMetadata('Gas', '⛽', color, 'assets/category/gas.svg');
     case 'electricity':
     case 'utility':
-      return CategoryMetadata('Utilities', '⚡', color);
+      return CategoryMetadata('Utilities', '⚡', color, 'assets/category/electricity.svg');
     case 'medical':
-      return CategoryMetadata('Medical', '🏥', color);
+      return CategoryMetadata('Medical', '🏥', color, 'assets/category/medical.svg');
     case 'insurances':
-      return CategoryMetadata('Insurances', '🛡️', color);
+      return CategoryMetadata('Insurances', '🛡️', color, 'assets/category/insurances.svg');
     case 'shopping':
-      return CategoryMetadata('Shopping', '🛍️', color);
+      return CategoryMetadata('Shopping', '🛍️', color, 'assets/category/shopping.svg');
     case 'rent':
-      return CategoryMetadata('Rent', '🏠', color);
+      return CategoryMetadata('Rent', '🏠', color, 'assets/category/rent.svg');
     case 'bills':
-      return CategoryMetadata('Bills', '📄', color);
+      return CategoryMetadata('Bills', '📄', color, 'assets/category/others.svg');
     case 'entertainment':
-      return CategoryMetadata('Entertainment', '🎬', color);
+      return CategoryMetadata('Entertainment', '🎬', color, 'assets/category/entertainment.svg');
     case 'education':
-      return CategoryMetadata('Education', '📚', color);
+      return CategoryMetadata('Education', '📚', color, 'assets/category/education.svg');
     case 'college':
     case 'collage':
-      return CategoryMetadata('College', '🎓', color);
+      return CategoryMetadata('College', '🎓', color, 'assets/category/college.svg');
     default:
-      return CategoryMetadata(category, '📦', color);
+      return CategoryMetadata(category, '📦', color, 'assets/category/others.svg');
   }
 }
 
