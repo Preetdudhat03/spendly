@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import 'package:spendly/features/analytics/providers/analytics_providers.dart';
 import 'package:spendly/features/analytics/presentation/widgets/category_donut_chart.dart';
@@ -89,6 +88,17 @@ class RecurringExpensesCard extends StatelessWidget {
                 itemBuilder: (context, idx) {
                   final item = items[idx];
                   final meta = getCategoryMetadata(context, item.category);
+                  
+                  // Emoji selection based on title/desc
+                  String emoji = meta.emoji;
+                  final titleLower = item.title.toLowerCase();
+                  if (titleLower.contains('milk')) emoji = '🥛';
+                  if (titleLower.contains('netflix')) emoji = '🎬';
+                  if (titleLower.contains('spotify')) emoji = '🎵';
+                  if (titleLower.contains('electricity')) emoji = '⚡';
+                  if (titleLower.contains('gas')) emoji = '⛽';
+                  if (titleLower.contains('wifi') || titleLower.contains('internet')) emoji = '🌐';
+                  if (titleLower.contains('rent')) emoji = '🏠';
 
                   return Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -98,15 +108,12 @@ class RecurringExpensesCard extends StatelessWidget {
                         Container(
                           width: 38,
                           height: 38,
-                          padding: const EdgeInsets.all(8),
+                          alignment: Alignment.center,
                           decoration: BoxDecoration(
                             color: meta.color.withOpacity(0.12),
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: SvgPicture.asset(
-                            meta.iconPath,
-                            colorFilter: ColorFilter.mode(meta.color, BlendMode.srcIn),
-                          ),
+                          child: Text(emoji, style: const TextStyle(fontSize: 16)),
                         ),
                         const SizedBox(width: 14),
 

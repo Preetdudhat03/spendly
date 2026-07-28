@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import 'package:spendly/features/analytics/providers/analytics_providers.dart';
 import 'package:spendly/features/analytics/presentation/widgets/category_donut_chart.dart';
@@ -92,15 +91,12 @@ class _TopExpensesListState extends State<TopExpensesList> {
                             Container(
                               width: 40,
                               height: 40,
-                              padding: const EdgeInsets.all(8),
+                              alignment: Alignment.center,
                               decoration: BoxDecoration(
                                 color: meta.color.withOpacity(0.12),
                                 shape: BoxShape.circle,
                               ),
-                              child: SvgPicture.asset(
-                                meta.iconPath,
-                                colorFilter: ColorFilter.mode(meta.color, BlendMode.srcIn),
-                              ),
+                              child: Text(meta.emoji, style: const TextStyle(fontSize: 18)),
                             ),
                             const SizedBox(width: 14),
 

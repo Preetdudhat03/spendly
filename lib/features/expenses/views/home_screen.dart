@@ -664,7 +664,7 @@ class HomeScreen extends ConsumerWidget {
       case 'travel':
         return 'assets/category/travel.svg';
       case 'gas':
-        return 'assets/category/fuel.svg';
+        return 'assets/category/gas.svg';
       case 'electricity':
       case 'water':
       case 'utility':

@@ -20,7 +20,7 @@ String getCategoryIconPath(String category) {
     case 'travel':
       return 'assets/category/travel.svg';
     case 'gas':
-      return 'assets/category/fuel.svg';
+      return 'assets/category/gas.svg';
     case 'electricity':
     case 'utility':
       return 'assets/category/electricity.svg';
@@ -347,7 +347,7 @@ class _EditExpenseFormState extends State<_EditExpenseForm> {
     {'name': 'Petrol', 'iconPath': 'assets/category/petrol.svg'},
     {'name': 'Recharges', 'iconPath': 'assets/category/recharge.svg'},
     {'name': 'Travel', 'iconPath': 'assets/category/travel.svg'},
-    {'name': 'Gas', 'iconPath': 'assets/category/fuel.svg'},
+    {'name': 'Gas', 'iconPath': 'assets/category/gas.svg'},
     {'name': 'Electricity', 'iconPath': 'assets/category/electricity.svg'},
     {'name': 'Medical', 'iconPath': 'assets/category/medical.svg'},
     {'name': 'Insurances', 'iconPath': 'assets/category/insurances.svg'},
