@@ -247,12 +247,17 @@ class _CategoryDonutChartState extends State<CategoryDonutChart> {
                           Container(
                             width: 32,
                             height: 32,
-                            alignment: Alignment.center,
+                            padding: const EdgeInsets.all(6),
                             decoration: BoxDecoration(
                               color: meta.color.withOpacity(0.12),
                               shape: BoxShape.circle,
                             ),
-                            child: Text(meta.emoji, style: const TextStyle(fontSize: 16)),
+                            child: SvgPicture.asset(
+                              meta.iconPath,
+                              width: 18,
+                              height: 18,
+                              colorFilter: ColorFilter.mode(meta.color, BlendMode.srcIn),
+                            ),
                           ),
                           const SizedBox(width: 12),
                           Expanded(
