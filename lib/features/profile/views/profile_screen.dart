@@ -160,7 +160,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     showModalBottomSheet(
       context: context,
       builder: (context) => Padding(
-        padding: const EdgeInsets.fromLTRB(20.0, 20.0, 20.0, 100.0),
+        padding: const EdgeInsets.fromLTRB(20.0, 20.0, 20.0, 105.0),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
