@@ -103,12 +103,19 @@ class DrillDownSheet extends StatelessWidget {
                 child: Row(
                   children: [
                     Container(
+                      width: 52,
+                      height: 52,
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
                         color: color.withOpacity(0.15),
                         shape: BoxShape.circle,
                       ),
-                      child: Icon(icon, color: color, size: 28),
+                      child: iconPath != null
+                          ? SvgPicture.asset(
+                              iconPath!,
+                              colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
+                            )
+                          : Icon(icon, color: color, size: 28),
                     ),
                     const SizedBox(width: 16),
                     Expanded(
