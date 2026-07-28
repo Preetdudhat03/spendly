@@ -311,7 +311,7 @@ class HomeScreen extends ConsumerWidget {
                           children: [
 
                             _buildQuickAddButton(context, ref, 'assets/category/food.svg', 'Food'),
-                            _buildQuickAddButton(context, ref, 'assets/category/petrol.svg', 'Petrol'),
+                            _buildQuickAddButton(context, ref, 'assets/category/fuel.svg', 'Petrol'),
                             _buildQuickAddButton(context, ref, 'assets/category/groceries.svg', 'Groceries'),
                             _buildQuickAddButton(context, ref, 'assets/category/electricity.svg', 'Electricity'),
                             _buildQuickAddButton(context, ref, 'assets/category/medical.svg', 'Medical'),
@@ -658,7 +658,7 @@ class HomeScreen extends ConsumerWidget {
       case 'transport':
       case 'fuel':
       case 'petrol':
-        return 'assets/category/petrol.svg';  
+        return 'assets/category/fuel.svg';  
       case 'recharges':
         return 'assets/category/recharge.svg';
       case 'travel':
