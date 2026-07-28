@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
@@ -257,13 +258,11 @@ class _StackedChartConsumer extends ConsumerWidget {
                 return Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Container(
-                      width: 10,
-                      height: 10,
-                      decoration: BoxDecoration(
-                        color: meta.color,
-                        borderRadius: BorderRadius.circular(2.5),
-                      ),
+                    SvgPicture.asset(
+                      meta.iconPath,
+                      width: 12,
+                      height: 12,
+                      colorFilter: ColorFilter.mode(meta.color, BlendMode.srcIn),
                     ),
                     const SizedBox(width: 4),
                     Text(
