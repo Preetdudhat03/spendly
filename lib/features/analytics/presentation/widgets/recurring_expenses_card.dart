@@ -89,17 +89,6 @@ class RecurringExpensesCard extends StatelessWidget {
                 itemBuilder: (context, idx) {
                   final item = items[idx];
                   final meta = getCategoryMetadata(context, item.category);
-                  
-                  // Emoji selection based on title/desc
-                  String emoji = meta.emoji;
-                  final titleLower = item.title.toLowerCase();
-                  if (titleLower.contains('milk')) emoji = '🥛';
-                  if (titleLower.contains('netflix')) emoji = '🎬';
-                  if (titleLower.contains('spotify')) emoji = '🎵';
-                  if (titleLower.contains('electricity')) emoji = '⚡';
-                  if (titleLower.contains('gas')) emoji = '⛽';
-                  if (titleLower.contains('wifi') || titleLower.contains('internet')) emoji = '🌐';
-                  if (titleLower.contains('rent')) emoji = '🏠';
 
                   return Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8.0),
