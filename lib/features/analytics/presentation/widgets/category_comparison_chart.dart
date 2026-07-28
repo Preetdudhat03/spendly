@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import 'package:spendly/features/analytics/providers/analytics_providers.dart';
 import 'package:spendly/features/analytics/presentation/widgets/category_donut_chart.dart';
@@ -94,7 +95,12 @@ class CategoryComparisonChart extends StatelessWidget {
                         children: [
                           Row(
                             children: [
-                              Text(meta.emoji, style: const TextStyle(fontSize: 15)),
+                              SvgPicture.asset(
+                                meta.iconPath,
+                                width: 18,
+                                height: 18,
+                                colorFilter: ColorFilter.mode(meta.color, BlendMode.srcIn),
+                              ),
                               const SizedBox(width: 8),
                               Text(
                                 meta.name,
