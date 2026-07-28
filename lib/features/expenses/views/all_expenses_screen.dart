@@ -27,7 +27,7 @@ class _AllExpensesScreenState extends ConsumerState<AllExpensesScreen> {
     {'name': 'Petrol', 'emoji': '🚗', 'iconPath': 'assets/category/petrol.svg'},
     {'name': 'Recharges', 'emoji': '📱', 'iconPath': 'assets/category/recharge.svg'},
     {'name': 'Travel', 'emoji': '✈️', 'iconPath': 'assets/category/travel.svg'},
-    {'name': 'Gas', 'emoji': '⛽', 'iconPath': 'assets/category/gas.svg'},
+    {'name': 'Gas', 'emoji': '⛽', 'iconPath': 'assets/category/fuel.svg'},
     {'name': 'Electricity', 'emoji': '⚡', 'iconPath': 'assets/category/electricity.svg'},
     {'name': 'Medical', 'emoji': '💊', 'iconPath': 'assets/category/medical.svg'},
     {'name': 'Insurances', 'emoji': '🛡️', 'iconPath': 'assets/category/insurances.svg'},
