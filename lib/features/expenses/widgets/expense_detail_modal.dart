@@ -14,7 +14,7 @@ String getCategoryIconPath(String category) {
       return 'assets/category/groceries.svg';
     case 'petrol':
     case 'fuel':
-      return 'assets/category/petrol.svg';
+      return 'assets/category/fuel.svg';
     case 'recharges':
       return 'assets/category/recharge.svg';
     case 'travel':
@@ -344,7 +344,7 @@ class _EditExpenseFormState extends State<_EditExpenseForm> {
   final List<Map<String, String>> _categories = [
     {'name': 'Food', 'iconPath': 'assets/category/food.svg'},
     {'name': 'Groceries', 'iconPath': 'assets/category/groceries.svg'},
-    {'name': 'Petrol', 'iconPath': 'assets/category/petrol.svg'},
+    {'name': 'Petrol', 'iconPath': 'assets/category/fuel.svg'},
     {'name': 'Recharges', 'iconPath': 'assets/category/recharge.svg'},
     {'name': 'Travel', 'iconPath': 'assets/category/travel.svg'},
     {'name': 'Gas', 'iconPath': 'assets/category/gas.svg'},
