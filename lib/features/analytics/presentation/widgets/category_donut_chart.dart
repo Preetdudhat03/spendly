@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import 'package:spendly/features/analytics/providers/analytics_providers.dart';
 import 'package:spendly/models/expense.dart';
@@ -9,9 +10,10 @@ import 'drill_down_sheet.dart';
 class CategoryMetadata {
   final String name;
   final String emoji;
+  final String iconPath;
   final Color color;
 
-  CategoryMetadata(this.name, this.emoji, this.color);
+  CategoryMetadata(this.name, this.emoji, this.iconPath, this.color);
 }
 
 CategoryMetadata getCategoryMetadata(BuildContext context, String category) {
@@ -20,40 +22,42 @@ CategoryMetadata getCategoryMetadata(BuildContext context, String category) {
   
   switch (category.toLowerCase()) {
     case 'food':
-      return CategoryMetadata('Food', '🍔', color);
+      return CategoryMetadata('Food', '🍔', 'assets/category/food.svg', color);
     case 'groceries':
-      return CategoryMetadata('Groceries', '🛒', color);
+      return CategoryMetadata('Groceries', '🛒', 'assets/category/groceries.svg', color);
     case 'petrol':
+      return CategoryMetadata('Petrol', '🚗', 'assets/category/petrol.svg', color);
     case 'fuel':
-      return CategoryMetadata('Petrol/Fuel', '⛽', color);
+      return CategoryMetadata('Fuel', '⛽', 'assets/category/fuel.svg', color);
     case 'recharges':
-      return CategoryMetadata('Recharges', '📱', color);
+      return CategoryMetadata('Recharges', '📱', 'assets/category/recharge.svg', color);
     case 'travel':
-      return CategoryMetadata('Travel', '✈️', color);
+      return CategoryMetadata('Travel', '✈️', 'assets/category/travel.svg', color);
     case 'gas':
-      return CategoryMetadata('Gas', '⛽', color);
+      return CategoryMetadata('Gas', '⛽', 'assets/category/fuel.svg', color);
     case 'electricity':
     case 'utility':
-      return CategoryMetadata('Utilities', '⚡', color);
+    case 'utilities':
+      return CategoryMetadata('Utilities', '⚡', 'assets/category/electricity.svg', color);
     case 'medical':
-      return CategoryMetadata('Medical', '🏥', color);
+      return CategoryMetadata('Medical', '💊', 'assets/category/medical.svg', color);
     case 'insurances':
-      return CategoryMetadata('Insurances', '🛡️', color);
+      return CategoryMetadata('Insurances', '🛡️', 'assets/category/insurances.svg', color);
     case 'shopping':
-      return CategoryMetadata('Shopping', '🛍️', color);
+      return CategoryMetadata('Shopping', '🛍️', 'assets/category/shopping.svg', color);
     case 'rent':
-      return CategoryMetadata('Rent', '🏠', color);
+      return CategoryMetadata('Rent', '🏠', 'assets/category/rent.svg', color);
     case 'bills':
-      return CategoryMetadata('Bills', '📄', color);
+      return CategoryMetadata('Bills', '📄', 'assets/category/others.svg', color);
     case 'entertainment':
-      return CategoryMetadata('Entertainment', '🎬', color);
+      return CategoryMetadata('Entertainment', '🎬', 'assets/category/entertainment.svg', color);
     case 'education':
-      return CategoryMetadata('Education', '📚', color);
+      return CategoryMetadata('Education', '📚', 'assets/category/education.svg', color);
     case 'college':
     case 'collage':
-      return CategoryMetadata('College', '🎓', color);
+      return CategoryMetadata('College', '🎓', 'assets/category/college.svg', color);
     default:
-      return CategoryMetadata(category, '📦', color);
+      return CategoryMetadata(category, '📦', 'assets/category/others.svg', color);
   }
 }
 
@@ -82,7 +86,8 @@ class _CategoryDonutChartState extends State<CategoryDonutChart> {
       context,
       title: meta.name,
       subtitle: '${share.percentage.toStringAsFixed(0)}% of total spending',
-      icon: Icons.category, // You could use a specific icon or just use the emoji text in a custom way. We'll use a generic icon for now.
+      icon: Icons.category,
+      iconPath: meta.iconPath,
       color: meta.color,
       totalAmount: share.amount,
       expenses: categoryExpenses,
@@ -244,12 +249,15 @@ class _CategoryDonutChartState extends State<CategoryDonutChart> {
                           Container(
                             width: 32,
                             height: 32,
-                            alignment: Alignment.center,
+                            padding: const EdgeInsets.all(6),
                             decoration: BoxDecoration(
                               color: meta.color.withOpacity(0.12),
                               shape: BoxShape.circle,
                             ),
-                            child: Text(meta.emoji, style: const TextStyle(fontSize: 16)),
+                            child: SvgPicture.asset(
+                              meta.iconPath,
+                              colorFilter: ColorFilter.mode(meta.color, BlendMode.srcIn),
+                            ),
                           ),
                           const SizedBox(width: 12),
                           Expanded(
