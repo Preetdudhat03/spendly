@@ -139,7 +139,7 @@ class DrillDownSheet extends StatelessWidget {
               Expanded(
                 child: ListView(
                   controller: scrollController,
-                  padding: const EdgeInsets.fromLTRB(24.0, 24.0, 24.0, 80.0),
+                  padding: const EdgeInsets.fromLTRB(24.0, 24.0, 24.0, 85.0),
                   children: [
                     // AI Summary
                     if (aiSummary != null && aiSummary!.isNotEmpty) ...[
