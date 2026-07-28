@@ -329,44 +329,18 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
                       style: Theme.of(context).textTheme.titleLarge,
                     ),
                     const SizedBox(height: 12),
-                    Row(
-                      children: ['UPI', 'Cash', 'Card'].map((method) {
-                        final isSelected = _paymentMethod == method;
-                        final colorScheme = Theme.of(context).colorScheme;
-                        return Expanded(
-                          child: Container(
-                            margin: const EdgeInsets.symmetric(horizontal: 4),
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: isSelected ? colorScheme.primaryContainer : colorScheme.surface,
-                                foregroundColor: isSelected ? colorScheme.onPrimaryContainer : colorScheme.onSurface,
-                                side: BorderSide(
-                                  color: isSelected ? colorScheme.primary : colorScheme.outline,
-                                  width: 1.5,
-                                ),
-                                elevation: 0,
-                                padding: const EdgeInsets.symmetric(vertical: 14),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(14),
-                                ),
-                              ),
-                              onPressed: () {
-                                setState(() {
-                                  _paymentMethod = method;
-                                });
-                              },
-                              child: Text(
-                                method,
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: isSelected ? colorScheme.onPrimaryContainer : colorScheme.onSurface,
-                                ),
-                              ),
-                            ),
-                          ),
-                        );
-                      }).toList(),
+                    SegmentedButton<String>(
+                      segments: const [
+                        ButtonSegment(value: 'UPI', label: Text('UPI'), icon: Icon(Icons.mobile_friendly)),
+                        ButtonSegment(value: 'Cash', label: Text('Cash'), icon: Icon(Icons.money)),
+                        ButtonSegment(value: 'Card', label: Text('Card'), icon: Icon(Icons.credit_card)),
+                      ],
+                      selected: {_paymentMethod},
+                      onSelectionChanged: (Set<String> newSelection) {
+                        setState(() {
+                          _paymentMethod = newSelection.first;
+                        });
+                      },
                     ),
                     const SizedBox(height: 24),
 
