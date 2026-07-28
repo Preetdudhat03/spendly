@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import 'package:spendly/features/analytics/providers/analytics_providers.dart';
 import 'package:spendly/features/analytics/presentation/widgets/category_donut_chart.dart';
@@ -108,12 +109,17 @@ class RecurringExpensesCard extends StatelessWidget {
                         Container(
                           width: 38,
                           height: 38,
-                          alignment: Alignment.center,
+                          padding: const EdgeInsets.all(7),
                           decoration: BoxDecoration(
                             color: meta.color.withOpacity(0.12),
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: Text(emoji, style: const TextStyle(fontSize: 16)),
+                          child: SvgPicture.asset(
+                            meta.iconPath,
+                            width: 20,
+                            height: 20,
+                            colorFilter: ColorFilter.mode(meta.color, BlendMode.srcIn),
+                          ),
                         ),
                         const SizedBox(width: 14),
 
