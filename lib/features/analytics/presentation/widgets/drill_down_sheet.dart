@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import 'package:spendly/models/expense.dart';
 
@@ -7,6 +8,7 @@ class DrillDownSheet extends StatelessWidget {
   final String title;
   final String subtitle;
   final IconData icon;
+  final String? iconPath;
   final Color color;
   final double totalAmount;
   final List<Expense> expenses;
@@ -17,6 +19,7 @@ class DrillDownSheet extends StatelessWidget {
     required this.title,
     required this.subtitle,
     required this.icon,
+    this.iconPath,
     required this.color,
     required this.totalAmount,
     required this.expenses,
@@ -27,6 +30,7 @@ class DrillDownSheet extends StatelessWidget {
     required String title,
     required String subtitle,
     required IconData icon,
+    String? iconPath,
     required Color color,
     required double totalAmount,
     required List<Expense> expenses,
@@ -41,6 +45,7 @@ class DrillDownSheet extends StatelessWidget {
         title: title,
         subtitle: subtitle,
         icon: icon,
+        iconPath: iconPath,
         color: color,
         totalAmount: totalAmount,
         expenses: expenses,
