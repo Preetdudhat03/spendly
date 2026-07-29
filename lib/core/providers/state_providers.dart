@@ -38,6 +38,7 @@ class AuthState {
   final String? userId;
   final String? email;
   final String? displayName;
+  final String? avatarColor;
   final String? error;
   
   // Migration support fields
@@ -51,6 +52,7 @@ class AuthState {
     this.userId,
     this.email,
     this.displayName,
+    this.avatarColor,
     this.error,
     this.isMigrationPending = false,
     this.legacyUserId,
@@ -65,6 +67,7 @@ class AuthState {
     String? userId,
     String? email,
     String? displayName,
+    String? avatarColor,
     String? error,
     bool? isMigrationPending,
     String? legacyUserId,
@@ -76,6 +79,7 @@ class AuthState {
       userId: userId ?? this.userId,
       email: email ?? this.email,
       displayName: displayName ?? this.displayName,
+      avatarColor: avatarColor ?? this.avatarColor,
       error: error,
       isMigrationPending: isMigrationPending ?? this.isMigrationPending,
       legacyUserId: legacyUserId ?? this.legacyUserId,
@@ -179,6 +183,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
 
     // Native user is logged in
+    final savedAvatar = state.avatarColor ?? (user.userMetadata?['avatar_color'] as String?) ?? HiveService.settings.get('avatar_color') as String?;
+
     final profileAsync = _ref.read(profileProvider);
     profileAsync.when(
       data: (profile) {
@@ -196,13 +202,13 @@ class AuthNotifier extends StateNotifier<AuthState> {
             userId: profile.id,
             email: profile.email,
             displayName: profile.displayName.isNotEmpty ? profile.displayName : (user.userMetadata?['display_name'] as String? ?? 'User'),
+            avatarColor: savedAvatar,
             isMigrationPending: false,
           );
           HiveService.settings.put('active_user_id', profile.id);
           _ref.read(familyProvider.notifier).loadFamily();
         } else {
           // Profile doesn't exist yet (e.g. email is not confirmed)
-          // Keep the migration pending view active during signup/migration check
           if (state.isMigrationPending) {
             return;
           }
@@ -213,13 +219,14 @@ class AuthNotifier extends StateNotifier<AuthState> {
             userId: user.id,
             email: user.email,
             displayName: user.userMetadata?['display_name'] as String? ?? 'User',
+            avatarColor: savedAvatar,
           );
           HiveService.settings.put('active_user_id', user.id);
           _ref.read(familyProvider.notifier).loadFamily();
         }
       },
       loading: () {
-        if (!state.isLoading) {
+        if (state.isInitializing) {
           state = state.copyWith(isLoading: true);
         }
       },
@@ -515,11 +522,12 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<void> updateAvatarColor(String colorHex) async {
     try {
       await _dbService.updateMemberAvatarColor(colorHex);
+      await HiveService.settings.put('avatar_color', colorHex);
+      state = state.copyWith(avatarColor: colorHex);
       
-      // Refresh native profile notifier
       final user = _ref.read(currentUserProvider);
       if (user != null) {
-        _ref.read(profileNotifierProvider(user.id).notifier).refresh();
+        _ref.read(familyProvider.notifier).loadMembers();
       }
     } catch (e) {
       state = state.copyWith(error: ErrorHelper.getReadableErrorMessage(e));
