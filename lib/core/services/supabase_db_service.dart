@@ -598,16 +598,15 @@ class SupabaseDbService implements DbService {
     final userId = _client.auth.currentUser?.id;
     if (userId == null) return;
     debugPrint('Supabase DB: updateMemberAvatarColor requested for user $userId');
-    
-    // We update the users table directly (since that's where profiles are stored)
-    // We need to ensure there is an avatar_color column in the DB, or store it in user_metadata.
-    // For simplicity without running migrations, we will store it in Auth user metadata,
-    // and also update the users table if possible. Wait, the users table might not have avatar_color.
-    // Let's store it in user_metadata of auth.
-    await _client.auth.updateUser(
-      UserAttributes(
-        data: {'avatar_color': colorHex},
-      ),
-    );
+    await HiveService.settings.put('avatar_color', colorHex);
+    try {
+      await _client.auth.updateUser(
+        UserAttributes(
+          data: {'avatar_color': colorHex},
+        ),
+      );
+    } catch (e) {
+      debugPrint('Error updating user metadata in Supabase: $e');
+    }
   }
 }
