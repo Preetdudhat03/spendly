@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:math';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:spendly/core/services/db_service.dart';
+import 'package:spendly/core/services/hive_service.dart';
 import 'package:spendly/core/utils/crypto_utils.dart';
 import 'package:spendly/models/family.dart';
 import 'package:spendly/models/family_member.dart';
