@@ -598,8 +598,6 @@ class MockDbService implements DbService {
   Future<void> updateMemberAvatarColor(String colorHex) async {
     final userId = getCurrentUserId();
     if (userId == null) return;
-    // In mock DB, we don't store avatar_color in the member model yet,
-    // so we can just do a no-op or simulate it.
-    // We'll leave it as a no-op for the mock provider.
+    await HiveService.settings.put('avatar_color', colorHex);
   }
 }
