@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:spendly/core/services/db_service.dart';
+import 'package:spendly/core/services/hive_service.dart';
 import 'package:spendly/core/utils/crypto_utils.dart';
 import 'package:spendly/core/utils/schema_validator.dart';
 import 'package:spendly/models/family.dart';
