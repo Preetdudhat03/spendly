@@ -10,6 +10,7 @@ import 'package:spendly/core/providers/settings_provider.dart';
 import 'package:spendly/features/analytics/providers/analytics_providers.dart';
 import 'package:spendly/core/widgets/shimmer_loading.dart';
 import 'package:spendly/core/services/report_service.dart';
+import 'package:spendly/core/services/hive_service.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
