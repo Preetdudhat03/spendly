@@ -258,8 +258,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                               children: [
                                 Builder(
                                   builder: (context) {
-                                    final meta = Supabase.instance.client.auth.currentUser?.userMetadata;
-                                    final hex = meta?['avatar_color'] as String?;
+                                    final hex = authState.avatarColor ?? (Supabase.instance.client.auth.currentUser?.userMetadata?['avatar_color'] as String?) ?? HiveService.settings.get('avatar_color') as String?;
                                     Color bgColor = Theme.of(context).primaryColor;
                                     if (hex != null && hex.startsWith('#') && hex.length >= 7) {
                                       try {
