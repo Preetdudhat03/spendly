@@ -123,4 +123,32 @@ void main() {
       expect(share.isIncrease, isTrue);
     });
   });
+
+  group('Spending Heatmap Date Calculation Tests', () {
+    test('startOfHeatmap always starts on a Monday and aligns days with columns', () {
+      // Test across multiple days of the week
+      final testDates = [
+        DateTime(2026, 7, 30), // Thursday (weekday 4)
+        DateTime(2026, 7, 27), // Monday (weekday 1)
+        DateTime(2026, 8, 2),  // Sunday (weekday 7)
+        DateTime(2026, 8, 1),  // Saturday (weekday 6)
+      ];
+
+      for (var now in testDates) {
+        final todayOnly = DateTime(now.year, now.month, now.day);
+        final mondayOfCurrentWeek = DateTime(todayOnly.year, todayOnly.month, todayOnly.day - (todayOnly.weekday - 1));
+        final startOfHeatmap = DateTime(mondayOfCurrentWeek.year, mondayOfCurrentWeek.month, mondayOfCurrentWeek.day - 77);
+
+        // Verify startOfHeatmap is a Monday (weekday 1)
+        expect(startOfHeatmap.weekday, DateTime.monday, reason: 'startOfHeatmap should be a Monday for date $now');
+
+        // Verify all 84 days align with columns (0=Mon, 1=Tue, 2=Wed, 3=Thu, 4=Fri, 5=Sat, 6=Sun)
+        for (int i = 0; i < 84; i++) {
+          final day = DateTime(startOfHeatmap.year, startOfHeatmap.month, startOfHeatmap.day + i);
+          final expectedWeekday = (i % 7) + 1;
+          expect(day.weekday, expectedWeekday, reason: 'Day $i should have weekday $expectedWeekday');
+        }
+      }
+    });
+  });
 }
