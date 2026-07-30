@@ -42,7 +42,7 @@ class AnalyticsFilterHeader extends ConsumerWidget {
         final colorScheme = Theme.of(context).colorScheme;
         return SafeArea(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.only(bottom: 24.0),
+            padding: const EdgeInsets.only(bottom: 50.0),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
