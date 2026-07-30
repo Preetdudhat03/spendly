@@ -703,9 +703,10 @@ class AnalyticsNotifier extends StateNotifier<AnalyticsState> {
     // 10. Heatmap Data (Rolling 12 weeks of daily totals)
     final heatmapData = <DateTime, double>{};
     final todayOnly = DateUtils.dateOnly(params.now);
-    final startOfHeatmap = todayOnly.subtract(Duration(days: 84 - (todayOnly.weekday - 1)));
+    final mondayOfCurrentWeek = DateTime(todayOnly.year, todayOnly.month, todayOnly.day - (todayOnly.weekday - 1));
+    final startOfHeatmap = DateTime(mondayOfCurrentWeek.year, mondayOfCurrentWeek.month, mondayOfCurrentWeek.day - 77);
     for (int i = 0; i < 84; i++) {
-      final day = startOfHeatmap.add(Duration(days: i));
+      final day = DateTime(startOfHeatmap.year, startOfHeatmap.month, startOfHeatmap.day + i);
       heatmapData[day] = 0.0;
     }
     for (var e in allExpenses) {
