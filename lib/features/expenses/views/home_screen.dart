@@ -586,34 +586,31 @@ class HomeScreen extends ConsumerWidget {
     NumberFormat fmt,
   ) {
     final dayStr = DateFormat('dd MMM').format(exp.expenseDate);
+    final catColor = getCategoryColor(exp.category);
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       child: Card(
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
-          side: const BorderSide(color: Color(0xFFE2E8F0)),
+          side: BorderSide(color: Theme.of(context).colorScheme.outline),
         ),
         child: ListTile(
           leading: Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: Theme.of(context).primaryColor.withOpacity(0.1),
+              color: catColor.withOpacity(0.15),
               shape: BoxShape.circle,
             ),
-            /*child: Text(
-              _getCategoryEmoji(exp.category),
-              style: const TextStyle(fontSize: 22),
-            ),*/
             child: SvgPicture.asset(
               _getcategoryiconpath(exp.category),
               width: 24,
               height: 24,
-              colorFilter: ColorFilter.mode(Theme.of(context).primaryColor, BlendMode.srcIn), // Optional: Tints the SVG to your theme color
+              colorFilter: ColorFilter.mode(catColor, BlendMode.srcIn),
             ),
           ),
           title: Text(
             exp.description.isEmpty ? exp.category : exp.description,
-            style: const TextStyle(fontWeight: FontWeight.bold),
+            style: TextStyle(fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface),
           ),
           subtitle: Text(
             'by ${exp.createdByName} • $dayStr',
