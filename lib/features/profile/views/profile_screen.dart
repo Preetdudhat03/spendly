@@ -276,9 +276,20 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                   }
                                 ),
                                 Container(
-                                  padding: const EdgeInsets.all(4),
-                                  decoration: BoxDecoration(color: Theme.of(context).colorScheme.surface, shape: BoxShape.circle),
-                                  child: Icon(Icons.palette, size: 16, color: Theme.of(context).primaryColor),
+                                  padding: const EdgeInsets.all(6),
+                                  decoration: BoxDecoration(
+                                    color: Theme.of(context).colorScheme.primary,
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: Theme.of(context).cardTheme.color ?? Theme.of(context).colorScheme.surface,
+                                      width: 2,
+                                    ),
+                                  ),
+                                  child: const Icon(
+                                    Icons.palette,
+                                    size: 14,
+                                    color: Colors.white,
+                                  ),
                                 ),
                               ],
                             ),
