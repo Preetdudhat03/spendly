@@ -181,10 +181,10 @@ class HomeScreen extends ConsumerWidget {
                                     width: 220,
                                     margin: const EdgeInsets.only(right: 12),
                                     child: Card(
-                                      color: const Color(0xFFF1F5F9),
+                                      color: Theme.of(context).cardTheme.color ?? Theme.of(context).colorScheme.surface,
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(16),
-                                        side: const BorderSide(color: Color(0xFFE2E8F0)),
+                                        side: BorderSide(color: Theme.of(context).colorScheme.outline),
                                       ),
                                       child: Padding(
                                         padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 10.0),
@@ -200,11 +200,19 @@ class HomeScreen extends ConsumerWidget {
                                                     '${sug.description.isEmpty ? sug.category : sug.description} • ${currencyFormat.format(sug.amount)}',
                                                     maxLines: 1,
                                                     overflow: TextOverflow.ellipsis,
-                                                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                                                    style: TextStyle(
+                                                      fontWeight: FontWeight.bold,
+                                                      fontSize: 14,
+                                                      color: Theme.of(context).colorScheme.onSurface,
+                                                    ),
                                                   ),
                                                 ),
                                                 PopupMenuButton<String>(
-                                                  icon: const Icon(Icons.more_vert, size: 18),
+                                                  icon: Icon(
+                                                    Icons.more_vert,
+                                                    size: 18,
+                                                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                                  ),
                                                   padding: EdgeInsets.zero,
                                                   constraints: const BoxConstraints(),
                                                   itemBuilder: (context) => [
@@ -276,11 +284,14 @@ class HomeScreen extends ConsumerWidget {
                                                   color: Theme.of(context).primaryColor,
                                                   borderRadius: BorderRadius.circular(8),
                                                 ),
-                                                child: const Center(
+                                                child: Center(
                                                   child: Text(
                                                     'One Tap Save',
                                                     style: TextStyle(
-                                                        color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
+                                                      color: Theme.of(context).colorScheme.onPrimary,
+                                                      fontSize: 13,
+                                                      fontWeight: FontWeight.bold,
+                                                    ),
                                                   ),
                                                 ),
                                               ),
@@ -536,9 +547,9 @@ class HomeScreen extends ConsumerWidget {
         borderRadius: BorderRadius.circular(16),
         child: Ink(
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: Theme.of(context).cardTheme.color ?? Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFFE2E8F0)),
+            border: Border.all(color: Theme.of(context).colorScheme.outline),
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -547,7 +558,7 @@ class HomeScreen extends ConsumerWidget {
                 iconpath,
                 width: 28, //32
                 height: 28, //32
-                colorFilter: ColorFilter.mode(Theme.of(context).primaryColor, BlendMode.srcIn), // Optional: Tints the SVG to your theme color
+                colorFilter: ColorFilter.mode(Theme.of(context).colorScheme.primary, BlendMode.srcIn), // Optional: Tints the SVG to your theme color
               ),
               //Text(emoji, style: const TextStyle(fontSize: 28)),
               const SizedBox(height: 6),
@@ -555,7 +566,11 @@ class HomeScreen extends ConsumerWidget {
                 category,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
               )
             ],
           ),
