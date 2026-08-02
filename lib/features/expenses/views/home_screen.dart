@@ -610,47 +610,112 @@ class HomeScreen extends ConsumerWidget {
   Widget _buildQuickAddButton(
     BuildContext context,
     WidgetRef ref,
-    //String emoji,
     String iconpath,
     String category,
   ) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final catColor = _getCategoryColor(category);
+
     return Container(
       margin: const EdgeInsets.only(right: 12),
-      width: 80,
-      child: InkWell(
-        onTap: () {
-          ref.read(selectedCategoryProvider.notifier).state = category;
-          context.go('/add');
-        },
-        borderRadius: BorderRadius.circular(16),
-        child: Ink(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFFE2E8F0)),
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              SvgPicture.asset(
-                iconpath,
-                width: 28, //32
-                height: 28, //32
-                colorFilter: ColorFilter.mode(Theme.of(context).primaryColor, BlendMode.srcIn), // Optional: Tints the SVG to your theme color
+      width: 90,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            ref.read(selectedCategoryProvider.notifier).state = category;
+            context.go('/add');
+          },
+          borderRadius: BorderRadius.circular(20),
+          child: Ink(
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xFF1E293B) : Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                width: 1,
               ),
-              //Text(emoji, style: const TextStyle(fontSize: 28)),
-              const SizedBox(height: 6),
-              Text(
-                category,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-              )
-            ],
+              boxShadow: isDark
+                  ? []
+                  : [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.04),
+                        blurRadius: 8,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: catColor.withOpacity(isDark ? 0.2 : 0.12),
+                    shape: BoxShape.circle,
+                  ),
+                  padding: const EdgeInsets.all(10),
+                  child: SvgPicture.asset(
+                    iconpath,
+                    colorFilter: ColorFilter.mode(catColor, BlendMode.srcIn),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  category,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: isDark ? const Color(0xFFE2E8F0) : const Color(0xFF334155),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
     );
+  }
+
+  Color _getCategoryColor(String category) {
+    switch (category.toLowerCase()) {
+      case 'food':
+        return const Color(0xFFF97316); // Vibrant Orange
+      case 'groceries':
+        return const Color(0xFF10B981); // Emerald Green
+      case 'petrol':
+      case 'fuel':
+      case 'transport':
+        return const Color(0xFF3B82F6); // Bright Blue
+      case 'recharges':
+        return const Color(0xFF0EA5E9); // Sky Blue
+      case 'travel':
+        return const Color(0xFF06B6D4); // Cyan
+      case 'gas':
+        return const Color(0xFFF59E0B); // Amber
+      case 'electricity':
+      case 'utility':
+      case 'water':
+        return const Color(0xFFA855F7); // Purple / Violet
+      case 'medical':
+        return const Color(0xFFEF4444); // Red
+      case 'insurances':
+        return const Color(0xFF6366F1); // Indigo
+      case 'shopping':
+        return const Color(0xFFEC4899); // Pink
+      case 'rent':
+        return const Color(0xFF8B5CF6); // Deep Purple
+      case 'entertainment':
+        return const Color(0xFFF43F5E); // Rose
+      case 'education':
+      case 'college':
+        return const Color(0xFF4F46E5); // Blue-Indigo
+      default:
+        return const Color(0xFF64748B); // Slate Grey
+    }
   }
 
   Widget _buildExpenseListItem(
