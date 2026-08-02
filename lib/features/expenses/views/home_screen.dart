@@ -160,167 +160,98 @@ class HomeScreen extends ConsumerWidget {
                   Widget budgetCard = _buildBudgetCard(
                       context, monthTotal, budgetLimit, budgetPercent, budgetColor, currencyFormat);
 
-                  final isDark = Theme.of(context).brightness == Brightness.dark;
-
                   Widget smartSuggestions = suggestions.isEmpty
                       ? const SizedBox.shrink()
                       : Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  'Frequently used Expenses',
-                                  style: Theme.of(context).textTheme.titleLarge,
-                                ),
-                                Text(
-                                  '${suggestions.length} items',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
-                                    color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
-                                  ),
-                                ),
-                              ],
+                            Text(
+                              'Frequently used Expenses',
+                              style: Theme.of(context).textTheme.titleLarge,
                             ),
-                            const SizedBox(height: 12),
+                            const SizedBox(height: 8),
                             SizedBox(
-                              height: 145,
+                              height: 120,
                               child: ListView.builder(
                                 scrollDirection: Axis.horizontal,
-                                physics: const BouncingScrollPhysics(),
                                 itemCount: suggestions.length,
                                 itemBuilder: (context, index) {
                                   final sug = suggestions[index];
-                                  final catColor = _getCategoryColor(sug.category);
-                                  final iconPath = _getcategoryiconpath(sug.category);
-                                  final titleText = sug.description.isEmpty ? sug.category : sug.description;
-
                                   return Container(
-                                    width: 230,
-                                    margin: const EdgeInsets.only(right: 14),
-                                    decoration: BoxDecoration(
-                                      color: isDark ? const Color(0xFF1E293B) : Colors.white,
-                                      borderRadius: BorderRadius.circular(20),
-                                      border: Border.all(
-                                        color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
-                                        width: 1,
+                                    width: 220,
+                                    margin: const EdgeInsets.only(right: 12),
+                                    child: Card(
+                                      color: const Color(0xFFF1F5F9),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(16),
+                                        side: const BorderSide(color: Color(0xFFE2E8F0)),
                                       ),
-                                      boxShadow: isDark
-                                          ? []
-                                          : [
-                                              BoxShadow(
-                                                color: Colors.black.withOpacity(0.04),
-                                                blurRadius: 12,
-                                                offset: const Offset(0, 4),
-                                              ),
-                                            ],
-                                    ),
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(14.0),
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Row(
-                                            children: [
-                                              Container(
-                                                width: 38,
-                                                height: 38,
-                                                decoration: BoxDecoration(
-                                                  color: catColor.withOpacity(isDark ? 0.2 : 0.12),
-                                                  shape: BoxShape.circle,
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 10.0),
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Row(
+                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                              children: [
+                                                Expanded(
+                                                  child: Text(
+                                                    '${sug.description.isEmpty ? sug.category : sug.description} • ${currencyFormat.format(sug.amount)}',
+                                                    maxLines: 1,
+                                                    overflow: TextOverflow.ellipsis,
+                                                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                                                  ),
                                                 ),
-                                                padding: const EdgeInsets.all(8),
-                                                child: SvgPicture.asset(
-                                                  iconPath,
-                                                  colorFilter: ColorFilter.mode(catColor, BlendMode.srcIn),
-                                                ),
-                                              ),
-                                              const SizedBox(width: 10),
-                                              Expanded(
-                                                child: Column(
-                                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                                  children: [
-                                                    Text(
-                                                      titleText,
-                                                      maxLines: 1,
-                                                      overflow: TextOverflow.ellipsis,
-                                                      style: TextStyle(
-                                                        fontWeight: FontWeight.bold,
-                                                        fontSize: 14,
-                                                        color: isDark ? Colors.white : const Color(0xFF0F172A),
+                                                PopupMenuButton<String>(
+                                                  icon: const Icon(Icons.more_vert, size: 18),
+                                                  padding: EdgeInsets.zero,
+                                                  constraints: const BoxConstraints(),
+                                                  itemBuilder: (context) => [
+                                                    const PopupMenuItem(
+                                                      value: 'edit',
+                                                      child: Row(
+                                                        children: [
+                                                          Icon(Icons.edit_outlined, size: 18),
+                                                          SizedBox(width: 8),
+                                                          Text('Edit details'),
+                                                        ],
                                                       ),
                                                     ),
-                                                    Text(
-                                                      '${sug.category} • ${currencyFormat.format(sug.amount)}',
-                                                      maxLines: 1,
-                                                      overflow: TextOverflow.ellipsis,
-                                                      style: TextStyle(
-                                                        fontSize: 12,
-                                                        fontWeight: FontWeight.w600,
-                                                        color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                                                    const PopupMenuItem(
+                                                      value: 'delete',
+                                                      child: Row(
+                                                        children: [
+                                                          Icon(Icons.delete_outline, size: 18, color: Colors.red),
+                                                          SizedBox(width: 8),
+                                                          Text('Delete card', style: TextStyle(color: Colors.red)),
+                                                        ],
                                                       ),
                                                     ),
                                                   ],
-                                                ),
-                                              ),
-                                              PopupMenuButton<String>(
-                                                icon: Icon(
-                                                  Icons.more_vert_rounded,
-                                                  size: 18,
-                                                  color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
-                                                ),
-                                                padding: EdgeInsets.zero,
-                                                constraints: const BoxConstraints(),
-                                                itemBuilder: (context) => [
-                                                  const PopupMenuItem(
-                                                    value: 'edit',
-                                                    child: Row(
-                                                      children: [
-                                                        Icon(Icons.edit_outlined, size: 18),
-                                                        SizedBox(width: 8),
-                                                        Text('Edit details'),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                  const PopupMenuItem(
-                                                    value: 'delete',
-                                                    child: Row(
-                                                      children: [
-                                                        Icon(Icons.delete_outline, size: 18, color: Colors.red),
-                                                        SizedBox(width: 8),
-                                                        Text('Delete card', style: TextStyle(color: Colors.red)),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                ],
-                                                onSelected: (value) async {
-                                                  if (value == 'edit') {
-                                                    ref.read(selectedCategoryProvider.notifier).state = sug.category;
-                                                    ref.read(prefilledAmountProvider.notifier).state = sug.amount;
-                                                    ref.read(prefilledDescriptionProvider.notifier).state = sug.description;
-                                                    context.go('/add');
-                                                  } else if (value == 'delete') {
-                                                    final key = '${sug.category}|${sug.description}|${sug.amount}';
-                                                    await ref.read(blacklistSuggestionsProvider.notifier).blacklist(key);
-                                                    if (context.mounted) {
-                                                      ScaffoldMessenger.of(context).showSnackBar(
-                                                        const SnackBar(
-                                                          content: Text('Suggestion deleted.'),
-                                                          duration: Duration(seconds: 2),
-                                                        ),
-                                                      );
+                                                  onSelected: (value) async {
+                                                    if (value == 'edit') {
+                                                      ref.read(selectedCategoryProvider.notifier).state = sug.category;
+                                                      ref.read(prefilledAmountProvider.notifier).state = sug.amount;
+                                                      ref.read(prefilledDescriptionProvider.notifier).state = sug.description;
+                                                      context.go('/add');
+                                                    } else if (value == 'delete') {
+                                                      final key = '${sug.category}|${sug.description}|${sug.amount}';
+                                                      await ref.read(blacklistSuggestionsProvider.notifier).blacklist(key);
+                                                      if (context.mounted) {
+                                                        ScaffoldMessenger.of(context).showSnackBar(
+                                                          const SnackBar(
+                                                            content: Text('Suggestion deleted.'),
+                                                            duration: Duration(seconds: 2),
+                                                          ),
+                                                        );
+                                                      }
                                                     }
-                                                  }
-                                                },
-                                              ),
-                                            ],
-                                          ),
-                                          Material(
-                                            color: Colors.transparent,
-                                            child: InkWell(
+                                                  },
+                                                ),
+                                              ],
+                                            ),
+                                            GestureDetector(
                                               onTap: () async {
                                                 await ref.read(expenseProvider.notifier).addExpense(
                                                       amount: sug.amount,
@@ -339,45 +270,23 @@ class HomeScreen extends ConsumerWidget {
                                                   );
                                                 }
                                               },
-                                              borderRadius: BorderRadius.circular(12),
-                                              child: Ink(
-                                                height: 36,
+                                              child: Container(
+                                                padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
                                                 decoration: BoxDecoration(
-                                                  gradient: LinearGradient(
-                                                    colors: [
-                                                      Theme.of(context).primaryColor,
-                                                      Theme.of(context).primaryColor.withOpacity(0.85),
-                                                    ],
-                                                  ),
-                                                  borderRadius: BorderRadius.circular(12),
-                                                  boxShadow: [
-                                                    BoxShadow(
-                                                      color: Theme.of(context).primaryColor.withOpacity(0.25),
-                                                      blurRadius: 6,
-                                                      offset: const Offset(0, 3),
-                                                    ),
-                                                  ],
+                                                  color: Theme.of(context).primaryColor,
+                                                  borderRadius: BorderRadius.circular(8),
                                                 ),
-                                                child: const Row(
-                                                  mainAxisAlignment: MainAxisAlignment.center,
-                                                  children: [
-                                                    Icon(Icons.bolt_rounded, size: 16, color: Colors.white),
-                                                    SizedBox(width: 6),
-                                                    Text(
-                                                      'One Tap Save',
-                                                      style: TextStyle(
-                                                        color: Colors.white,
-                                                        fontSize: 13,
-                                                        fontWeight: FontWeight.bold,
-                                                        letterSpacing: 0.2,
-                                                      ),
-                                                    ),
-                                                  ],
+                                                child: const Center(
+                                                  child: Text(
+                                                    'One Tap Save',
+                                                    style: TextStyle(
+                                                        color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
+                                                  ),
                                                 ),
                                               ),
-                                            ),
-                                          )
-                                        ],
+                                            )
+                                          ],
+                                        ),
                                       ),
                                     ),
                                   );
@@ -396,19 +305,21 @@ class HomeScreen extends ConsumerWidget {
                       ),
                       const SizedBox(height: 12),
                       SizedBox(
-                        height: 108,
+                        height: 100,
                         child: ListView(
                           scrollDirection: Axis.horizontal,
-                          physics: const BouncingScrollPhysics(),
                           children: [
+
                             _buildQuickAddButton(context, ref, 'assets/category/food.svg', 'Food'),
                             _buildQuickAddButton(context, ref, 'assets/category/fuel.svg', 'Petrol'),
                             _buildQuickAddButton(context, ref, 'assets/category/groceries.svg', 'Groceries'),
                             _buildQuickAddButton(context, ref, 'assets/category/electricity.svg', 'Electricity'),
                             _buildQuickAddButton(context, ref, 'assets/category/medical.svg', 'Medical'),
-                            _buildQuickAddButton(context, ref, 'assets/category/recharge.svg', 'Recharges'),
-                            _buildQuickAddButton(context, ref, 'assets/category/shopping.svg', 'Shopping'),
-                            _buildQuickAddButton(context, ref, 'assets/category/travel.svg', 'Travel'),
+                           /* _buildQuickAddButton(context, ref, '🍔', 'Food'),
+                            _buildQuickAddButton(context, ref, '🚗', 'Petrol'),
+                            _buildQuickAddButton(context, ref, '🛒', 'Groceries'),
+                            _buildQuickAddButton(context, ref, '⚡', 'Electricity'),
+                            _buildQuickAddButton(context, ref, '💊', 'Medical'),*/
                           ],
                         ),
                       ),
@@ -610,112 +521,47 @@ class HomeScreen extends ConsumerWidget {
   Widget _buildQuickAddButton(
     BuildContext context,
     WidgetRef ref,
+    //String emoji,
     String iconpath,
     String category,
   ) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final catColor = _getCategoryColor(category);
-
     return Container(
       margin: const EdgeInsets.only(right: 12),
-      width: 90,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () {
-            ref.read(selectedCategoryProvider.notifier).state = category;
-            context.go('/add');
-          },
-          borderRadius: BorderRadius.circular(20),
-          child: Ink(
-            decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF1E293B) : Colors.white,
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
-                width: 1,
+      width: 80,
+      child: InkWell(
+        onTap: () {
+          ref.read(selectedCategoryProvider.notifier).state = category;
+          context.go('/add');
+        },
+        borderRadius: BorderRadius.circular(16),
+        child: Ink(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xFFE2E8F0)),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SvgPicture.asset(
+                iconpath,
+                width: 28, //32
+                height: 28, //32
+                colorFilter: ColorFilter.mode(Theme.of(context).primaryColor, BlendMode.srcIn), // Optional: Tints the SVG to your theme color
               ),
-              boxShadow: isDark
-                  ? []
-                  : [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.04),
-                        blurRadius: 8,
-                        offset: const Offset(0, 3),
-                      ),
-                    ],
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    color: catColor.withOpacity(isDark ? 0.2 : 0.12),
-                    shape: BoxShape.circle,
-                  ),
-                  padding: const EdgeInsets.all(10),
-                  child: SvgPicture.asset(
-                    iconpath,
-                    colorFilter: ColorFilter.mode(catColor, BlendMode.srcIn),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  category,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: isDark ? const Color(0xFFE2E8F0) : const Color(0xFF334155),
-                  ),
-                ),
-              ],
-            ),
+              //Text(emoji, style: const TextStyle(fontSize: 28)),
+              const SizedBox(height: 6),
+              Text(
+                category,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+              )
+            ],
           ),
         ),
       ),
     );
-  }
-
-  Color _getCategoryColor(String category) {
-    switch (category.toLowerCase()) {
-      case 'food':
-        return const Color(0xFFF97316); // Vibrant Orange
-      case 'groceries':
-        return const Color(0xFF10B981); // Emerald Green
-      case 'petrol':
-      case 'fuel':
-      case 'transport':
-        return const Color(0xFF3B82F6); // Bright Blue
-      case 'recharges':
-        return const Color(0xFF0EA5E9); // Sky Blue
-      case 'travel':
-        return const Color(0xFF06B6D4); // Cyan
-      case 'gas':
-        return const Color(0xFFF59E0B); // Amber
-      case 'electricity':
-      case 'utility':
-      case 'water':
-        return const Color(0xFFA855F7); // Purple / Violet
-      case 'medical':
-        return const Color(0xFFEF4444); // Red
-      case 'insurances':
-        return const Color(0xFF6366F1); // Indigo
-      case 'shopping':
-        return const Color(0xFFEC4899); // Pink
-      case 'rent':
-        return const Color(0xFF8B5CF6); // Deep Purple
-      case 'entertainment':
-        return const Color(0xFFF43F5E); // Rose
-      case 'education':
-      case 'college':
-        return const Color(0xFF4F46E5); // Blue-Indigo
-      default:
-        return const Color(0xFF64748B); // Slate Grey
-    }
   }
 
   Widget _buildExpenseListItem(
