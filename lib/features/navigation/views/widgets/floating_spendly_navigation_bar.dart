@@ -224,15 +224,15 @@ class __AddExpenseFloatingButtonState
           height: 56,//52
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: colors.primary,
+            color: colors.navFab,
           ),
           child: Center(
             child: SvgPicture.asset(
               'assets/icons/plus.svg',
               width: 40, //24
               height: 40, //24
-              colorFilter: const ColorFilter.mode(
-                Colors.white,
+              colorFilter: ColorFilter.mode(
+                colors.navFabIcon,
                 BlendMode.srcIn,
               ),
             ),
