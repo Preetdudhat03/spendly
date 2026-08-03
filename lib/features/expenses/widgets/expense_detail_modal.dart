@@ -124,6 +124,7 @@ void showExpenseDetail(BuildContext context, WidgetRef ref, Expense expense) {
     context: context,
     isScrollControlled: true,
     useSafeArea: true,
+    backgroundColor: Theme.of(context).cardTheme.color ?? Theme.of(context).colorScheme.surface,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
     ),
@@ -138,106 +139,109 @@ void showExpenseDetail(BuildContext context, WidgetRef ref, Expense expense) {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Center(
-                child: Container(
-                  width: 50,
-                  height: 5,
-                  decoration: BoxDecoration(
-                    color: Colors.grey[300],
-                    borderRadius: BorderRadius.circular(10),
+              children: [
+                Center(
+                  child: Container(
+                    width: 50,
+                    height: 5,
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.outlineVariant,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 20),
-              Row(
-                children: [
-                  CircleAvatar(
-                    radius: 30,
-                    backgroundColor: getCategoryColor(expense.category).withOpacity(0.15),
-                    /*child: Text(
-                      getCategoryEmoji(expense.category),
-                      style: const TextStyle(fontSize: 28),
-                    ),*/
-                    child: SvgPicture.asset(
-                      getCategoryIconPath(expense.category),
-                      width: 24,
-                      height: 24,
-                      colorFilter: ColorFilter.mode(getCategoryColor(expense.category), BlendMode.srcIn),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          expense.category,
-                          style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          expense.description.isNotEmpty ? expense.description : 'No description',
-                          style: const TextStyle(fontSize: 16, color: Colors.grey),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Text(
-                    amtStr,
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: Theme.of(context).primaryColor,
-                    ),
-                  ),
-                ],
-              ),
-              const Divider(height: 36),
-              _buildDetailRow(Icons.calendar_today_outlined, 'Logged Date', dateStr),
-              const SizedBox(height: 12),
-              _buildDetailRow(Icons.payment_outlined, 'Payment Method', expense.paymentMethod),
-              const SizedBox(height: 12),
-              _buildDetailRow(Icons.person_outline, 'Logged By', expense.createdByName),
-              const SizedBox(height: 32),
-              Row(
-                children: [
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Theme.of(context).primaryColor.withOpacity(0.1),
-                        foregroundColor: Theme.of(context).primaryColor,
-                        elevation: 0,
+                const SizedBox(height: 20),
+                Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 30,
+                      backgroundColor: getCategoryColor(expense.category).withOpacity(0.15),
+                      child: SvgPicture.asset(
+                        getCategoryIconPath(expense.category),
+                        width: 24,
+                        height: 24,
+                        colorFilter: ColorFilter.mode(getCategoryColor(expense.category), BlendMode.srcIn),
                       ),
-                      onPressed: () {
-                        Navigator.pop(context);
-                        _showEditExpenseSheet(context, ref, expense);
-                      },
-                      icon: const Icon(Icons.edit),
-                      label: const FittedBox(fit: BoxFit.scaleDown, child: Text('EDIT')),
                     ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red[50],
-                        foregroundColor: Colors.red,
-                        elevation: 0,
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            expense.category,
+                            style: TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                              color: Theme.of(context).colorScheme.onSurface,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            expense.description.isNotEmpty ? expense.description : 'No description',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Theme.of(context).colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
                       ),
-                      onPressed: () {
-                        Navigator.pop(context);
-                        _confirmDeleteExpense(context, ref, expense.id);
-                      },
-                      icon: const Icon(Icons.delete_outline),
-                      label: const FittedBox(fit: BoxFit.scaleDown, child: Text('DELETE')),
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 70), // Padding to account for the floating navigation bar 80
-            ],
-          ),
+                    Text(
+                      amtStr,
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                    ),
+                  ],
+                ),
+                const Divider(height: 36),
+                _buildDetailRow(context, Icons.calendar_today_outlined, 'Logged Date', dateStr),
+                const SizedBox(height: 12),
+                _buildDetailRow(context, Icons.payment_outlined, 'Payment Method', expense.paymentMethod),
+                const SizedBox(height: 12),
+                _buildDetailRow(context, Icons.person_outline, 'Logged By', expense.createdByName),
+                const SizedBox(height: 32),
+                Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+                          foregroundColor: Theme.of(context).colorScheme.onPrimaryContainer,
+                          elevation: 0,
+                        ),
+                        onPressed: () {
+                          Navigator.pop(context);
+                          _showEditExpenseSheet(context, ref, expense);
+                        },
+                        icon: const Icon(Icons.edit),
+                        label: const FittedBox(fit: BoxFit.scaleDown, child: Text('EDIT')),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red.withOpacity(0.15),
+                          foregroundColor: Colors.red,
+                          elevation: 0,
+                        ),
+                        onPressed: () {
+                          Navigator.pop(context);
+                          _confirmDeleteExpense(context, ref, expense.id);
+                        },
+                        icon: const Icon(Icons.delete_outline),
+                        label: const FittedBox(fit: BoxFit.scaleDown, child: Text('DELETE')),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 70), // Padding to account for the floating navigation bar 80
+              ],
+            ),
           ),
         ),
       );
@@ -245,20 +249,20 @@ void showExpenseDetail(BuildContext context, WidgetRef ref, Expense expense) {
   );
 }
 
-Widget _buildDetailRow(IconData icon, String label, String value) {
+Widget _buildDetailRow(BuildContext context, IconData icon, String label, String value) {
   return Row(
     children: [
-      Icon(icon, color: Colors.grey[600], size: 20),
+      Icon(icon, color: Theme.of(context).colorScheme.onSurfaceVariant, size: 20),
       const SizedBox(width: 12),
       Text(
         '$label:',
-        style: const TextStyle(fontWeight: FontWeight.w500, color: Colors.grey),
+        style: TextStyle(fontWeight: FontWeight.w500, color: Theme.of(context).colorScheme.onSurfaceVariant),
       ),
       const SizedBox(width: 8),
       Expanded(
         child: Text(
           value,
-          style: const TextStyle(fontWeight: FontWeight.bold),
+          style: TextStyle(fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface),
           textAlign: TextAlign.right,
         ),
       ),
