@@ -17,9 +17,11 @@ class FloatingSpendlyNavigationBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.spendly.colors;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    final pillBgColor = colors.navBg;
-    final borderColor = colors.border;
+    // Solid theme-aware colors with zero blur/transparency
+    final pillBgColor = isDark ? colors.neutral900 : Colors.white;
+    final borderColor = isDark ? colors.neutral800 : colors.neutral200;
 
     return FittedBox(
       fit: BoxFit.scaleDown,
@@ -97,10 +99,14 @@ class FloatingSpendlyNavigationBar extends StatelessWidget {
     required bool isSelected,
   }) {
     final colors = context.spendly.colors;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    final activeBgColor = colors.navSelectedPill;
-    final activeColor = colors.navSelectedIcon;
-    final inactiveColor = colors.navUnselectedIcon;
+    final activeBgColor = isDark
+        ? colors.primary.withOpacity(0.20)
+        : colors.primary.withOpacity(0.12);
+
+    final activeColor = colors.primary;
+    final inactiveColor = isDark ? colors.neutral400 : colors.neutral500;
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
@@ -222,15 +228,15 @@ class __AddExpenseFloatingButtonState
           height: 56,//52
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: colors.navFab,
+            color: colors.primary,
           ),
           child: Center(
             child: SvgPicture.asset(
               'assets/icons/plus.svg',
               width: 40, //24
               height: 40, //24
-              colorFilter: ColorFilter.mode(
-                colors.navFabIcon,
+              colorFilter: const ColorFilter.mode(
+                Colors.white,
                 BlendMode.srcIn,
               ),
             ),
