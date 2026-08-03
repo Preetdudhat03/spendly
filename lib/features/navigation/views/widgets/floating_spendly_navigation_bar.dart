@@ -17,7 +17,6 @@ class FloatingSpendlyNavigationBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.spendly.colors;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     final pillBgColor = colors.navBg;
     final borderColor = colors.border;
@@ -98,7 +97,6 @@ class FloatingSpendlyNavigationBar extends StatelessWidget {
     required bool isSelected,
   }) {
     final colors = context.spendly.colors;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     final activeBgColor = colors.navSelectedPill;
     final activeColor = colors.navSelectedIcon;
