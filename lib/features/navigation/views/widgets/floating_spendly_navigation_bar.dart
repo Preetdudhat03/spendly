@@ -100,12 +100,9 @@ class FloatingSpendlyNavigationBar extends StatelessWidget {
     final colors = context.spendly.colors;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    final activeBgColor = isDark
-        ? colors.primary.withOpacity(0.20)
-        : colors.primary.withOpacity(0.12);
-
-    final activeColor = colors.primary;
-    final inactiveColor = isDark ? colors.neutral400 : colors.neutral500;
+    final activeBgColor = colors.navSelectedPill;
+    final activeColor = colors.navSelectedIcon;
+    final inactiveColor = colors.navUnselectedIcon;
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
