@@ -19,9 +19,8 @@ class FloatingSpendlyNavigationBar extends StatelessWidget {
     final colors = context.spendly.colors;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    // Solid theme-aware colors with zero blur/transparency
-    final pillBgColor = isDark ? colors.neutral900 : Colors.white;
-    final borderColor = isDark ? colors.neutral800 : colors.neutral200;
+    final pillBgColor = colors.navBg;
+    final borderColor = colors.border;
 
     return FittedBox(
       fit: BoxFit.scaleDown,
