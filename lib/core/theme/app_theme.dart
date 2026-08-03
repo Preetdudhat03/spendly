@@ -378,7 +378,7 @@ class AppTheme {
         onBackground: colors.textPrimary,
       ),
       scaffoldBackgroundColor: colors.backgroundPrimary,
-      extensions: const [
+      extensions: [
         SpendlyTheme(
           colors: colors,
           spacing: _spacing,
@@ -517,7 +517,7 @@ class AppTheme {
         onBackground: colors.textPrimary,
       ),
       scaffoldBackgroundColor: colors.backgroundPrimary,
-      extensions: const [
+      extensions: [
         SpendlyTheme(
           colors: colors,
           spacing: _spacing,
