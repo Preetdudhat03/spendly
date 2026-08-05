@@ -62,6 +62,7 @@ class ExpenseRepository {
       userId: createdBy,
       familyId: familyId,
       timestamp: now,
+      deviceId: HiveService.deviceId,
     );
     await HiveService.pendingOperations.put(pendingOp.id, pendingOp);
 
@@ -81,6 +82,7 @@ class ExpenseRepository {
       userId: updatedExpense.createdBy,
       familyId: updatedExpense.familyId,
       timestamp: DateTime.now(),
+      deviceId: HiveService.deviceId,
     );
     await HiveService.pendingOperations.put(pendingOp.id, pendingOp);
 
@@ -99,6 +101,7 @@ class ExpenseRepository {
       userId: userId,
       familyId: familyId,
       timestamp: DateTime.now(),
+      deviceId: HiveService.deviceId,
     );
     await HiveService.pendingOperations.put(pendingOp.id, pendingOp);
   }
