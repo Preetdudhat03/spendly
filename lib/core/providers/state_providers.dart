@@ -772,7 +772,28 @@ class FamilyNotifier extends StateNotifier<FamilyState> {
     if (state.isLoading) return;
 
     final activeUserId = HiveService.settings.get('active_user_id') ?? '';
-    final family = _familyRepo.getCurrentFamily(activeUserId);
+    var family = _familyRepo.getCurrentFamily(activeUserId);
+
+    if (family == null && activeUserId.isNotEmpty && !activeUserId.startsWith('user_')) {
+      try {
+        final dbService = _ref.read(dbServiceProvider);
+        final remoteFamily = await dbService.getCurrentFamily();
+        if (remoteFamily != null) {
+          await HiveService.families.put(remoteFamily.id, FamilyModel.fromDomain(remoteFamily));
+          final remoteMembers = await dbService.getFamilyMembers();
+          for (var m in remoteMembers) {
+            await HiveService.familyMembers.put(
+              '${remoteFamily.id}_${m.userId}',
+              FamilyMemberModel.fromDomain(m),
+            );
+          }
+          family = remoteFamily;
+        }
+      } catch (e) {
+        debugPrint('FamilyNotifier: Failed to fetch remote family fallback: $e');
+      }
+    }
+
     final members = family != null ? _familyRepo.getFamilyMembers(family.id) : <FamilyMember>[];
     
     final newState = FamilyState(
