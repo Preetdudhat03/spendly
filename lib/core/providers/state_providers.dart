@@ -180,7 +180,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
-  void _updateStateFromProviders() {
+  Future<void> _updateStateFromProviders() async {
     final user = _ref.read(currentUserProvider);
     if (user == null) {
       // If legacy session still exists in SharedPreferences, keep it active
@@ -190,7 +190,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       }
       if (!state.isMigrationPending) {
         if (HiveService.currentUserId != HiveService.guestNamespace) {
-          HiveService.openUserBoxes(HiveService.guestNamespace);
+          await HiveService.openUserBoxes(HiveService.guestNamespace);
         }
         state = AuthState(isLoading: false, isInitializing: false);
       }
@@ -199,10 +199,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
     // Native user is logged in - Account Integrity Guard
     if (HiveService.currentUserId != user.id) {
-      HiveService.openUserBoxes(user.id);
+      await HiveService.openUserBoxes(user.id);
     }
-    HiveService.settings.put('active_user_id', user.id);
-    HiveService.updateUserRegistry(
+    await HiveService.settings.put('active_user_id', user.id);
+    await HiveService.updateUserRegistry(
       userId: user.id,
       displayName: user.userMetadata?['display_name'] as String? ?? 'User',
       email: user.email,
