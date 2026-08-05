@@ -500,6 +500,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     state = state.copyWith(isLoading: true);
     await HiveService.settings.delete('active_user_id');
     await _dbService.signOut();
+    await HiveService.openUserBoxes(HiveService.guestNamespace);
     state = AuthState(isLoading: false, isInitializing: false);
     _ref.read(familyProvider.notifier).reset();
     _ref.read(expenseProvider.notifier).reset();
