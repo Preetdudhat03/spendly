@@ -87,7 +87,9 @@ class HiveService {
 
   static Future<void> openUserBoxes(String userId) async {
     final cleanUserId = userId.isNotEmpty ? userId : guestNamespace;
-    _activeUserId = cleanUserId;
+    if (_activeUserId == cleanUserId && Hive.isBoxOpen(getUserBoxName(expensesBox, cleanUserId))) {
+      return;
+    }
 
     final cipher = _encryptionKey != null ? HiveAesCipher(_encryptionKey!) : null;
 
@@ -105,6 +107,9 @@ class HiveService {
       _openUnencryptedBox<dynamic>(getUserBoxName(analyticsCacheBox, cleanUserId)),
       _openUnencryptedBox<dynamic>(getUserBoxName(syncLogBox, cleanUserId)),
     ]);
+
+    _activeUserId = cleanUserId;
+    await settings.put('active_user_id', cleanUserId);
   }
 
   static Future<Box<T>> _openEncryptedBox<T>(String boxName, HiveAesCipher? cipher) async {
@@ -139,9 +144,20 @@ class HiveService {
     if (Hive.isBoxOpen(boxName)) {
       return Hive.box<T>(boxName);
     }
-    // Fallback for legacy global box if user-scoped box is not open yet
-    if (Hive.isBoxOpen(boxName.split('_').first)) {
-      return Hive.box<T>(boxName.split('_').first);
+    // Fallback 1: check if active user box is open
+    final activeBoxName = getUserBoxName(boxName.split('_').first);
+    if (Hive.isBoxOpen(activeBoxName)) {
+      return Hive.box<T>(activeBoxName);
+    }
+    // Fallback 2: check guest_local box
+    final guestBoxName = '${boxName.split('_').first}_guest_local';
+    if (Hive.isBoxOpen(guestBoxName)) {
+      return Hive.box<T>(guestBoxName);
+    }
+    // Fallback 3: check un-namespaced box
+    final baseName = boxName.split('_').first;
+    if (Hive.isBoxOpen(baseName)) {
+      return Hive.box<T>(baseName);
     }
     throw StateError('Hive box $boxName is not open. Call openUserBoxes() first.');
   }
