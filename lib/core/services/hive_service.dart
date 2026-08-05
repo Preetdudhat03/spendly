@@ -116,14 +116,31 @@ class HiveService {
     if (Hive.isBoxOpen(boxName)) {
       return Hive.box<T>(boxName);
     }
-    return await Hive.openBox<T>(boxName, encryptionCipher: cipher);
+    try {
+      return await Hive.openBox<T>(boxName, encryptionCipher: cipher);
+    } catch (e) {
+      debugPrint('HiveService: Error opening encrypted box $boxName: $e. Retrying without cipher...');
+      try {
+        return await Hive.openBox<T>(boxName);
+      } catch (e2) {
+        debugPrint('HiveService: Failed opening $boxName without cipher: $e2. Recreating box...');
+        await Hive.deleteBoxFromDisk(boxName);
+        return await Hive.openBox<T>(boxName, encryptionCipher: cipher);
+      }
+    }
   }
 
   static Future<Box<T>> _openUnencryptedBox<T>(String boxName) async {
     if (Hive.isBoxOpen(boxName)) {
       return Hive.box<T>(boxName);
     }
-    return await Hive.openBox<T>(boxName);
+    try {
+      return await Hive.openBox<T>(boxName);
+    } catch (e) {
+      debugPrint('HiveService: Error opening unencrypted box $boxName: $e. Recreating box...');
+      await Hive.deleteBoxFromDisk(boxName);
+      return await Hive.openBox<T>(boxName);
+    }
   }
 
   // Getters for current active user's boxes
