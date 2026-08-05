@@ -96,6 +96,7 @@ class SupabaseDbService implements DbService {
   @override
   Future<void> signOut() async {
     try {
+      await _client.removeAllChannels();
       await _client.auth.signOut();
     } catch (e) {
       debugPrint('Error signing out from Supabase Auth: $e');
