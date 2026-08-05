@@ -50,6 +50,7 @@ class ProfileRepository {
       payload: {'display_name': newName},
       userId: userId,
       timestamp: DateTime.now(),
+      deviceId: HiveService.deviceId,
     );
     await HiveService.pendingOperations.put(pendingOp.id, pendingOp);
   }
