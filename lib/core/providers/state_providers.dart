@@ -27,6 +27,8 @@ import 'package:spendly/models/family.dart';
 import 'package:spendly/models/family_member.dart';
 import 'package:spendly/models/expense.dart';
 import 'package:spendly/models/budget.dart';
+import 'package:spendly/models/hive/family_model.dart';
+import 'package:spendly/models/hive/family_member_model.dart';
 
 // ==========================================
 // 1. Authentication State & Provider
