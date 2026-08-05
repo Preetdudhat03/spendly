@@ -179,21 +179,25 @@ class HiveService {
     if (Hive.isBoxOpen(boxName)) {
       return Hive.box<T>(boxName);
     }
+    final baseName = boxName.split('_').first;
+
     // Fallback 1: check if active user box is open
-    final activeBoxName = getUserBoxName(boxName.split('_').first);
+    final activeBoxName = getUserBoxName(baseName);
     if (Hive.isBoxOpen(activeBoxName)) {
       return Hive.box<T>(activeBoxName);
     }
-    // Fallback 2: check guest_local box
-    final guestBoxName = '${boxName.split('_').first}_guest_local';
+
+    // Fallback 2: check guest_local box (always opened during init)
+    final guestBoxName = '${baseName}_$guestNamespace';
     if (Hive.isBoxOpen(guestBoxName)) {
       return Hive.box<T>(guestBoxName);
     }
-    // Fallback 3: check un-namespaced box
-    final baseName = boxName.split('_').first;
+
+    // Fallback 3: check un-namespaced base box
     if (Hive.isBoxOpen(baseName)) {
       return Hive.box<T>(baseName);
     }
+
     throw StateError('Hive box $boxName is not open. Call openUserBoxes() first.');
   }
 
