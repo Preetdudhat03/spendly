@@ -457,6 +457,14 @@ class SyncService {
     );
     await HiveService.syncMetadata.put('last_sync_timestamp', syncMeta);
     await HiveService.logSyncEvent('PULL', status: 'SUCCESS', itemsPulled: expensesList.length);
+
+    Future.microtask(() {
+      try {
+        _ref.read(familyProvider.notifier).loadFamily();
+        _ref.read(expenseProvider.notifier).loadExpenses();
+        _ref.read(budgetProvider.notifier).loadBudget();
+      } catch (_) {}
+    });
   }
 
   Future<void> mergeLocalDataToCloud(String newUserId) async {
