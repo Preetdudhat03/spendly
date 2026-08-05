@@ -67,12 +67,30 @@ class HiveService {
     // 3. Ensure device ID exists
     deviceId;
 
-    // 4. Open default guest boxes or active user boxes if active_user_id exists
+    // 4. Always open guest_local boxes first so a safety fallback box is guaranteed to be open
+    await _openGuestBoxes();
+
     final activeId = settings.get('active_user_id') as String?;
-    final targetUser = (activeId != null && activeId.isNotEmpty) ? activeId : guestNamespace;
-    await openUserBoxes(targetUser);
+    if (activeId != null && activeId.isNotEmpty && activeId != guestNamespace) {
+      await openUserBoxes(activeId);
+    }
 
     debugPrint('Hive Service initialized successfully for user: $_activeUserId (device: $deviceId)');
+  }
+
+  static Future<void> _openGuestBoxes() async {
+    final cipher = _encryptionKey != null ? HiveAesCipher(_encryptionKey!) : null;
+    await Future.wait([
+      _openEncryptedBox<ProfileModel>(getUserBoxName(profilesBox, guestNamespace), cipher),
+      _openEncryptedBox<FamilyModel>(getUserBoxName(familiesBox, guestNamespace), cipher),
+      _openEncryptedBox<FamilyMemberModel>(getUserBoxName(familyMembersBox, guestNamespace), cipher),
+      _openEncryptedBox<ExpenseModel>(getUserBoxName(expensesBox, guestNamespace), cipher),
+      _openEncryptedBox<BudgetModel>(getUserBoxName(budgetsBox, guestNamespace), cipher),
+      _openEncryptedBox<PendingOperationModel>(getUserBoxName(pendingOperationsBox, guestNamespace), cipher),
+      _openUnencryptedBox<SyncMetadataModel>(getUserBoxName(syncMetadataBox, guestNamespace)),
+      _openUnencryptedBox<dynamic>(getUserBoxName(analyticsCacheBox, guestNamespace)),
+      _openUnencryptedBox<dynamic>(getUserBoxName(syncLogBox, guestNamespace)),
+    ]);
   }
 
   static void _initEncryptionKey() {
