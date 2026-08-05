@@ -20,6 +20,7 @@ class SyncService {
   StreamSubscription? _connectivitySubscription;
   Timer? _syncDebounceTimer;
   DateTime? _lastSyncFailureTime;
+  bool _isSyncing = false;
 
   SyncService(this._ref);
 
@@ -37,7 +38,7 @@ class SyncService {
     // Automatically trigger sync whenever a new pending operation is added
     HiveService.pendingOperations.watch().listen((event) {
       if (event.deleted) return; // Ignore deletion events
-      if (_ref.read(syncStateProvider)) return; // Ignore local changes caused by sync process
+      if (_isSyncing || _ref.read(syncStateProvider)) return; // Ignore local changes during sync
 
       // Cool-down: If last sync failed within 15s due to network issue, back off
       if (_lastSyncFailureTime != null &&
@@ -87,7 +88,7 @@ class SyncService {
   }
 
   Future<void> syncNow() async {
-    if (_ref.read(syncStateProvider)) return;
+    if (_isSyncing || _ref.read(syncStateProvider)) return;
 
     // Guard: Only sync if native user is logged in
     final nativeUser = _client.auth.currentUser;
@@ -96,23 +97,37 @@ class SyncService {
       return;
     }
 
+    _isSyncing = true;
     _ref.read(syncStateProvider.notifier).state = true;
     
     try {
-      debugPrint('SyncService: Starting synchronization');
+      debugPrint('SyncService: Starting synchronization for user ${nativeUser.id}');
       await _pushPendingOperations();
       await _pullLatestData();
       _lastSyncFailureTime = null;
+      
+      await HiveService.logSyncEvent('SYNC', status: 'SUCCESS', message: 'Sync complete');
+      await HiveService.updateUserRegistry(
+        userId: nativeUser.id,
+        lastSuccessfulSync: DateTime.now(),
+        expensesCount: HiveService.expenses.length,
+        pendingSyncCount: HiveService.pendingOperations.length,
+      );
       debugPrint('SyncService: Synchronization complete');
     } catch (e) {
       _lastSyncFailureTime = DateTime.now();
+      await HiveService.logSyncEvent('SYNC', status: 'ERROR', message: e.toString());
       debugPrint('SyncService: Synchronization failed: $e');
     } finally {
+      _isSyncing = false;
       _ref.read(syncStateProvider.notifier).state = false;
     }
   }
 
   Future<void> _pushPendingOperations() async {
+    final nativeUser = _client.auth.currentUser;
+    if (nativeUser == null) return;
+
     final ops = HiveService.pendingOperations.values
         .where((op) => op.syncStatus != 'SYNCING' && op.retryCount < 3)
         .toList()
@@ -120,7 +135,16 @@ class SyncService {
 
     if (ops.isEmpty) return;
 
+    int pushedCount = 0;
+
     for (final op in ops) {
+      // Sync Ownership Guard: Never upload an operation that does not belong to the active authenticated user
+      if (op.userId != null && op.userId != nativeUser.id && !op.userId!.startsWith('user_')) {
+        debugPrint('SyncService: Skipping operation ${op.id} as userId (${op.userId}) does not match authenticated user (${nativeUser.id})');
+        await HiveService.logSyncEvent('PUSH_SKIPPED', status: 'WARN', message: 'User mismatch for op ${op.id}');
+        continue;
+      }
+
       op.syncStatus = 'SYNCING';
       await op.save();
 
@@ -130,8 +154,8 @@ class SyncService {
           final familyPayload = op.payload['family'];
           final memberPayload = op.payload['member'];
           if (familyPayload['created_by'] != null && familyPayload['created_by'].toString().startsWith('user_')) {
-            familyPayload['created_by'] = op.userId;
-            memberPayload['user_id'] = op.userId;
+            familyPayload['created_by'] = nativeUser.id;
+            memberPayload['user_id'] = nativeUser.id;
             op.payload['family'] = familyPayload;
             op.payload['member'] = memberPayload;
             await op.save();
@@ -139,6 +163,7 @@ class SyncService {
         }
 
         await _processOperation(op);
+        pushedCount++;
         
         // On success, remove from queue
         await op.delete();
@@ -155,6 +180,10 @@ class SyncService {
           break;
         }
       }
+    }
+
+    if (pushedCount > 0) {
+      await HiveService.logSyncEvent('PUSH', status: 'SUCCESS', opsPushed: pushedCount);
     }
   }
 
@@ -427,38 +456,37 @@ class SyncService {
       value: DateTime.now(),
     );
     await HiveService.syncMetadata.put('last_sync_timestamp', syncMeta);
+    await HiveService.logSyncEvent('PULL', status: 'SUCCESS', itemsPulled: expensesList.length);
   }
 
   Future<void> mergeLocalDataToCloud(String newUserId) async {
-    debugPrint('SyncService: Merging local sandbox data for new user $newUserId');
+    debugPrint('SyncService: Merging local guest sandbox data for new user $newUserId');
+    await HiveService.updateUserRegistry(userId: newUserId, migrationState: 'IN_PROGRESS');
 
-    final strandedFamilies = HiveService.families.values.where((f) => f.createdBy != newUserId).toList();
+    // ONLY merge families that were created during an unauthenticated guest session (starting with 'user_')
+    final guestFamilies = HiveService.families.values
+        .where((f) => f.createdBy != null && f.createdBy!.startsWith('user_'))
+        .toList();
     
-    if (strandedFamilies.isEmpty) {
-       debugPrint('SyncService: No sandbox data found to merge. Triggering pull instead.');
+    if (guestFamilies.isEmpty) {
+       debugPrint('SyncService: No guest sandbox data found to merge. Triggering pull instead.');
+       await HiveService.updateUserRegistry(userId: newUserId, migrationState: 'COMPLETED');
        syncNow();
        return;
     }
 
     bool localDataUpdated = false;
 
-    for (final family in strandedFamilies) {
+    for (final family in guestFamilies) {
       final oldUserId = family.createdBy;
       if (oldUserId == null || oldUserId.isEmpty) continue;
 
+      // STRICT MIGRATION GUARD: NEVER call complete_user_migration for real UUIDs
       bool isRealUuid = oldUserId.length > 20 && !oldUserId.startsWith('user_');
 
       if (isRealUuid) {
-         try {
-           await _client.rpc('complete_user_migration', params: {
-             'old_user_id': oldUserId,
-             'new_user_id': newUserId,
-           });
-           debugPrint('Successfully ran RPC to migrate $oldUserId to $newUserId');
-         } catch (e) {
-           debugPrint('RPC failed: $e. Cannot migrate real UUID without backend.');
-           continue;
-         }
+         debugPrint('SyncService Migration Guard: Refusing to migrate real UUID $oldUserId to $newUserId');
+         continue;
       }
 
       final updatedFamily = family.toDomain().copyWith(createdBy: newUserId);
@@ -491,56 +519,59 @@ class SyncService {
                 userId: newUserId, 
                 timestamp: op.timestamp,
                 retryCount: op.retryCount,
+                deviceId: HiveService.deviceId,
              );
              await HiveService.pendingOperations.put(op.id, updatedOp);
          }
       }
 
-      if (!isRealUuid) {
-          final familyOpId = 'local_${DateTime.now().millisecondsSinceEpoch}_fam_${family.id}';
-          final adminMember = HiveService.familyMembers.values.firstWhere(
-             (m) => m.familyId == family.id && m.userId == newUserId, 
-             orElse: () => HiveService.familyMembers.values.first,
-          ).toDomain();
-          
-          final op = PendingOperationModel(
-            id: familyOpId,
-            type: 'CREATE_FAMILY',
-            payload: {
-              'family': updatedFamily.toJson(),
-              'member': adminMember.toJson(),
-            },
-            userId: newUserId,
-            timestamp: DateTime.now(),
-          );
-          await HiveService.pendingOperations.put(op.id, op);
+      final familyOpId = 'local_${DateTime.now().millisecondsSinceEpoch}_fam_${family.id}';
+      final adminMember = HiveService.familyMembers.values.firstWhere(
+         (m) => m.familyId == family.id && m.userId == newUserId, 
+         orElse: () => HiveService.familyMembers.values.first,
+      ).toDomain();
+      
+      final op = PendingOperationModel(
+        id: familyOpId,
+        type: 'CREATE_FAMILY',
+        payload: {
+          'family': updatedFamily.toJson(),
+          'member': adminMember.toJson(),
+        },
+        userId: newUserId,
+        timestamp: DateTime.now(),
+        deviceId: HiveService.deviceId,
+      );
+      await HiveService.pendingOperations.put(op.id, op);
 
-          for (var e in expenses) {
-              if (e.createdBy == oldUserId) {
-                  final opId = 'local_${DateTime.now().millisecondsSinceEpoch}_${e.id}';
-                  final opEx = PendingOperationModel(
-                    id: opId,
-                    type: 'ADD_EXPENSE',
-                    payload: e.toDomain().copyWith(createdBy: newUserId).toJson(),
-                    userId: newUserId,
-                    timestamp: DateTime.now(),
-                  );
-                  await HiveService.pendingOperations.put(opEx.id, opEx);
-              }
-          }
-
-          for (var b in budgets) {
-              final opId = 'local_${DateTime.now().millisecondsSinceEpoch}_budget_${b.id}';
-              final opB = PendingOperationModel(
+      for (var e in expenses) {
+          if (e.createdBy == oldUserId) {
+              final opId = 'local_${DateTime.now().millisecondsSinceEpoch}_${e.id}';
+              final opEx = PendingOperationModel(
                 id: opId,
-                type: 'SET_BUDGET',
-                payload: b.toDomain().toJson(),
+                type: 'ADD_EXPENSE',
+                payload: e.toDomain().copyWith(createdBy: newUserId).toJson(),
                 userId: newUserId,
                 timestamp: DateTime.now(),
+                deviceId: HiveService.deviceId,
               );
-              await HiveService.pendingOperations.put(opB.id, opB);
+              await HiveService.pendingOperations.put(opEx.id, opEx);
           }
       }
+
+      for (var b in budgets) {
+          final opId = 'local_${DateTime.now().millisecondsSinceEpoch}_budget_${b.id}';
+          final opB = PendingOperationModel(
+            id: opId,
+            type: 'SET_BUDGET',
+            payload: b.toDomain().toJson(),
+            userId: newUserId,
+            timestamp: DateTime.now(),
+            deviceId: HiveService.deviceId,
+          );
+          await HiveService.pendingOperations.put(opB.id, opB);
+      }
+
       localDataUpdated = true;
     }
 
@@ -553,8 +584,9 @@ class SyncService {
         });
     }
 
+    await HiveService.updateUserRegistry(userId: newUserId, migrationState: 'COMPLETED');
     await HiveService.settings.put('active_user_id', newUserId);
-    debugPrint('SyncService: Sandbox data queued for upload. Triggering sync...');
+    debugPrint('SyncService: Guest sandbox data queued for upload. Triggering sync...');
     syncNow();
   }
 }
