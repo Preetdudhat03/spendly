@@ -31,6 +31,9 @@ class PendingOperationModel extends HiveObject {
   @HiveField(8)
   String? lastError;
 
+  @HiveField(9)
+  final String? deviceId;
+
   PendingOperationModel({
     required this.id,
     required this.type,
@@ -41,5 +44,6 @@ class PendingOperationModel extends HiveObject {
     this.retryCount = 0,
     this.syncStatus = 'PENDING',
     this.lastError,
+    this.deviceId,
   });
 }

@@ -26,13 +26,14 @@ class PendingOperationModelAdapter extends TypeAdapter<PendingOperationModel> {
       retryCount: fields[6] as int,
       syncStatus: fields[7] as String,
       lastError: fields[8] as String?,
+      deviceId: fields[9] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, PendingOperationModel obj) {
     writer
-      ..writeByte(9)
+      ..writeByte(10)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -50,7 +51,9 @@ class PendingOperationModelAdapter extends TypeAdapter<PendingOperationModel> {
       ..writeByte(7)
       ..write(obj.syncStatus)
       ..writeByte(8)
-      ..write(obj.lastError);
+      ..write(obj.lastError)
+      ..writeByte(9)
+      ..write(obj.deviceId);
   }
 
   @override
