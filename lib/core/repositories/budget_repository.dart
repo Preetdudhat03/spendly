@@ -61,6 +61,7 @@ class BudgetRepository {
       userId: userId,
       familyId: familyId,
       timestamp: DateTime.now(),
+      deviceId: HiveService.deviceId,
     );
     await HiveService.pendingOperations.put(pendingOp.id, pendingOp);
 
