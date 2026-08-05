@@ -141,9 +141,13 @@ class AuthNotifier extends StateNotifier<AuthState> {
     
     state = state.copyWith(isLoading: true, isInitializing: true);
     
-    // Check native user first
+    // Check native user first (Account Integrity Guard)
     final user = _ref.read(currentUserProvider);
     if (user != null) {
+      if (HiveService.currentUserId != user.id) {
+        await HiveService.openUserBoxes(user.id);
+      }
+      await HiveService.settings.put('active_user_id', user.id);
       _updateStateFromProviders();
       _ref.read(familyProvider.notifier).loadFamily();
       return;
@@ -152,6 +156,9 @@ class AuthNotifier extends StateNotifier<AuthState> {
     // Check legacy user in SharedPreferences
     final legacyId = _dbService.getCurrentUserId();
     if (legacyId != null) {
+      if (HiveService.currentUserId != legacyId) {
+        await HiveService.openUserBoxes(legacyId);
+      }
       final email = _dbService.getCurrentUserEmail();
       final displayName = await _dbService.getCurrentUserDisplayName();
       state = AuthState(
@@ -161,9 +168,12 @@ class AuthNotifier extends StateNotifier<AuthState> {
         email: email,
         displayName: displayName,
       );
-      HiveService.settings.put('active_user_id', legacyId);
+      await HiveService.settings.put('active_user_id', legacyId);
       _ref.read(familyProvider.notifier).loadFamily();
     } else {
+      if (HiveService.currentUserId != HiveService.guestNamespace) {
+        await HiveService.openUserBoxes(HiveService.guestNamespace);
+      }
       state = AuthState(isLoading: false, isInitializing: false);
     }
   }
@@ -177,12 +187,27 @@ class AuthNotifier extends StateNotifier<AuthState> {
         return; // Don't wipe legacy session if active
       }
       if (!state.isMigrationPending) {
+        if (HiveService.currentUserId != HiveService.guestNamespace) {
+          HiveService.openUserBoxes(HiveService.guestNamespace);
+        }
         state = AuthState(isLoading: false, isInitializing: false);
       }
       return;
     }
 
-    // Native user is logged in
+    // Native user is logged in - Account Integrity Guard
+    if (HiveService.currentUserId != user.id) {
+      HiveService.openUserBoxes(user.id);
+    }
+    HiveService.settings.put('active_user_id', user.id);
+    HiveService.updateUserRegistry(
+      userId: user.id,
+      displayName: user.userMetadata?['display_name'] as String? ?? 'User',
+      email: user.email,
+      appVersion: '4.4.25',
+      boxVersion: 1,
+    );
+
     final savedAvatar = state.avatarColor ?? (user.userMetadata?['avatar_color'] as String?) ?? HiveService.settings.get('avatar_color') as String?;
 
     final profileAsync = _ref.read(profileProvider);
