@@ -182,7 +182,7 @@ void main() {
       expect(find.text('December 2026'), findsOneWidget);
 
       // Tap Next Month arrow
-      await tester.tap(find.bySemanticsLabel('Next Month'));
+      await tester.tap(find.byTooltip('Next Month'));
       await tester.pumpAndSettle();
 
       // Should move to January 2027
