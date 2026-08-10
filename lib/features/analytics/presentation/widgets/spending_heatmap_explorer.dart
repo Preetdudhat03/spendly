@@ -220,6 +220,7 @@ class _SpendingHeatmapExplorerState extends State<SpendingHeatmapExplorer> {
               Flexible(
                 child: ListView.builder(
                   shrinkWrap: true,
+                  padding: const EdgeInsets.only(bottom: 84.0),
                   itemCount: _availableYears.length,
                   itemBuilder: (context, index) {
                     final yr = _availableYears[index];
@@ -289,6 +290,7 @@ class _SpendingHeatmapExplorerState extends State<SpendingHeatmapExplorer> {
               const Divider(height: 1),
               Expanded(
                 child: ListView.builder(
+                  padding: const EdgeInsets.only(bottom: 84.0),
                   itemCount: 12,
                   itemBuilder: (context, index) {
                     final monthNum = index + 1;
@@ -1237,7 +1239,7 @@ class _SpendingHeatmapExplorerState extends State<SpendingHeatmapExplorer> {
   Widget _buildLegendFooter(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
+      padding: const EdgeInsets.fromLTRB(24.0, 12.0, 24.0, 84.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
