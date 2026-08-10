@@ -4,5 +4,8 @@
   "watch": true,
   "delay": 1,
   "auto_push": true,
+  "auto_sync": true,
+  "sync_strategy": "merge",
+  "fetch_interval": 300,
   "max_file_size_mb": 50
 }
