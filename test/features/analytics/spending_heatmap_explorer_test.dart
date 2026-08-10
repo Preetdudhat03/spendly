@@ -80,6 +80,10 @@ void main() {
 
   group('SpendingHeatmapExplorer Tests', () {
     testWidgets('Renders Year View initially with correct totals and month tiles', (tester) async {
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 2.0;
+      addTearDown(tester.view.reset);
+
       await tester.pumpWidget(
         buildTestableWidget(
           SpendingHeatmapExplorer(
@@ -101,6 +105,10 @@ void main() {
     });
 
     testWidgets('Drill-down: Year View -> Tap July -> Month View -> Tap July 18 -> Day View', (tester) async {
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 2.0;
+      addTearDown(tester.view.reset);
+
       await tester.pumpWidget(
         buildTestableWidget(
           SpendingHeatmapExplorer(
@@ -111,7 +119,9 @@ void main() {
       );
 
       // Tap on July tile
-      await tester.tap(find.text('Jul'));
+      final julTile = find.text('Jul');
+      await tester.ensureVisible(julTile);
+      await tester.tap(julTile);
       await tester.pumpAndSettle();
 
       // Should be in Month View for July 2026
@@ -120,7 +130,9 @@ void main() {
       expect(find.text('Peak Day'), findsOneWidget);
 
       // Tap on day 18 in calendar
-      await tester.tap(find.text('18'));
+      final day18Cell = find.text('18');
+      await tester.ensureVisible(day18Cell);
+      await tester.tap(day18Cell);
       await tester.pumpAndSettle();
 
       // Should be in Day View for July 18, 2026
@@ -134,6 +146,10 @@ void main() {
     });
 
     testWidgets('Drill-up: Day View -> Tap breadcrumb July -> Month View -> Tap breadcrumb 2026 -> Year View', (tester) async {
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 2.0;
+      addTearDown(tester.view.reset);
+
       await tester.pumpWidget(
         buildTestableWidget(
           SpendingHeatmapExplorer(
@@ -144,9 +160,14 @@ void main() {
       );
 
       // Drill down to July 18
-      await tester.tap(find.text('Jul'));
+      final julTile = find.text('Jul');
+      await tester.ensureVisible(julTile);
+      await tester.tap(julTile);
       await tester.pumpAndSettle();
-      await tester.tap(find.text('18'));
+
+      final day18Cell = find.text('18');
+      await tester.ensureVisible(day18Cell);
+      await tester.tap(day18Cell);
       await tester.pumpAndSettle();
 
       expect(find.text('Jul 18, 2026'), findsOneWidget);
@@ -166,6 +187,10 @@ void main() {
     });
 
     testWidgets('Month navigation across year boundaries: Dec 2026 -> Next Month -> Jan 2027', (tester) async {
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 2.0;
+      addTearDown(tester.view.reset);
+
       await tester.pumpWidget(
         buildTestableWidget(
           SpendingHeatmapExplorer(
@@ -176,7 +201,9 @@ void main() {
       );
 
       // Drill down to December 2026
-      await tester.tap(find.text('Dec'));
+      final decTile = find.text('Dec');
+      await tester.ensureVisible(decTile);
+      await tester.tap(decTile);
       await tester.pumpAndSettle();
 
       expect(find.text('December 2026'), findsOneWidget);
@@ -191,6 +218,10 @@ void main() {
     });
 
     testWidgets('Empty Year displays empty state with lowest intensity tiles without error', (tester) async {
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 2.0;
+      addTearDown(tester.view.reset);
+
       await tester.pumpWidget(
         buildTestableWidget(
           const SpendingHeatmapExplorer(
