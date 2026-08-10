@@ -415,7 +415,7 @@ class _SpendingHeatmapExplorerState extends State<SpendingHeatmapExplorer> {
             children: [
               // Back Button (Drill-Up or Close)
               IconButton(
-                semanticsLabel: _level == ExplorerLevel.year ? 'Close Explorer' : 'Go Back',
+                tooltip: _level == ExplorerLevel.year ? 'Close Explorer' : 'Go Back',
                 icon: Icon(
                   _level == ExplorerLevel.year ? Icons.close : Icons.arrow_back,
                   color: colorScheme.onSurface,
@@ -570,7 +570,7 @@ class _SpendingHeatmapExplorerState extends State<SpendingHeatmapExplorer> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               IconButton(
-                semanticsLabel: 'Previous Year',
+                tooltip: 'Previous Year',
                 icon: const Icon(Icons.arrow_back_ios, size: 18),
                 onPressed: _previousYear,
               ),
@@ -596,7 +596,7 @@ class _SpendingHeatmapExplorerState extends State<SpendingHeatmapExplorer> {
                 ),
               ),
               IconButton(
-                semanticsLabel: 'Next Year',
+                tooltip: 'Next Year',
                 icon: const Icon(Icons.arrow_forward_ios, size: 18),
                 onPressed: _nextYear,
               ),
@@ -801,7 +801,7 @@ class _SpendingHeatmapExplorerState extends State<SpendingHeatmapExplorer> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               IconButton(
-                semanticsLabel: 'Previous Month',
+                tooltip: 'Previous Month',
                 icon: const Icon(Icons.arrow_back_ios, size: 18),
                 onPressed: _previousMonth,
               ),
@@ -827,7 +827,7 @@ class _SpendingHeatmapExplorerState extends State<SpendingHeatmapExplorer> {
                 ),
               ),
               IconButton(
-                semanticsLabel: 'Next Month',
+                tooltip: 'Next Month',
                 icon: const Icon(Icons.arrow_forward_ios, size: 18),
                 onPressed: _nextMonth,
               ),
