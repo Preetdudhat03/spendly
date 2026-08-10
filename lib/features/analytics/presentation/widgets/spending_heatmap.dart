@@ -101,7 +101,7 @@ class SpendingHeatmap extends ConsumerWidget {
                   ],
                 ),
                 IconButton(
-                  semanticsLabel: 'Open Spending Heatmap Explorer',
+                  tooltip: 'Open Spending Heatmap Explorer',
                   icon: Icon(Icons.grid_on, size: 20, color: colorScheme.primary),
                   onPressed: () {
                     final initialYear = state.dateRange.start.year;
