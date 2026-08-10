@@ -1239,7 +1239,7 @@ class _SpendingHeatmapExplorerState extends State<SpendingHeatmapExplorer> {
   Widget _buildLegendFooter(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     return Container(
-      padding: const EdgeInsets.fromLTRB(24.0, 12.0, 24.0, 84.0),
+      padding: const EdgeInsets.fromLTRB(24.0, 12.0, 24.0, 90.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
