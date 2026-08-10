@@ -6,7 +6,11 @@ import 'drill_down_sheet.dart';
 
 import 'package:spendly/models/expense.dart';
 
-class SpendingHeatmap extends StatelessWidget {
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'spending_heatmap_explorer.dart';
+import 'package:spendly/core/providers/state_providers.dart';
+
+class SpendingHeatmap extends ConsumerWidget {
   final AnalyticsState state;
   final List<Expense> allExpenses;
 
@@ -31,10 +35,24 @@ class SpendingHeatmap extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final currencyFmt = NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 0);
     final dateFmt = DateFormat('EEE, MMM d');
     final colorScheme = Theme.of(context).colorScheme;
+
+    final selectedMemberId = ref.watch(analyticsMemberFilterProvider);
+    final familyState = ref.watch(familyProvider);
+    String? activeMemberName;
+    List<Expense> explorerExpenses = allExpenses;
+    if (selectedMemberId != null) {
+      explorerExpenses = allExpenses.where((e) => e.createdBy == selectedMemberId).toList();
+      try {
+        final member = familyState.members.firstWhere(
+          (m) => m.userId == selectedMemberId,
+        );
+        activeMemberName = member.displayName;
+      } catch (_) {}
+    }
 
     // Retrieve heatmap sorted keys
     final days = state.heatmapData.keys.toList()..sort();
@@ -82,7 +100,19 @@ class SpendingHeatmap extends StatelessWidget {
                     ),
                   ],
                 ),
-                Icon(Icons.grid_on, size: 20, color: colorScheme.primary),
+                IconButton(
+                  semanticsLabel: 'Open Spending Heatmap Explorer',
+                  icon: Icon(Icons.grid_on, size: 20, color: colorScheme.primary),
+                  onPressed: () {
+                    final initialYear = state.dateRange.start.year;
+                    SpendingHeatmapExplorer.show(
+                      context,
+                      expenses: explorerExpenses,
+                      initialYear: initialYear,
+                      activeMemberName: activeMemberName,
+                    );
+                  },
+                ),
               ],
             ),
             const SizedBox(height: 20),
