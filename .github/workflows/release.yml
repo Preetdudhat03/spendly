@@ -30,6 +30,20 @@ jobs:
       - name: Install Dependencies
         run: flutter pub get
 
+      - name: Ensure Environment Configuration
+        run: |
+          mkdir -p lib/core/constants
+          if [ ! -f lib/core/constants/config.dart ]; then
+            echo "Creating AppConfig for CI build..."
+            echo "class AppConfig {" > lib/core/constants/config.dart
+            echo "  static const bool forceSandboxMode = false;" >> lib/core/constants/config.dart
+            echo "  static const String supabaseUrl = String.fromEnvironment('SUPABASE_URL', defaultValue: '${{ secrets.SUPABASE_URL }}');" >> lib/core/constants/config.dart
+            echo "  static const String supabaseAnonKey = String.fromEnvironment('SUPABASE_ANON_KEY', defaultValue: '${{ secrets.SUPABASE_ANON_KEY }}');" >> lib/core/constants/config.dart
+            echo "  static bool isSupabaseInitialized = false;" >> lib/core/constants/config.dart
+            echo "  static bool get isSupabaseConfigured => supabaseUrl.isNotEmpty && supabaseAnonKey.isNotEmpty;" >> lib/core/constants/config.dart
+            echo "}" >> lib/core/constants/config.dart
+          fi
+
       - name: Run Static Code Analysis
         run: flutter analyze
 
