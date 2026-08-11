@@ -44,6 +44,14 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
+# Executables & Compiled APK Distribution
+*.apk
+*.aab
+*.keystore
+*.jks
+key.properties
+
+
 # Security / Environment Secrets
 .env
 .env.*

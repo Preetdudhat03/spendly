@@ -17,6 +17,17 @@ Spendly is a cross-platform mobile application built with Flutter that helps fam
 - **🔒 Secure Authentication:** Sign up securely. Your personal and financial data is protected.
 - **📄 Export Reports:** Export your expense data to PDF or CSV for external use or tax filing.
 
+## 📥 Download Spendly
+
+### Android
+Download the latest production release APK for Android directly from GitHub Releases:
+
+👉 [**Download Latest Spendly Release**](https://github.com/Preetdudhat03/spendly/releases/latest)
+
+> [!NOTE]
+> The compiled APK file is distributed as a GitHub Release Asset and is not committed inside the Git repository source tree.
+> For modern 64-bit Android smartphones, download `Spendly-vX.Y.Z-arm64-v8a.apk` for the fastest download and smallest footprint. For all other hardware or emulators, download `Spendly-vX.Y.Z.apk`.
+
 ## 🛠️ Tech Stack
 
 - **Framework:** [Flutter](https://flutter.dev/) (Dart)
