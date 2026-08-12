@@ -1,122 +1,151 @@
 <div align="center">
-  <img src="assets/images/logo.png" alt="Spendly Logo" width="140" height="140" />
-  <h1>Spendly</h1>
-  <p><strong>A Modern, Offline-First Collaborative Family Expense & Budget Tracker</strong></p>
+  <img src="assets/images/logo.png" alt="Spendly - Open Source Flutter Family Expense Tracker Logo" width="140" height="140" />
+  <h1>Spendly — Offline-First Collaborative Family Expense Tracker & Budget Manager</h1>
+  <p><strong>A modern, open-source cross-platform Flutter application for collaborative household expense tracking, budget management, and real-time cloud synchronization.</strong></p>
 
   [![Flutter](https://img.shields.io/badge/Flutter-3.11+-02569B?style=flat-square&logo=flutter&logoColor=white)](https://flutter.dev)
   [![Dart](https://img.shields.io/badge/Dart-3.0+-0175C2?style=flat-square&logo=dart&logoColor=white)](https://dart.dev)
   [![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3ECF8E?style=flat-square&logo=supabase&logoColor=white)](https://supabase.com)
   [![Riverpod](https://img.shields.io/badge/State-Riverpod-00599C?style=flat-square)](https://riverpod.dev)
   [![Hive](https://img.shields.io/badge/Storage-Hive_Encrypted-FF6B6B?style=flat-square)](https://docs.hivedb.dev)
+  [![License](https://img.shields.io/badge/License-MIT-blue.style=flat-square)](LICENSE)
 </div>
 
 ---
 
-## 📌 Overview
+## 📌 Executive Summary & Key Highlights
 
-**Spendly** is a cross-platform Flutter application designed to help families track daily expenses, set category budgets, analyze spending trends, and manage finances together in real-time.
+**Spendly** is a high-performance, cross-platform mobile application built with **Flutter**, **Riverpod**, **Hive**, and **Supabase**. Designed specifically for families and households, Spendly enables multi-user expense sharing, category-based budget tracking, spending heatmaps, and financial analytics with zero reliance on constant internet connectivity.
 
-Built with an **offline-first architecture**, Spendly guarantees uninterrupted expense logging even without an active internet connection. When online connectivity is restored, all pending changes sync seamlessly with the Supabase cloud backend with conflict handling and audit event logging.
-
----
-
-## ✨ Key Features
-
-### 👨‍👩‍👧‍👦 Family Collaboration & Multi-Tenant Management
-- **Shared Household Expense Tracking:** Group household members into a single family workspace.
-- **Role-Based Access Control:** Distinguish between **Admin** (family creator with management rights) and **Members**.
-- **Family Invite Codes:** Join existing families seamlessly using a 6-character uppercase join code.
-- **Multi-Device Support:** Track entries across multiple devices per user with unique device installation IDs.
-
-### 📱 Offline-First Architecture & Sync Engine
-- **Instant Response Times:** All reads and writes hit fast local Hive storage (`expenses`, `budgets`, `family_members`) instantly.
-- **Queued Operations Engine:** Offline operations are serialized into `PendingOperationModel` objects with `operationId`, `deviceId`, `userId`, and `timestamp`.
-- **Automatic Cloud Synchronization:** background/foreground sync pushes pending local operations to Supabase and pulls remote family updates.
-- **Sync Event Logger:** Local event history (`sync_log`) tracks sync timestamps, pushed operation counts, and pulled entities for easy production troubleshooting.
-- **Self-Healing Storage:** Encrypted Hive storage automatically recovers from corrupted files or cipher key mismatches without crashing.
-
-### 📊 Financial Insights & Intelligent Analytics
-- **Spending Heatmap:** Interactive visual calendar heatmap illustrating daily spending density.
-- **Category Breakdown & Pie Charts:** Visual summary of expenses by category (Food, Utilities, Transportation, Entertainment, Health, Shopping, etc.).
-- **Budget Tracking & Visual Alerts:**
-  - Progress bars displaying percentage of budget consumed.
-  - **70% Threshold Notice:** Subtle reminder when approaching budget limit.
-  - **90% Threshold Warning:** High-priority warning alert before exceeding budget.
-- **AI-Powered Heuristics & Pattern Detection:** Detects recurring subscription patterns and provides automated savings suggestions.
-
-### 📄 Export & Audit Capabilities
-- **PDF & CSV Export:** Download formatted financial summaries for accounting, auditing, or tax filing.
-- **Detailed Audit Trail:** Track who created or modified each expense entry across the family.
+### 🌟 Core Highlights
+- 🚀 **Offline-First Architecture:** Instant zero-latency expense entry powered by local AES-256 encrypted Hive storage.
+- ⚡ **Real-Time Supabase Synchronization:** Background sync engine pushes queued offline operations and pulls family updates automatically.
+- 👨‍👩‍👧‍👦 **Multi-User Family Workspaces:** Share household budgets and expenses securely via unique 6-character family join codes.
+- 📊 **Visual Analytics & Smart Heuristics:** Interactive spending heatmaps, category pie charts, recurring pattern detection, and budget alert notices (70% and 90% thresholds).
+- 📄 **Data Portability:** Export complete financial reports in PDF and CSV formats for tax preparation and auditing.
 
 ---
 
-## 🛠️ Architecture & Tech Stack
+## 📑 Table of Contents
+1. [Executive Summary & Key Highlights](#-executive-summary--key-highlights)
+2. [Why Spendly? Solve Real Household Financial Challenges](#-why-spendly-solve-real-household-financial-challenges)
+3. [Key Features & Capabilities](#-key-features--capabilities)
+4. [System Architecture & Technology Stack](#-system-architecture--technology-stack)
+5. [Download & Installation Guide](#-download--installation-guide)
+6. [Developer Setup & Configuration](#-developer-setup--configuration)
+7. [Database Schema & Local Storage Architecture](#-database-schema--local-storage-architecture)
+8. [Building for Production (Android APK / iOS)](#-building-for-production-android-apk--ios)
+9. [Frequently Asked Questions (FAQ)](#-frequently-asked-questions-faq)
+10. [License & Author Information](#-license--author-information)
+
+---
+
+## 💡 Why Spendly? Solve Real Household Financial Challenges
+
+Managing shared household finances across multiple family members often suffers from three major flaws:
+
+1. **Loss of Connection while Shopping:** Traditional cloud-only finance apps fail when logging receipts in basements, supermarkets, or remote areas with poor mobile signal.
+2. **Lack of Family Transparency:** Individual spending apps keep budgets isolated, making it difficult to monitor overall family cash flow.
+3. **Data Loss During Sync Conflicts:** Multi-device apps frequently overwrite expense entries when multiple family members upload data simultaneously.
+
+**Spendly resolves all three issues** by combining an offline-first client database with a queued sync engine, multi-tenant family access controls, and device-level transaction tracking (`operationId` + `deviceId` + `userId`).
+
+---
+
+## ✨ Key Features & Capabilities
+
+### 📱 1. Offline-First Mobile Storage & Sync Engine
+- **Instant Response Times:** Reads and writes execute directly against local encrypted Hive boxes without network blocking.
+- **Queued Operations Engine:** Offline actions (create, edit, delete expense) are serialized into `PendingOperationModel` payloads containing `operationId`, `deviceId`, `userId`, and ISO timestamps.
+- **Conflict-Free Cloud Synchronization:** background sync service pushes local queues to Supabase PostgreSQL and pulls remote changes seamlessly.
+- **Self-Healing Local Database:** Automatic corruption detection and cipher key recovery prevent app crashes from bad local state.
+- **Sync History Log:** Embedded audit logger records the last 100 sync events (`sync_log`) for easy debugging.
+
+### 👨‍👩‍👧‍👦 2. Multi-Tenant Family Collaboration
+- **Family Workspace Creation:** Create a shared family hub or join an existing one using a 6-character code.
+- **Role-Based Access Controls (RBAC):** Admin (family creator) and Member roles enforce administrative permissions.
+- **Real-Time Shared Feed:** View expenses added by spouse, parents, or children in real time.
+
+### 📊 3. Interactive Analytics & Smart Budgeting
+- **Calendar Spending Heatmap:** Visual calendar matrix displaying daily spending intensity.
+- **Category Allocation Pie Charts:** Breakdown of monthly expenses by category (Food, Utilities, Transport, Entertainment, Healthcare, Shopping).
+- **Proactive Budget Alerts:**
+  - **70% Budget Consumption:** Visual notice indicating budget threshold reached.
+  - **90% Budget Warning:** Prominent warning alert before budget limit is exceeded.
+- **Smart Subscription Detection:** AI-inspired heuristics identify recurring billing cycles and suggest cost-saving opportunities.
+
+---
+
+## 🛠️ System Architecture & Technology Stack
 
 ```text
 ┌─────────────────────────────────────────────────────────────┐
-│                    Flutter Presentation Layer               │
-│         (GoRouter, Riverpod Providers, ConsumerWidgets)      │
+│                 Flutter 3.x Presentation Layer              │
+│       (GoRouter Navigation, Riverpod Providers, Widgets)    │
 └──────────────────────────────┬──────────────────────────────┘
                                │
                ┌───────────────┴───────────────┐
                ▼                               ▼
   ┌─────────────────────────┐     ┌─────────────────────────┐
   │ Local Hive Encrypted DB │     │ Supabase Cloud Backend  │
-  │  (Profiles, Expenses,   │     │ (PostgreSQL, Auth, RLS, │
-  │   Budgets, Sync Logs)   │     │   Realtime WebSockets)  │
+  │  (Expenses, Budgets,    │     │ (PostgreSQL, Auth, RLS, │
+  │   Profiles, Sync Logs)  │     │   Realtime Sync Engine) │
   └────────────┬────────────┘     └────────────┬────────────┘
                │                               │
                └───────────────┬───────────────┘
                                ▼
             ┌────────────────────────────────────┐
-            │       Sync Engine Service          │
-            │ (PendingOperation Queue & Puller)  │
+            │   Offline-First Sync Controller    │
+            │   (Pending Queue & Delta Puller)   │
             └────────────────────────────────────┘
 ```
 
-| Layer | Technology / Package | Description |
+| Technology Layer | Tool / Library | Technical Description |
 | :--- | :--- | :--- |
-| **UI Framework** | [Flutter 3.x](https://flutter.dev/) | Cross-platform UI toolkit targeting Android and iOS. |
-| **Language** | [Dart 3.x](https://dart.dev/) | Strongly-typed object-oriented language. |
-| **State Management** | [Flutter Riverpod](https://riverpod.dev/) | Compile-safe state management & provider dependency injection. |
-| **Local Database** | [Hive](https://docs.hivedb.dev/) | Lightweight, ultra-fast key-value database encrypted with AES-256 (`HiveAesCipher`). |
-| **Backend & Sync** | [Supabase](https://supabase.com/) | Managed PostgreSQL database, GoTrue Authentication, and Row Level Security. |
-| **Navigation** | [GoRouter](https://pub.dev/packages/go_router) | Declarative routing with auth state redirection guards. |
-| **Data Visualization** | [FL Chart](https://pub.dev/packages/fl_chart) | Interactive animated pie charts and bar graphs. |
-| **Date Utilities** | [Intl](https://pub.dev/packages/intl) | Date formatting, currency formatting, and internationalization. |
+| **Framework** | [Flutter 3.x](https://flutter.dev/) | Google's UI framework for compiling natively to Android & iOS. |
+| **Programming Language** | [Dart 3.x](https://dart.dev/) | Type-safe, asynchronous language with sound null safety. |
+| **State Management** | [Flutter Riverpod](https://riverpod.dev/) | Compile-safe state management with automatic provider caching. |
+| **Local Storage** | [Hive DB](https://docs.hivedb.dev/) | Fast, lightweight key-value database encrypted with AES-256 (`HiveAesCipher`). |
+| **Backend & Cloud Database** | [Supabase](https://supabase.com/) | Open-source Firebase alternative powered by PostgreSQL, Auth, and RLS. |
+| **Navigation & Routing** | [GoRouter](https://pub.dev/packages/go_router) | Declarative routing with session authentication guards. |
+| **Data Visualization** | [FL Chart](https://pub.dev/packages/fl_chart) | Highly customizable animated charting library. |
+| **Report Generation** | [PDF](https://pub.dev/packages/pdf) & [CSV](https://pub.dev/packages/csv) | Export engines for generating external financial reports. |
 
 ---
 
-## 📥 Download & Build Spendly
+## 📥 Download & Installation Guide
 
-### Android Release APK
-Download compiled Android releases directly from the GitHub Releases page:
+### Android Installation Options
 
-👉 [**Browse Spendly Releases**](https://github.com/Preetdudhat03/spendly/releases)
+#### Option A: Download Pre-Compiled APK
+Download official production Android APK builds directly from our releases page:
 
-> [!NOTE]
-> If a release tag is not yet published on GitHub, you can build the production APK locally anytime:
-> ```bash
-> flutter build apk --release
-> ```
-> The compiled APK will be generated at `build/app/outputs/flutter-apk/app-release.apk`.
-> 
-> For 64-bit Android devices (smaller file size):
-> ```bash
-> flutter build apk --target-platform android-arm64 --release
-> ```
+👉 [**Download Latest Spendly Android Release**](https://github.com/Preetdudhat03/spendly/releases)
+
+#### Option B: Build Production APK Locally
+If a pre-compiled binary is unavailable, build the release APK directly using the Flutter CLI:
+
+```bash
+# Build universal production APK
+flutter build apk --release
+
+# Output path: build/app/outputs/flutter-apk/app-release.apk
+
+# Build optimized 64-bit ARM APK (Smaller file size for modern devices)
+flutter build apk --target-platform android-arm64 --release
+```
 
 ---
 
-## 🚀 Getting Started
+## 🚀 Developer Setup & Configuration
 
-### 1. Prerequisites
-- [Flutter SDK](https://docs.flutter.dev/get-started/install) (Version 3.11.3 or higher)
-- [Dart SDK](https://dart.dev/get-started) (Version 3.0 or higher)
-- Android Studio / VS Code with Flutter extension
-- Android SDK (API 21 / Android 5.0 minimum)
+### Prerequisites
+- **Flutter SDK:** Version 3.11.3 or higher
+- **Dart SDK:** Version 3.0 or higher
+- **Android Studio / VS Code** with Flutter extensions installed
+- **Supabase Account:** Free or paid tier at [supabase.com](https://supabase.com)
 
-### 2. Installation & Setup
+### Step-by-Step Installation
 
 1. **Clone the repository**
    ```bash
@@ -124,22 +153,22 @@ Download compiled Android releases directly from the GitHub Releases page:
    cd spendly
    ```
 
-2. **Install Dart dependencies**
+2. **Install Dart package dependencies**
    ```bash
    flutter pub get
    ```
 
 3. **Configure Environment Credentials**
-   Create a configuration file at `lib/core/constants/config.dart` with your Supabase credentials:
+   Create a configuration file at `lib/core/constants/config.dart`:
 
    ```dart
    class AppConfig {
-     // Set to true for offline local sandbox mode without cloud dependencies
+     // Set forceSandboxMode to true for local testing without Supabase
      static const bool forceSandboxMode = false;
 
      static const String supabaseUrl = forceSandboxMode 
          ? '' 
-         : String.fromEnvironment('SUPABASE_URL', defaultValue: 'YOUR_SUPABASE_PROJECT_URL'); 
+         : String.fromEnvironment('SUPABASE_URL', defaultValue: 'https://YOUR_SUPABASE_PROJECT_ID.supabase.co'); 
          
      static const String supabaseAnonKey = forceSandboxMode 
          ? '' 
@@ -156,21 +185,21 @@ Download compiled Android releases directly from the GitHub Releases page:
    }
    ```
 
-4. **Run the Application**
+4. **Launch Application in Debug Mode**
    ```bash
    flutter run
    ```
 
 ---
 
-## 🗄️ Database Schema & Local Storage
+## 🗄️ Database Schema & Local Storage Architecture
 
-### Supabase PostgreSQL Backend Architecture
+### PostgreSQL Cloud Schema (Supabase Backend)
 
-The remote database utilizes 5 primary PostgreSQL tables protected by Row Level Security (RLS):
+Spendly's backend database is built on PostgreSQL with Row Level Security (RLS) policies:
 
 ```sql
--- Families Workspace
+-- Families Schema
 CREATE TABLE public.families (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name TEXT NOT NULL,
@@ -179,7 +208,7 @@ CREATE TABLE public.families (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Family Members (Role-Based Access)
+-- Family Membership Schema
 CREATE TABLE public.family_members (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     family_id UUID REFERENCES public.families(id) ON DELETE CASCADE,
@@ -189,7 +218,7 @@ CREATE TABLE public.family_members (
     UNIQUE(family_id, user_id)
 );
 
--- Expenses Table
+-- Expense Ledger Schema
 CREATE TABLE public.expenses (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     family_id UUID REFERENCES public.families(id) ON DELETE CASCADE,
@@ -203,7 +232,7 @@ CREATE TABLE public.expenses (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Budgets Table
+-- Monthly Budget Schema
 CREATE TABLE public.budgets (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     family_id UUID REFERENCES public.families(id) ON DELETE CASCADE,
@@ -215,61 +244,76 @@ CREATE TABLE public.budgets (
 );
 ```
 
-### Hive Local Storage Namespaces
+### Local Storage Namespaces (Hive Engine)
 
-Local storage is isolated per authenticated user (`<base_name>_<userId>`):
+Hive boxes are isolated per user ID (`<base_name>_<userId>`) for complete data security:
 
-- `profiles_<userId>` — User profile cache
-- `families_<userId>` — Workspace family metadata
-- `family_members_<userId>` — Family member list
-- `expenses_<userId>` — Cached expense records
-- `budgets_<userId>` — Cached category budgets
-- `pending_operations_<userId>` — Offline sync queue
-- `sync_log_<userId>` — Last 100 sync events for debugging
-- `guest_local` — Default fallback storage during initial boot or logout
+| Hive Box Name | Data Model | Description |
+| :--- | :--- | :--- |
+| `expenses_<userId>` | `ExpenseModel` | Offline expense transaction ledger. |
+| `budgets_<userId>` | `BudgetModel` | Monthly category spending thresholds. |
+| `families_<userId>` | `FamilyModel` | Family workspace metadata and join codes. |
+| `family_members_<userId>` | `FamilyMemberModel` | Member profiles and roles list. |
+| `pending_operations_<userId>` | `PendingOperationModel` | Queue of un-synced offline edits. |
+| `sync_log_<userId>` | `Map<String, dynamic>` | Audit event history for debugging. |
+| `guest_local` | Various | Safety fallback storage during initialization or guest mode. |
 
 ---
 
-## 📁 Project Structure
+## 📦 Building for Production (Android APK / iOS)
 
-Spendly follows a **feature-first architecture**:
-
-```text
-lib/
-├── core/
-│   ├── constants/       # AppConfig, colors, theme tokens
-│   ├── models/          # Shared Hive TypeAdapters and models
-│   ├── providers/       # Riverpod StateNotifiers (Auth, Family, Expense, Budget)
-│   ├── services/        # Services (HiveService, SyncService, RouterService, ExportService)
-│   └── widgets/         # Shared reusable UI widgets (cards, modals, inputs)
-├── features/
-│   ├── analytics/       # Heatmap, pie charts, category summaries
-│   ├── auth/            # Login, Register, Startup screens
-│   ├── budgets/         # Category budget management & alerts
-│   ├── expenses/        # Add expense modal, home screen, expense detail
-│   ├── family/          # Create family, join code screen, member list
-│   ├── navigation/      # Floating bottom navigation bar
-│   └── profile/         # User profile, account management
-└── main.dart            # App entry point, Hive initialization, Riverpod scope
+### Build Android App Bundle (for Google Play Store)
+```bash
+flutter build appbundle --release
 ```
 
----
-
-## 🧪 Testing & Verification
-
-Run the full suite of automated unit and widget tests:
-
+### Build iOS Release (Mac Environment Required)
 ```bash
-# Run all automated tests
+flutter build ios --release
+```
+
+### Verify Code Quality & Run Tests
+```bash
+# Run unit and widget test suite
 flutter test
 
-# Run static code analysis
+# Perform static code analysis
 flutter analyze
 ```
 
 ---
 
-## 📄 License & Attribution
+## ❓ Frequently Asked Questions (FAQ)
 
-This project is developed by **Preet Dudhat**. All rights reserved.  
-Built with Flutter & Supabase.
+<details>
+<summary><strong>Q: Does Spendly work without an internet connection?</strong></summary>
+<br/>
+<strong>Yes!</strong> Spendly is built with an offline-first architecture. All expense entries and budget checks work offline instantly using encrypted Hive local storage. When you reconnect to Wi-Fi or cellular data, all pending changes sync automatically to the cloud.
+</details>
+
+<details>
+<summary><strong>Q: Is my financial data encrypted?</strong></summary>
+<br/>
+<strong>Yes.</strong> Local storage on your mobile device is encrypted using AES-256 (`HiveAesCipher`). Cloud communication with Supabase is encrypted in transit over HTTPS/TLS, and database tables are protected by PostgreSQL Row Level Security (RLS).
+</details>
+
+<details>
+<summary><strong>Q: How do family members join the same household?</strong></summary>
+<br/>
+One family member creates the family workspace in Spendly, which generates a unique 6-character Join Code (e.g. <code>ABC123</code>). Other family members simply enter this code in their app to join the shared workspace.
+</details>
+
+<details>
+<summary><strong>Q: Can I export my expenses to Excel or PDF?</strong></summary>
+<br/>
+<strong>Yes.</strong> Spendly includes built-in export services allowing you to download monthly expense summaries as formatted PDF reports or raw CSV files.
+</details>
+
+---
+
+## 👨‍💻 License & Author Information
+
+Developed with ❤️ by **Preet Dudhat**.
+
+- 🐙 **GitHub Repository:** [Preetdudhat03/spendly](https://github.com/Preetdudhat03/spendly)
+- 📄 **License:** MIT License — free for personal and educational use.
