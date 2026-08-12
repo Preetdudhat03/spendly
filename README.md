@@ -17,16 +17,24 @@ Spendly is a cross-platform mobile application built with Flutter that helps fam
 - **🔒 Secure Authentication:** Sign up securely. Your personal and financial data is protected.
 - **📄 Export Reports:** Export your expense data to PDF or CSV for external use or tax filing.
 
-## 📥 Download Spendly
+## 📥 Download & Build Spendly
 
-### Android
-Download the latest production release APK for Android directly from GitHub Releases:
+### Android Release APK
+Download compiled Android releases directly from the GitHub Releases page:
 
-👉 [**Download Latest Spendly Release**](https://github.com/Preetdudhat03/spendly/releases/latest)
+👉 [**Browse Spendly Releases**](https://github.com/Preetdudhat03/spendly/releases)
 
 > [!NOTE]
-> The compiled APK file is distributed as a GitHub Release Asset and is not committed inside the Git repository source tree.
-> For modern 64-bit Android smartphones, download `Spendly-vX.Y.Z-arm64-v8a.apk` for the fastest download and smallest footprint. For all other hardware or emulators, download `Spendly-vX.Y.Z.apk`.
+> If a release tag is not yet published on GitHub, you can build the production APK locally anytime:
+> ```bash
+> flutter build apk --release
+> ```
+> The compiled APK will be generated at `build/app/outputs/flutter-apk/app-release.apk`.
+> 
+> For 64-bit Android devices (smaller file size):
+> ```bash
+> flutter build apk --target-platform android-arm64 --release
+> ```
 
 ## 🛠️ Tech Stack
 
@@ -48,7 +56,7 @@ Download the latest production release APK for Android directly from GitHub Rele
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/your-username/spendly.git
+   git clone https://github.com/Preetdudhat03/spendly.git
    cd spendly
    ```
 
