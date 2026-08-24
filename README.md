@@ -1,6 +1,6 @@
 <div align="center">
   <img src="assets/images/logo.png" alt="Spendly - Open Source Flutter Family Expense Tracker Logo" width="140" height="140" />
-  <h1>Spendly — Offline-First Collaborative Family Expense Tracker & Budget Manager</h1>
+  <h1>Spendly - Offline-First Collaborative Family Expense Tracker & Budget Manager</h1>
   <p><strong>A comprehensive, open-source, cross-platform Flutter application for multi-user household expense tracking, category budget management, AI-inspired financial analytics, and real-time cloud synchronization.</strong></p>
 
   [![Flutter](https://img.shields.io/badge/Flutter-3.11+-02569B?style=flat-square&logo=flutter&logoColor=white)](https://flutter.dev)
