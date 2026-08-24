@@ -45,7 +45,7 @@
 
 **Spendly** is a state-of-the-art mobile application engineered with **Flutter**, **Riverpod**, **Hive**, and **Supabase**. Built to bridge the gap between individual personal finance tools and complex enterprise accounting platforms, Spendly focuses specifically on **household collaborative finances**.
 
-It allows family members to record daily expenses, set monthly category budgets, monitor visual spending trends, and coordinate household financial goals in real time. Because real-world usage happens everywhere — in supermarket basements, during international travel, or in low-coverage rural areas — Spendly is architected **offline-first**, guaranteeing 0ms input latency and 100% data availability regardless of cellular signal.
+It allows family members to record daily expenses, set monthly category budgets, monitor visual spending trends, and coordinate household financial goals in real time. Because real-world usage happens everywhere - in supermarket basements, during international travel, or in low-coverage rural areas - Spendly is architected **offline-first**, guaranteeing 0ms input latency and 100% data availability regardless of cellular signal.
 
 ---
 
