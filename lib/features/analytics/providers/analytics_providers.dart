@@ -234,7 +234,7 @@ class AnalyticsState {
       previousDateRange: prevRange,
       filteredExpenses: [],
       previousExpenses: [],
-      status: AnalyticsStatus.initial,
+      status: filteredExps.isEmpty ? AnalyticsStatus.empty : AnalyticsStatus.success,
       totalSpent: 0,
       prevTotalSpent: 0,
       totalSpentDiffPercent: 0,
