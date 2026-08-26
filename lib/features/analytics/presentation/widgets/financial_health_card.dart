@@ -142,19 +142,19 @@ class FinancialHealthCard extends StatelessWidget {
             ),
             _buildScoreBar(
               context,
-              'Anomaly Exposure (10%)',
+              'Anomaly Control (10%)',
               health.anomalyExposure,
               _getScoreColor(health.anomalyExposure),
             ),
             _buildScoreBar(
               context,
-              'Concentration (10%)',
+              'Category Balance (10%)',
               health.concentration,
               _getScoreColor(health.concentration),
             ),
             _buildScoreBar(
               context,
-              'Data Confidence (5%)',
+              'Data Sufficiency (5%)',
               health.dataConfidenceScore,
               _getScoreColor(health.dataConfidenceScore),
             ),

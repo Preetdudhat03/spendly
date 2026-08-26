@@ -530,10 +530,12 @@ class SpendingHealth {
     // 5. Concentration
     // High concentration isn't always bad. If top category > 50%, we might dock slightly for lack of diversification, but not severely.
     int concentrationScore = 100;
-    if (topCategoryPercentage > 60) {
+    if (topCategoryPercentage >= 90) {
+      concentrationScore = 20;
+    } else if (topCategoryPercentage >= 75) {
+      concentrationScore = 50;
+    } else if (topCategoryPercentage > 60) {
       concentrationScore = 80;
-    } else if (topCategoryPercentage > 80) {
-      concentrationScore = 60;
     }
 
     // 6. Data Confidence
