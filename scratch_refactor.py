@@ -1,102 +1,93 @@
 import re
 
 def process():
-    path = r'p:\pro\spendly\lib\features\analytics\providers\analytics_providers.dart'
+    path = r'p:\pro\spendly\lib\features\analytics\models\analytics_models.dart'
     with open(path, 'r', encoding='utf-8') as f:
         content = f.read()
 
-    # 1. Update AnalyticsState
-    if "final SpendingVelocity? velocity;" not in content:
-        content = content.replace("final SpendingHealth? healthScore;", "final SpendingVelocity? velocity;\n  final BudgetForecast? budgetForecast;\n  final SpendingHealth? healthScore;")
-        content = content.replace("this.healthScore,", "this.velocity,\n    this.budgetForecast,\n    this.healthScore,")
-    
-    # 2. Update runCalculations
-    calc_from = """    final healthScore = SpendingHealth.calculate(
-      totalSpent: currentTotalSpent,
-      budgetLimit: params.budgetLimit,
-      elapsedDays: currentElapsedDays,
-      daysInMonth: DateUtils.getDaysInMonth(params.now.year, params.now.month),
-      confidence: confidence,
-      topCategoryPercentage: topCategoryPercentage,
-    );
+    new_models = """
+class CategoryInsight {
+  final String categoryName;
+  final double currentSpend;
+  final double previousSpend;
+  final PeriodComparison trend;
+  final double percentageOfTotal;
+  final int transactionCount;
+  final double averageTransaction;
+  final double largestTransaction;
 
-    return AnalyticsResult("""
-    
-    calc_to = """    final daysInMonth = DateUtils.getDaysInMonth(params.now.year, params.now.month);
-    
-    final velocity = SpendingVelocity.calculate(
-      totalSpent: currentTotalSpent,
-      budgetLimit: params.budgetLimit,
-      elapsedDays: currentElapsedDays,
-      totalDays: daysInMonth,
-    );
+  const CategoryInsight({
+    required this.categoryName,
+    required this.currentSpend,
+    required this.previousSpend,
+    required this.trend,
+    required this.percentageOfTotal,
+    required this.transactionCount,
+    required this.averageTransaction,
+    required this.largestTransaction,
+  });
+}
 
-    final budgetForecast = BudgetForecast.calculate(
-      currentTotalSpent: currentTotalSpent,
-      currentDailyAvg: currentDailyAvg,
-      budgetLimit: params.budgetLimit,
-      remainingDays: daysInMonth - currentElapsedDays,
-    );
+class MemberInsight {
+  final String memberId;
+  final String memberName;
+  final double currentSpend;
+  final PeriodComparison trend;
+  final double percentageOfTotal;
+  final int transactionCount;
+  final double averageTransaction;
+  final String topCategory;
 
-    final healthScore = SpendingHealth.calculate(
-      totalSpent: currentTotalSpent,
-      budgetLimit: params.budgetLimit,
-      elapsedDays: currentElapsedDays,
-      daysInMonth: daysInMonth,
-      confidence: confidence,
-      topCategoryPercentage: topCategoryPercentage,
-      velocity: velocity,
-    );
+  const MemberInsight({
+    required this.memberId,
+    required this.memberName,
+    required this.currentSpend,
+    required this.trend,
+    required this.percentageOfTotal,
+    required this.transactionCount,
+    required this.averageTransaction,
+    required this.topCategory,
+  });
+}
 
-    return AnalyticsResult("""
-    
-    content = content.replace(calc_from, calc_to)
-    
-    res_from = """      healthScore: healthScore,
-    );"""
-    res_to = """      velocity: velocity,
-      budgetForecast: budgetForecast,
-      healthScore: healthScore,
-    );"""
-    content = content.replace(res_from, res_to)
-    
-    # 3. Update fromResult mappings
-    map_from = """    // Forecast & Budget
-    double projectedMonthEnd = 0.0;
-    double expectedOverspend = 0.0;
-    final ranges = AnalyticsNotifier._calculateDateRanges(
-      AnalyticsFilterType.values[result.input.filterTypeIndex],
-      result.input.customRange,
-      result.input.now,
-    );
-    final currentRange = ranges[0];
-    final prevRange = ranges[1];
-    
-    if (AnalyticsFilterType.values[result.input.filterTypeIndex] == AnalyticsFilterType.thisMonth && currentRange.start.month == result.input.now.month && currentRange.start.year == result.input.now.year) {
-      final daysInMonth = DateUtils.getDaysInMonth(result.input.now.year, result.input.now.month);
-      final elapsedDays = result.input.now.day > 0 ? result.input.now.day : 1;
-      dailyAverage = agg.currentTotalSpent / elapsedDays;
-      final remainingDays = daysInMonth - elapsedDays;
-      projectedMonthEnd = agg.currentTotalSpent + (dailyAverage * remainingDays);
-      expectedOverspend = (projectedMonthEnd - result.input.budgetLimit) > 0 ? (projectedMonthEnd - result.input.budgetLimit) : 0.0;
-    }"""
-    
-    map_to = """    // Forecast & Budget
-    final ranges = AnalyticsNotifier._calculateDateRanges(
-      AnalyticsFilterType.values[result.input.filterTypeIndex],
-      result.input.customRange,
-      result.input.now,
-    );
-    final currentRange = ranges[0];
-    final prevRange = ranges[1];
-    
-    double projectedMonthEnd = result.budgetForecast.projectedTotal;
-    double expectedOverspend = result.budgetForecast.expectedOverrun;"""
-    
-    content = content.replace(map_from, map_to)
-    
-    # Add to AnalyticsState constructor in fromResult
-    content = content.replace("summary: result.summary,\n      healthScore: result.healthScore,", "summary: result.summary,\n      velocity: result.velocity,\n      budgetForecast: result.budgetForecast,\n      healthScore: result.healthScore,")
+class DiagnosticIntelligence {
+  final List<CategoryInsight> categoryInsights;
+  final List<MemberInsight> memberInsights;
+  
+  final double topCategoryShare;
+  final double top3CategoryShare;
+  
+  final double top3TransactionsTotal;
+  final double top3TransactionsShare;
+  
+  final int smallPurchasesCount;
+  final double smallPurchasesTotal;
+  
+  final String primaryIncreaseContributor; 
+  final String primaryDecreaseContributor;
+
+  const DiagnosticIntelligence({
+    required this.categoryInsights,
+    required this.memberInsights,
+    required this.topCategoryShare,
+    required this.top3CategoryShare,
+    required this.top3TransactionsTotal,
+    required this.top3TransactionsShare,
+    required this.smallPurchasesCount,
+    required this.smallPurchasesTotal,
+    required this.primaryIncreaseContributor,
+    required this.primaryDecreaseContributor,
+  });
+}
+"""
+
+    if "class CategoryInsight" not in content:
+        content = content.replace("class SpendingVelocity {", new_models + "\nclass SpendingVelocity {")
+        
+    # Add diagnosticIntelligence to AnalyticsResult
+    if "final DiagnosticIntelligence diagnostic;" not in content:
+        content = content.replace("final SpendingHealth healthScore;", "final DiagnosticIntelligence diagnostic;\n  final SpendingHealth healthScore;")
+        content = content.replace("required this.budgetForecast,", "required this.budgetForecast,\n    required this.diagnostic,")
 
     with open(path, 'w', encoding='utf-8') as f:
         f.write(content)
