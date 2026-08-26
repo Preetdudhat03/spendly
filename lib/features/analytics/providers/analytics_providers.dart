@@ -1256,8 +1256,11 @@ class AnalyticsNotifier extends StateNotifier<AnalyticsState> {
       topCategoryPercentage = (maxCat / currentTotalSpent) * 100;
     }
 
-    final daysInMonth = DateUtils.getDaysInMonth(params.now.year, params.now.month);
-    
+    final daysInMonth = DateUtils.getDaysInMonth(
+      params.now.year,
+      params.now.month,
+    );
+
     final velocity = SpendingVelocity.calculate(
       totalSpent: currentTotalSpent,
       budgetLimit: params.budgetLimit,
