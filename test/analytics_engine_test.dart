@@ -122,6 +122,13 @@ void main() {
       expect(state.healthScore, isNotNull);
       expect(state.healthScore!.budgetAdherence, 100); // 4500 < 10000 limit
       expect(state.healthScore!.dataConfidenceScore, 30); // Low confidence mapped to 30
+      
+      // Phase 4: Diagnostic Intelligence
+      expect(state.diagnostic, isNotNull);
+      expect(state.diagnostic!.categoryInsights.length, 2);
+      expect(state.diagnostic!.topCategoryShare, (3000 / 4500) * 100);
+      expect(state.diagnostic!.primaryIncreaseContributor, 'Shopping');
+      expect(state.diagnostic!.smallPurchasesCount, 0); // test data min is 500
     });
   });
 }
