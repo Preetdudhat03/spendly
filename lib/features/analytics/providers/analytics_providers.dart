@@ -741,6 +741,10 @@ final analyticsMemberFilterProvider = StateProvider<String?>((ref) {
 // Params for the isolate computation
 
 // Primary Analytics Calculations Provider
+// Global cache to prevent recomputation on tab switch or irrelevant state changes
+AnalyticsState? _cachedAnalyticsState;
+int? _cachedInputHash;
+
 final analyticsProvider =
     StateNotifierProvider<AnalyticsNotifier, AnalyticsState>((ref) {
       final expenseState = ref.watch(expenseProvider);
@@ -962,8 +966,26 @@ class AnalyticsNotifier extends StateNotifier<AnalyticsState> {
       },
       selectedMemberId: selectedMemberId,
       now: DateTime.now(),
-      calculationVersion: 1,
+      calculationVersion: 1, // You could increment this to force cache invalidation
     );
+
+    // Calculate a fast hash of the inputs
+    final currentHash = Object.hash(
+      input.budgetLimit,
+      input.activeMembersCount,
+      input.filterTypeIndex,
+      input.customRange?.start,
+      input.customRange?.end,
+      input.selectedMemberId,
+      Object.hashAll(expenseState.expenses.map((e) => e.id)),
+      Object.hashAll(expenseState.expenses.map((e) => e.amount)), // Catches edits to same ID
+    );
+
+    if (_cachedInputHash == currentHash && _cachedAnalyticsState != null) {
+      // Return immediately from memory cache without running isolate
+      state = _cachedAnalyticsState!;
+      return;
+    }
 
     // Compute in background isolate to prevent UI freezing
     final result = await compute(runCalculations, input);
