@@ -169,6 +169,7 @@ class AnalyticsState {
   
   // Phase 2
   final ExecutiveSummary? summary;
+  final SpendingHealth? healthScore;
 
   AnalyticsState({
     required this.filterType,
@@ -211,6 +212,7 @@ class AnalyticsState {
     required this.timeOfDayCounts,
     required this.timeOfDayAmounts,
     this.summary,
+    this.healthScore,
   });
 
   factory AnalyticsState.initial(DateTimeRange range, DateTimeRange prevRange) {
@@ -701,6 +703,7 @@ class AnalyticsState {
       timeOfDayCounts: agg.timeOfDayCounts,
       timeOfDayAmounts: agg.timeOfDayAmounts,
       summary: result.summary,
+      healthScore: result.healthScore,
     );
   }
 }
@@ -1237,11 +1240,32 @@ class AnalyticsNotifier extends StateNotifier<AnalyticsState> {
       ),
     );
 
+
+    // Calculate top category percentage
+    double topCategoryPercentage = 0.0;
+    if (currentCatTotals.isNotEmpty && currentTotalSpent > 0) {
+      double maxCat = 0.0;
+      for (var val in currentCatTotals.values) {
+        if (val > maxCat) maxCat = val;
+      }
+      topCategoryPercentage = (maxCat / currentTotalSpent) * 100;
+    }
+
+    final healthScore = SpendingHealth.calculate(
+      totalSpent: currentTotalSpent,
+      budgetLimit: params.budgetLimit,
+      elapsedDays: currentElapsedDays,
+      daysInMonth: DateUtils.getDaysInMonth(params.now.year, params.now.month),
+      confidence: confidence,
+      topCategoryPercentage: topCategoryPercentage,
+    );
+
     return AnalyticsResult(
       input: params,
       confidence: confidence,
       aggregations: agg,
       summary: summary,
+      healthScore: healthScore,
     );
   }
 }
