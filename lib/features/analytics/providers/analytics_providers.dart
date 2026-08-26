@@ -166,7 +166,7 @@ class AnalyticsState {
   final List<String> aiRecommendations;
   final Map<String, int> timeOfDayCounts;
   final Map<String, double> timeOfDayAmounts;
-  
+
   // Phase 2
   final ExecutiveSummary? summary;
   final SpendingHealth? healthScore;
@@ -1239,7 +1239,6 @@ class AnalyticsNotifier extends StateNotifier<AnalyticsState> {
         equivalentPrevTransactionCount.toDouble(),
       ),
     );
-
 
     // Calculate top category percentage
     double topCategoryPercentage = 0.0;
