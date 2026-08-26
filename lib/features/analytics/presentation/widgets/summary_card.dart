@@ -37,28 +37,28 @@ class FinancialSummaryCards extends StatelessWidget {
           _buildSummaryCard(
             context,
             title: 'Total Spent',
-            value: currencyFmt.format(state.totalSpent),
+            value: currencyFmt.format(state.summary?.totalSpend.currentValue ?? state.totalSpent),
             icon: Icons.account_balance_wallet_outlined,
             iconColor: colorScheme.primary,
             cardBg: colorScheme.primary.withOpacity(0.12),
             bottomWidget: Row(
               children: [
                 Icon(
-                  state.totalSpentDiffPercent >= 0
+                  (state.summary?.totalSpend.percentageChange ?? state.totalSpentDiffPercent) >= 0
                       ? Icons.arrow_upward
                       : Icons.arrow_downward,
                   size: 14,
-                  color: state.totalSpentDiffPercent >= 0
+                  color: (state.summary?.totalSpend.percentageChange ?? state.totalSpentDiffPercent) >= 0
                       ? Colors.red
                       : Colors.green,
                 ),
                 const SizedBox(width: 4),
                 Text(
-                  '${state.totalSpentDiffPercent.abs().toStringAsFixed(0)}% from last period',
+                  '${(state.summary?.totalSpend.percentageChange ?? state.totalSpentDiffPercent).abs().toStringAsFixed(0)}% from last period',
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
-                    color: state.totalSpentDiffPercent >= 0
+                    color: (state.summary?.totalSpend.percentageChange ?? state.totalSpentDiffPercent) >= 0
                         ? Colors.red
                         : Colors.green,
                   ),
@@ -71,18 +71,18 @@ class FinancialSummaryCards extends StatelessWidget {
           _buildSummaryCard(
             context,
             title: 'Daily Average',
-            value: '${currencyFmt.format(state.dailyAverage)}/day',
+            value: '${currencyFmt.format(state.summary?.dailyAverage.currentValue ?? state.dailyAverage)}/day',
             icon: Icons.analytics_outlined,
             iconColor: Colors.blue,
             cardBg: Colors.blue.withOpacity(0.12),
             bottomWidget: Row(
               children: [
                 Icon(
-                  state.dailyAverageDiffPercent >= 0
+                  (state.summary?.dailyAverage.percentageChange ?? state.dailyAverageDiffPercent) >= 0
                       ? Icons.arrow_upward
                       : Icons.arrow_downward,
                   size: 14,
-                  color: state.dailyAverageDiffPercent >= 0
+                  color: (state.summary?.dailyAverage.percentageChange ?? state.dailyAverageDiffPercent) >= 0
                       ? Colors.red
                       : Colors.green,
                 ),
@@ -148,12 +148,12 @@ class FinancialSummaryCards extends StatelessWidget {
           _buildSummaryCard(
             context,
             title: 'Total Transactions',
-            value: '${state.totalTransactions} Entries',
+            value: '${state.summary?.totalTransactions.currentValue.toInt() ?? state.totalTransactions} Entries',
             icon: Icons.receipt_long_outlined,
             iconColor: Colors.orange,
             cardBg: Colors.orange.withOpacity(0.12),
             bottomWidget: Text(
-              '${state.prevTotalTransactions} in last period',
+              '${state.summary?.totalTransactions.previousValue.toInt() ?? state.prevTotalTransactions} in last period',
               style: TextStyle(
                 fontSize: 12,
                 color: colorScheme.onSurfaceVariant,
