@@ -953,7 +953,7 @@ class AnalyticsNotifier extends StateNotifier<AnalyticsState> {
   }
 
   // Top-level static function for Isolate processing
-  static AnalyticsResult _runCalculations(AnalyticsInput params) {
+  static AnalyticsResult runCalculations(AnalyticsInput params) {
     final filterType = AnalyticsFilterType.values[params.filterTypeIndex];
     final ranges = _calculateDateRanges(
       filterType,
