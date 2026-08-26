@@ -129,6 +129,11 @@ void main() {
       expect(state.diagnostic!.topCategoryShare, (3000 / 4500) * 100);
       expect(state.diagnostic!.primaryIncreaseContributor, 'Food'); // 1500 increase vs Shopping 1000 increase
       expect(state.diagnostic!.smallPurchasesCount, 0); // test data min is 500
+      
+      // Phase 5: Pattern Intelligence
+      expect(state.patterns, isNotNull);
+      expect(state.patterns!.consistency.level, isNot(ConsistencyLevel.unavailable));
+      expect(state.patterns!.highSpendingDays.length, 0); // No single day meets criteria in this small test 
     });
   });
 }
