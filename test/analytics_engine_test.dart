@@ -117,6 +117,11 @@ void main() {
       expect(state.summary!.totalSpend.absoluteChange, 2500.0);
       expect(state.summary!.totalSpend.percentageChange, 125.0); // (2500 / 2000) * 100
       expect(state.summary!.totalSpend.direction, TrendDirection.increase);
+      
+      // Phase 6: Health Score Checks
+      expect(state.healthScore, isNotNull);
+      expect(state.healthScore!.budgetAdherence, 100); // 4500 < 10000 limit
+      expect(state.healthScore!.dataConfidenceScore, 30); // Low confidence mapped to 30
     });
   });
 }
