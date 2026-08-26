@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:spendly/features/analytics/providers/analytics_providers.dart';
+import 'package:spendly/features/analytics/models/analytics_models.dart';
 import 'drill_down_sheet.dart';
+import 'package:spendly/features/analytics/presentation/widgets/insight_drill_down_sheet.dart';
 
 class FamilyMemberLeaderboard extends StatelessWidget {
   final AnalyticsState state;
@@ -25,7 +27,7 @@ class FamilyMemberLeaderboard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (state.memberShares.isEmpty) {
+    if (state.diagnostic?.memberInsights.isEmpty ?? true) {
       return const SizedBox.shrink();
     }
 
@@ -36,9 +38,9 @@ class FamilyMemberLeaderboard extends StatelessWidget {
     );
 
     // Sum of all member spending to compute percentages
-    final membersTotal = state.memberShares.fold<double>(
+    final membersTotal = state.diagnostic!.memberInsights.fold<double>(
       0,
-      (sum, m) => sum + m.totalSpent,
+      (sum, m) => sum + m.currentSpend,
     );
 
     final colorScheme = Theme.of(context).colorScheme;
@@ -91,15 +93,15 @@ class FamilyMemberLeaderboard extends StatelessWidget {
             ListView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              itemCount: state.memberShares.length,
+              itemCount: state.diagnostic!.memberInsights.length,
               itemBuilder: (context, idx) {
-                final member = state.memberShares[idx];
+                final member = state.diagnostic!.memberInsights[idx];
                 final progress = membersTotal > 0
-                    ? (member.totalSpent / membersTotal)
+                    ? (member.currentSpend / membersTotal)
                     : 0.0;
                 final color = _getMemberColor(idx);
-                final initial = member.name.isNotEmpty
-                    ? member.name.substring(0, 1).toUpperCase()
+                final initial = member.memberName.isNotEmpty
+                    ? member.memberName.substring(0, 1).toUpperCase()
                     : 'M';
 
                 return Padding(
@@ -107,24 +109,9 @@ class FamilyMemberLeaderboard extends StatelessWidget {
                   child: InkWell(
                     borderRadius: BorderRadius.circular(16),
                     onTap: () {
-                      final memberExpenses =
-                          state.filteredExpenses
-                              .where((e) => e.createdByName == member.name)
-                              .toList()
-                            ..sort(
-                              (a, b) => b.expenseDate.compareTo(a.expenseDate),
-                            );
-
-                      DrillDownSheet.show(
+                      InsightDrillDownSheet.showForMember(
                         context,
-                        title: member.name,
-                        subtitle: 'Member spending details',
-                        icon: Icons.person,
-                        color: color,
-                        totalAmount: member.totalSpent,
-                        expenses: memberExpenses,
-                        aiSummary:
-                            '${member.name} has logged ${member.count} expenses with an average of ${currencyFmt.format(member.average)}. Their top category is ${member.favoriteCategory}.',
+                        insight: member,
                       );
                     },
                     child: Padding(
@@ -186,7 +173,7 @@ class FamilyMemberLeaderboard extends StatelessWidget {
                                       MainAxisAlignment.spaceBetween,
                                   children: [
                                     Text(
-                                      member.name,
+                                      member.memberName,
                                       style: TextStyle(
                                         fontWeight: FontWeight.bold,
                                         fontSize: 14,
@@ -194,7 +181,7 @@ class FamilyMemberLeaderboard extends StatelessWidget {
                                       ),
                                     ),
                                     Text(
-                                      currencyFmt.format(member.totalSpent),
+                                      currencyFmt.format(member.currentSpend),
                                       style: TextStyle(
                                         fontWeight: FontWeight.w900,
                                         fontSize: 14,
@@ -205,7 +192,7 @@ class FamilyMemberLeaderboard extends StatelessWidget {
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  '${member.count} Expenses • Avg ${currencyFmt.format(member.average)} • Max ${currencyFmt.format(member.largest)}',
+                                  '${member.transactionCount} Expenses • Avg ${currencyFmt.format(member.averageTransaction)}',
                                   style: TextStyle(
                                     fontSize: 11,
                                     color: colorScheme.onSurfaceVariant,
@@ -213,7 +200,7 @@ class FamilyMemberLeaderboard extends StatelessWidget {
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  'Top Category: ${member.favoriteCategory} • Prefers ${member.preferredPaymentMethod}',
+                                  'Top Category: ${member.topCategory}',
                                   style: TextStyle(
                                     fontSize: 11,
                                     color: colorScheme.onSurfaceVariant,
