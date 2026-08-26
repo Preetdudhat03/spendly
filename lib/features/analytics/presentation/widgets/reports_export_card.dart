@@ -16,7 +16,15 @@ class ReportsExportCard extends StatelessWidget {
   Future<void> _exportCSV(BuildContext context) async {
     try {
       final List<List<dynamic>> rows = [
-        ['Transaction ID', 'Date', 'Description', 'Category', 'Logged By', 'Amount', 'Payment Method']
+        [
+          'Transaction ID',
+          'Date',
+          'Description',
+          'Category',
+          'Logged By',
+          'Amount',
+          'Payment Method',
+        ],
       ];
 
       for (var e in state.filteredExpenses) {
@@ -36,7 +44,9 @@ class ReportsExportCard extends StatelessWidget {
       final file = File('${directory.path}/spendly_expense_report.csv');
       await file.writeAsString(csvString);
 
-      await Share.shareXFiles([XFile(file.path)], text: 'Spendly Family Expense CSV Report');
+      await Share.shareXFiles([
+        XFile(file.path),
+      ], text: 'Spendly Family Expense CSV Report');
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -49,7 +59,11 @@ class ReportsExportCard extends StatelessWidget {
   Future<void> _exportPDF(BuildContext context) async {
     try {
       final pdf = pw.Document();
-      final currencyFmt = NumberFormat.currency(locale: 'en_IN', symbol: 'Rs. ', decimalDigits: 0);
+      final currencyFmt = NumberFormat.currency(
+        locale: 'en_IN',
+        symbol: 'Rs. ',
+        decimalDigits: 0,
+      );
 
       pdf.addPage(
         pw.MultiPage(
@@ -61,45 +75,127 @@ class ReportsExportCard extends StatelessWidget {
                 child: pw.Row(
                   mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                   children: [
-                    pw.Text('Spendly Expense Report', style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold)),
-                    pw.Text(DateFormat('MMM d, yyyy').format(DateTime.now()), style: const pw.TextStyle(fontSize: 10)),
+                    pw.Text(
+                      'Spendly Expense Report',
+                      style: pw.TextStyle(
+                        fontSize: 24,
+                        fontWeight: pw.FontWeight.bold,
+                      ),
+                    ),
+                    pw.Text(
+                      DateFormat('MMM d, yyyy').format(DateTime.now()),
+                      style: const pw.TextStyle(fontSize: 10),
+                    ),
                   ],
                 ),
               ),
               pw.SizedBox(height: 14),
-              pw.Text('Family Account Summary', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
+              pw.Text(
+                'Family Account Summary',
+                style: pw.TextStyle(
+                  fontSize: 14,
+                  fontWeight: pw.FontWeight.bold,
+                ),
+              ),
               pw.SizedBox(height: 6),
-              pw.Bullet(text: 'Total Spent: ${currencyFmt.format(state.totalSpent)}'),
-              pw.Bullet(text: 'Daily Average: ${currencyFmt.format(state.dailyAverage)}/day'),
-              pw.Bullet(text: 'Total Transactions: ${state.totalTransactions} Entries'),
-              pw.Bullet(text: 'Active Members: ${state.activeMembersCount} family members active'),
+              pw.Bullet(
+                text: 'Total Spent: ${currencyFmt.format(state.totalSpent)}',
+              ),
+              pw.Bullet(
+                text:
+                    'Daily Average: ${currencyFmt.format(state.dailyAverage)}/day',
+              ),
+              pw.Bullet(
+                text: 'Total Transactions: ${state.totalTransactions} Entries',
+              ),
+              pw.Bullet(
+                text:
+                    'Active Members: ${state.activeMembersCount} family members active',
+              ),
               pw.SizedBox(height: 20),
-              
-              pw.Text('Recent Expenses List', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
+
+              pw.Text(
+                'Recent Expenses List',
+                style: pw.TextStyle(
+                  fontSize: 14,
+                  fontWeight: pw.FontWeight.bold,
+                ),
+              ),
               pw.SizedBox(height: 8),
-              
+
               // Table of expenses
               pw.Table(
                 border: pw.TableBorder.all(color: PdfColors.grey300),
                 children: [
                   pw.TableRow(
-                    decoration: const pw.BoxDecoration(color: PdfColors.grey100),
+                    decoration: const pw.BoxDecoration(
+                      color: PdfColors.grey100,
+                    ),
                     children: [
-                      pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text('Date', style: pw.TextStyle(fontWeight: pw.FontWeight.bold))),
-                      pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text('Description', style: pw.TextStyle(fontWeight: pw.FontWeight.bold))),
-                      pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text('Category', style: pw.TextStyle(fontWeight: pw.FontWeight.bold))),
-                      pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text('By', style: pw.TextStyle(fontWeight: pw.FontWeight.bold))),
-                      pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text('Amount', style: pw.TextStyle(fontWeight: pw.FontWeight.bold))),
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(6),
+                        child: pw.Text(
+                          'Date',
+                          style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                        ),
+                      ),
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(6),
+                        child: pw.Text(
+                          'Description',
+                          style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                        ),
+                      ),
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(6),
+                        child: pw.Text(
+                          'Category',
+                          style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                        ),
+                      ),
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(6),
+                        child: pw.Text(
+                          'By',
+                          style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                        ),
+                      ),
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(6),
+                        child: pw.Text(
+                          'Amount',
+                          style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                        ),
+                      ),
                     ],
                   ),
                   ...state.filteredExpenses.map((e) {
                     return pw.TableRow(
                       children: [
-                        pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text(DateFormat('MMM d').format(e.expenseDate))),
-                        pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text(e.description.isEmpty ? e.category : e.description)),
-                        pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text(e.category)),
-                        pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text(e.createdByName)),
-                        pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text(currencyFmt.format(e.amount))),
+                        pw.Padding(
+                          padding: const pw.EdgeInsets.all(6),
+                          child: pw.Text(
+                            DateFormat('MMM d').format(e.expenseDate),
+                          ),
+                        ),
+                        pw.Padding(
+                          padding: const pw.EdgeInsets.all(6),
+                          child: pw.Text(
+                            e.description.isEmpty ? e.category : e.description,
+                          ),
+                        ),
+                        pw.Padding(
+                          padding: const pw.EdgeInsets.all(6),
+                          child: pw.Text(e.category),
+                        ),
+                        pw.Padding(
+                          padding: const pw.EdgeInsets.all(6),
+                          child: pw.Text(e.createdByName),
+                        ),
+                        pw.Padding(
+                          padding: const pw.EdgeInsets.all(6),
+                          child: pw.Text(currencyFmt.format(e.amount)),
+                        ),
                       ],
                     );
                   }),
@@ -114,7 +210,9 @@ class ReportsExportCard extends StatelessWidget {
       final file = File('${directory.path}/spendly_expense_report.pdf');
       await file.writeAsBytes(await pdf.save());
 
-      await Share.shareXFiles([XFile(file.path)], text: 'Spendly Family Expense PDF Report');
+      await Share.shareXFiles([
+        XFile(file.path),
+      ], text: 'Spendly Family Expense PDF Report');
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -125,8 +223,13 @@ class ReportsExportCard extends StatelessWidget {
   }
 
   Future<void> _shareSummary(BuildContext context) async {
-    final currencyFmt = NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 0);
-    final summaryText = 'Spendly Financial Intelligence Summary:\n'
+    final currencyFmt = NumberFormat.currency(
+      locale: 'en_IN',
+      symbol: '₹',
+      decimalDigits: 0,
+    );
+    final summaryText =
+        'Spendly Financial Intelligence Summary:\n'
         '• Total Spent: ${currencyFmt.format(state.totalSpent)}\n'
         '• Daily Average: ${currencyFmt.format(state.dailyAverage)}/day\n'
         '• Transactions: ${state.totalTransactions} entries logged\n'
@@ -134,7 +237,7 @@ class ReportsExportCard extends StatelessWidget {
         '• Financial Health Score: ${state.healthMetrics.totalScore}/100 (${state.healthScoreLabel})\n'
         '• Top Category: ${state.categoryShares.isNotEmpty ? state.categoryShares.first.category : "N/A"}\n'
         'Shared via Spendly App.';
-    
+
     await Share.share(summaryText);
   }
 
@@ -163,18 +266,25 @@ class ReportsExportCard extends StatelessWidget {
                     Text(
                       'Export & Share',
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: colorScheme.onSurface,
-                          ),
+                        fontWeight: FontWeight.bold,
+                        color: colorScheme.onSurface,
+                      ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       'Distribute financial intelligence reports',
-                      style: TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: colorScheme.onSurfaceVariant,
+                      ),
                     ),
                   ],
                 ),
-                Icon(Icons.ios_share_outlined, size: 20, color: colorScheme.primary),
+                Icon(
+                  Icons.ios_share_outlined,
+                  size: 20,
+                  color: colorScheme.primary,
+                ),
               ],
             ),
             const SizedBox(height: 20),
@@ -216,7 +326,9 @@ class ReportsExportCard extends StatelessWidget {
                   label: 'Print Report',
                   icon: Icons.print_outlined,
                   color: Colors.purple[600]!,
-                  onTap: () => _exportPDF(context), // Shares PDF natively which has print capabilities
+                  onTap: () => _exportPDF(
+                    context,
+                  ), // Shares PDF natively which has print capabilities
                 ),
               ],
             ),

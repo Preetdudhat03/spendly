@@ -36,7 +36,11 @@ class SpendingHeatmap extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final currencyFmt = NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 0);
+    final currencyFmt = NumberFormat.currency(
+      locale: 'en_IN',
+      symbol: '₹',
+      decimalDigits: 0,
+    );
     final dateFmt = DateFormat('EEE, MMM d');
     final colorScheme = Theme.of(context).colorScheme;
 
@@ -45,7 +49,9 @@ class SpendingHeatmap extends ConsumerWidget {
     String? activeMemberName;
     List<Expense> explorerExpenses = allExpenses;
     if (selectedMemberId != null) {
-      explorerExpenses = allExpenses.where((e) => e.createdBy == selectedMemberId).toList();
+      explorerExpenses = allExpenses
+          .where((e) => e.createdBy == selectedMemberId)
+          .toList();
       try {
         final member = familyState.members.firstWhere(
           (m) => m.userId == selectedMemberId,
@@ -89,20 +95,27 @@ class SpendingHeatmap extends ConsumerWidget {
                     Text(
                       'Spending Heatmap',
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: colorScheme.onSurface,
-                          ),
+                        fontWeight: FontWeight.bold,
+                        color: colorScheme.onSurface,
+                      ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       'Identify spending frequency patterns',
-                      style: TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: colorScheme.onSurfaceVariant,
+                      ),
                     ),
                   ],
                 ),
                 IconButton(
                   tooltip: 'Open Spending Heatmap Explorer',
-                  icon: Icon(Icons.grid_on, size: 20, color: colorScheme.primary),
+                  icon: Icon(
+                    Icons.grid_on,
+                    size: 20,
+                    color: colorScheme.primary,
+                  ),
                   onPressed: () {
                     final initialYear = state.dateRange.start.year;
                     SpendingHeatmapExplorer.show(
@@ -134,7 +147,11 @@ class SpendingHeatmap extends ConsumerWidget {
                             alignment: Alignment.centerLeft,
                             child: Text(
                               DateFormat('MMM').format(firstDay),
-                              style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: colorScheme.onSurfaceVariant),
+                              style: TextStyle(
+                                fontSize: 9,
+                                fontWeight: FontWeight.bold,
+                                color: colorScheme.onSurfaceVariant,
+                              ),
                             ),
                           );
                         }
@@ -187,15 +204,23 @@ class SpendingHeatmap extends ConsumerWidget {
                                   return Expanded(
                                     child: Tooltip(
                                       triggerMode: TooltipTriggerMode.tap,
-                                      message: '${dateFmt.format(day)}: ${currencyFmt.format(amount)}',
+                                      message:
+                                          '${dateFmt.format(day)}: ${currencyFmt.format(amount)}',
                                       child: GestureDetector(
                                         onTap: () {
-                                          final dayExpenses = allExpenses.where((e) {
-                                            return e.expenseDate.year == day.year &&
-                                                e.expenseDate.month == day.month &&
-                                                e.expenseDate.day == day.day;
-                                          }).toList()
-                                            ..sort((a, b) => b.amount.compareTo(a.amount));
+                                          final dayExpenses =
+                                              allExpenses.where((e) {
+                                                return e.expenseDate.year ==
+                                                        day.year &&
+                                                    e.expenseDate.month ==
+                                                        day.month &&
+                                                    e.expenseDate.day ==
+                                                        day.day;
+                                              }).toList()..sort(
+                                                (a, b) => b.amount.compareTo(
+                                                  a.amount,
+                                                ),
+                                              );
 
                                           DrillDownSheet.show(
                                             context,
@@ -205,17 +230,26 @@ class SpendingHeatmap extends ConsumerWidget {
                                             color: colorScheme.primary,
                                             totalAmount: amount,
                                             expenses: dayExpenses,
-                                            aiSummary: 'You logged ${dayExpenses.length} transactions on this day.',
+                                            aiSummary:
+                                                'You logged ${dayExpenses.length} transactions on this day.',
                                           );
                                         },
                                         child: Container(
                                           height: 16,
-                                          margin: const EdgeInsets.symmetric(horizontal: 3),
+                                          margin: const EdgeInsets.symmetric(
+                                            horizontal: 3,
+                                          ),
                                           decoration: BoxDecoration(
-                                            color: _getCellColor(context, amount),
-                                            borderRadius: BorderRadius.circular(4),
+                                            color: _getCellColor(
+                                              context,
+                                              amount,
+                                            ),
+                                            borderRadius: BorderRadius.circular(
+                                              4,
+                                            ),
                                             border: Border.all(
-                                              color: colorScheme.outline.withOpacity(0.3),
+                                              color: colorScheme.outline
+                                                  .withOpacity(0.3),
                                               width: 0.5,
                                             ),
                                           ),
@@ -242,17 +276,61 @@ class SpendingHeatmap extends ConsumerWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                Text('Less', style: TextStyle(fontSize: 11, color: colorScheme.onSurfaceVariant)),
+                Text(
+                  'Less',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
                 const SizedBox(width: 4),
-                Container(width: 12, height: 12, decoration: BoxDecoration(color: colorScheme.surfaceContainerHigh.withOpacity(0.5), borderRadius: BorderRadius.circular(3), border: Border.all(color: colorScheme.outline.withOpacity(0.3), width: 0.5))),
+                Container(
+                  width: 12,
+                  height: 12,
+                  decoration: BoxDecoration(
+                    color: colorScheme.surfaceContainerHigh.withOpacity(0.5),
+                    borderRadius: BorderRadius.circular(3),
+                    border: Border.all(
+                      color: colorScheme.outline.withOpacity(0.3),
+                      width: 0.5,
+                    ),
+                  ),
+                ),
                 const SizedBox(width: 3),
-                Container(width: 12, height: 12, decoration: BoxDecoration(color: colorScheme.primary.withOpacity(0.30), borderRadius: BorderRadius.circular(3))),
+                Container(
+                  width: 12,
+                  height: 12,
+                  decoration: BoxDecoration(
+                    color: colorScheme.primary.withOpacity(0.30),
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                ),
                 const SizedBox(width: 3),
-                Container(width: 12, height: 12, decoration: BoxDecoration(color: colorScheme.primary.withOpacity(0.65), borderRadius: BorderRadius.circular(3))),
+                Container(
+                  width: 12,
+                  height: 12,
+                  decoration: BoxDecoration(
+                    color: colorScheme.primary.withOpacity(0.65),
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                ),
                 const SizedBox(width: 3),
-                Container(width: 12, height: 12, decoration: BoxDecoration(color: colorScheme.primary, borderRadius: BorderRadius.circular(3))),
+                Container(
+                  width: 12,
+                  height: 12,
+                  decoration: BoxDecoration(
+                    color: colorScheme.primary,
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                ),
                 const SizedBox(width: 4),
-                Text('More', style: TextStyle(fontSize: 11, color: colorScheme.onSurfaceVariant)),
+                Text(
+                  'More',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
               ],
             ),
           ],

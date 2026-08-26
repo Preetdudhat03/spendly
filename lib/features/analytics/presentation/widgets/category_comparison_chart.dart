@@ -15,7 +15,11 @@ class CategoryComparisonChart extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
-    final currencyFmt = NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 0);
+    final currencyFmt = NumberFormat.currency(
+      locale: 'en_IN',
+      symbol: '₹',
+      decimalDigits: 0,
+    );
 
     // We sort shares descending (they are already sorted in the provider, but let's be sure)
     final sortedShares = List<CategoryShare>.from(state.categoryShares)
@@ -47,18 +51,25 @@ class CategoryComparisonChart extends StatelessWidget {
                     Text(
                       'Category Comparison',
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: colorScheme.onSurface,
-                          ),
+                        fontWeight: FontWeight.bold,
+                        color: colorScheme.onSurface,
+                      ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       'Compare spending limits and trends',
-                      style: TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: colorScheme.onSurfaceVariant,
+                      ),
                     ),
                   ],
                 ),
-                Icon(Icons.align_horizontal_left, size: 20, color: colorScheme.primary),
+                Icon(
+                  Icons.align_horizontal_left,
+                  size: 20,
+                  color: colorScheme.primary,
+                ),
               ],
             ),
             const SizedBox(height: 20),
@@ -77,7 +88,8 @@ class CategoryComparisonChart extends StatelessWidget {
                 // Spend comparison details
                 String compText = '';
                 if (share.prevAmount > 0) {
-                  compText = '${isIncrease ? '↑' : '↓'} ${share.diffPercent.toStringAsFixed(0)}% from last period';
+                  compText =
+                      '${isIncrease ? '↑' : '↓'} ${share.diffPercent.toStringAsFixed(0)}% from last period';
                 } else {
                   compText = 'New category spend';
                 }
@@ -99,7 +111,10 @@ class CategoryComparisonChart extends StatelessWidget {
                                 meta.iconPath,
                                 width: 18,
                                 height: 18,
-                                colorFilter: ColorFilter.mode(meta.color, BlendMode.srcIn),
+                                colorFilter: ColorFilter.mode(
+                                  meta.color,
+                                  BlendMode.srcIn,
+                                ),
                               ),
                               const SizedBox(width: 8),
                               Text(

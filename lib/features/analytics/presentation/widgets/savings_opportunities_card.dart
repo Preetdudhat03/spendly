@@ -32,18 +32,25 @@ class SavingsOpportunitiesCard extends StatelessWidget {
                     Text(
                       'Savings Opportunities',
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: colorScheme.onSurface,
-                          ),
+                        fontWeight: FontWeight.bold,
+                        color: colorScheme.onSurface,
+                      ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       'AI-detected avenues to optimize family savings',
-                      style: TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: colorScheme.onSurfaceVariant,
+                      ),
                     ),
                   ],
                 ),
-                Icon(Icons.lightbulb_outline, size: 22, color: Colors.amber[600]),
+                Icon(
+                  Icons.lightbulb_outline,
+                  size: 22,
+                  color: Colors.amber[600],
+                ),
               ],
             ),
             const SizedBox(height: 16),
@@ -61,7 +68,11 @@ class SavingsOpportunitiesCard extends StatelessWidget {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Icon(Icons.savings_outlined, size: 18, color: Colors.amber),
+                    const Icon(
+                      Icons.savings_outlined,
+                      size: 18,
+                      color: Colors.amber,
+                    ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(

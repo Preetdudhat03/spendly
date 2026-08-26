@@ -57,9 +57,16 @@ class AnalyticsPage extends ConsumerWidget {
         color: Theme.of(context).primaryColor,
         child: expenseState.isLoading || state.isLoading
             ? _buildLoadingState(context, isWide)
-            : expenseState.expenses.isEmpty || (state.filteredExpenses.isEmpty && ref.read(analyticsMemberFilterProvider) != null)
-                ? _buildEmptyState(context, ref)
-                : _buildDashboardContent(context, state, expenseState.expenses, isWide),
+            : expenseState.expenses.isEmpty ||
+                  (state.filteredExpenses.isEmpty &&
+                      ref.read(analyticsMemberFilterProvider) != null)
+            ? _buildEmptyState(context, ref)
+            : _buildDashboardContent(
+                context,
+                state,
+                expenseState.expenses,
+                isWide,
+              ),
       ),
     );
   }
@@ -67,17 +74,21 @@ class AnalyticsPage extends ConsumerWidget {
   Widget _buildEmptyState(BuildContext context, WidgetRef ref) {
     final selectedMemberId = ref.watch(analyticsMemberFilterProvider);
     final familyState = ref.watch(familyProvider);
-    
+
     String messageTitle = 'No expenses recorded yet';
-    String messageBody = 'Log your first family transaction to activate real-time financial intelligence dashboard metrics.';
-    
+    String messageBody =
+        'Log your first family transaction to activate real-time financial intelligence dashboard metrics.';
+
     if (selectedMemberId != null) {
-      final memberName = familyState.members.firstWhere(
-        (m) => m.userId == selectedMemberId, 
-        orElse: () => familyState.members.first
-      ).displayName;
+      final memberName = familyState.members
+          .firstWhere(
+            (m) => m.userId == selectedMemberId,
+            orElse: () => familyState.members.first,
+          )
+          .displayName;
       messageTitle = '$memberName has no expenses';
-      messageBody = 'No expenses were found for $memberName during this period.';
+      messageBody =
+          'No expenses were found for $memberName during this period.';
     }
 
     return SingleChildScrollView(
@@ -95,39 +106,69 @@ class AnalyticsPage extends ConsumerWidget {
                 color: Theme.of(context).primaryColor.withOpacity(0.08),
                 shape: BoxShape.circle,
               ),
-              child: Icon(Icons.bar_chart_outlined, size: 64, color: Theme.of(context).primaryColor),
+              child: Icon(
+                Icons.bar_chart_outlined,
+                size: 64,
+                color: Theme.of(context).primaryColor,
+              ),
             ),
             const SizedBox(height: 24),
             Text(
               messageTitle,
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900, letterSpacing: -0.5),
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w900,
+                letterSpacing: -0.5,
+              ),
             ),
             const SizedBox(height: 8),
             Text(
               messageBody,
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.grey[500], fontSize: 13, height: 1.4),
+              style: TextStyle(
+                color: Colors.grey[500],
+                fontSize: 13,
+                height: 1.4,
+              ),
             ),
             const SizedBox(height: 24),
             if (selectedMemberId != null)
               OutlinedButton.icon(
                 style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 14,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
                 ),
-                onPressed: () => ref.read(analyticsMemberFilterProvider.notifier).state = null,
+                onPressed: () =>
+                    ref.read(analyticsMemberFilterProvider.notifier).state =
+                        null,
                 icon: const Icon(Icons.clear),
-                label: const Text('Clear Filter', style: TextStyle(fontWeight: FontWeight.bold)),
+                label: const Text(
+                  'Clear Filter',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
               )
             else
               ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 14,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
                 ),
                 onPressed: () => context.go('/add'),
                 icon: const Icon(Icons.add_circle_outline),
-                label: const Text('Add First Expense', style: TextStyle(fontWeight: FontWeight.bold)),
+                label: const Text(
+                  'Add First Expense',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
               ),
           ],
         ),
@@ -137,7 +178,9 @@ class AnalyticsPage extends ConsumerWidget {
 
   Widget _buildLoadingState(BuildContext context, bool isWide) {
     return SingleChildScrollView(
-      padding: isWide ? const EdgeInsets.symmetric(horizontal: 20, vertical: 10) : const EdgeInsets.fromLTRB(20, 10, 20, 140),
+      padding: isWide
+          ? const EdgeInsets.symmetric(horizontal: 20, vertical: 10)
+          : const EdgeInsets.fromLTRB(20, 10, 20, 140),
       child: ShimmerLoading(
         isLoading: true,
         child: Column(
@@ -169,7 +212,12 @@ class AnalyticsPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildDashboardContent(BuildContext context, AnalyticsState state, List<Expense> allExpenses, bool isWide) {
+  Widget _buildDashboardContent(
+    BuildContext context,
+    AnalyticsState state,
+    List<Expense> allExpenses,
+    bool isWide,
+  ) {
     Widget animatedItem(Widget child, int index) {
       return child;
     }
@@ -185,7 +233,7 @@ class AnalyticsPage extends ConsumerWidget {
             const SizedBox(height: 20),
             animatedItem(FinancialSummaryCards(state: state), 1),
             const SizedBox(height: 24),
-            
+
             // Grid layout for tablet/desktop split view
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -225,7 +273,10 @@ class AnalyticsPage extends ConsumerWidget {
                       const SizedBox(height: 20),
                       animatedItem(SpendingPatternsCard(state: state), 11),
                       const SizedBox(height: 20),
-                      animatedItem(SpendingHeatmap(state: state, allExpenses: allExpenses), 13),
+                      animatedItem(
+                        SpendingHeatmap(state: state, allExpenses: allExpenses),
+                        13,
+                      ),
                       const SizedBox(height: 20),
                       animatedItem(SpendingCalendar(state: state), 14),
                       const SizedBox(height: 20),
@@ -260,7 +311,10 @@ class AnalyticsPage extends ConsumerWidget {
             const SizedBox(height: 16),
             animatedItem(SpendingTrendChart(state: state), 4),
             const SizedBox(height: 16),
-            animatedItem(SpendingHeatmap(state: state, allExpenses: allExpenses), 5),
+            animatedItem(
+              SpendingHeatmap(state: state, allExpenses: allExpenses),
+              5,
+            ),
             const SizedBox(height: 16),
             animatedItem(CategoryDonutChart(state: state), 6),
             const SizedBox(height: 16),

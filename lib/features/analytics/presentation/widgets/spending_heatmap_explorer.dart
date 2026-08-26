@@ -3,11 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:spendly/models/expense.dart';
 
-enum ExplorerLevel {
-  year,
-  month,
-  day,
-}
+enum ExplorerLevel { year, month, day }
 
 class SpendingHeatmapExplorer extends StatefulWidget {
   final List<Expense> expenses;
@@ -41,7 +37,8 @@ class SpendingHeatmapExplorer extends StatefulWidget {
   }
 
   @override
-  State<SpendingHeatmapExplorer> createState() => _SpendingHeatmapExplorerState();
+  State<SpendingHeatmapExplorer> createState() =>
+      _SpendingHeatmapExplorerState();
 }
 
 class _SpendingHeatmapExplorerState extends State<SpendingHeatmapExplorer> {
@@ -69,7 +66,8 @@ class _SpendingHeatmapExplorerState extends State<SpendingHeatmapExplorer> {
     final Set<int> yearsSet = {widget.initialYear, DateTime.now().year};
 
     for (final exp in widget.expenses) {
-      final key = '${exp.expenseDate.year}-${exp.expenseDate.month}-${exp.expenseDate.day}';
+      final key =
+          '${exp.expenseDate.year}-${exp.expenseDate.month}-${exp.expenseDate.day}';
       _dailyExpensesMap.putIfAbsent(key, () => []).add(exp);
       _dailyTotalMap[key] = (_dailyTotalMap[key] ?? 0.0) + exp.amount;
       yearsSet.add(exp.expenseDate.year);
@@ -211,9 +209,9 @@ class _SpendingHeatmapExplorerState extends State<SpendingHeatmapExplorer> {
               Text(
                 'Select Year',
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: colorScheme.onSurface,
-                    ),
+                  fontWeight: FontWeight.bold,
+                  color: colorScheme.onSurface,
+                ),
               ),
               const SizedBox(height: 12),
               const Divider(height: 1),
@@ -230,12 +228,18 @@ class _SpendingHeatmapExplorerState extends State<SpendingHeatmapExplorer> {
                         '$yr',
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                          color: isSelected ? colorScheme.primary : colorScheme.onSurface,
+                          fontWeight: isSelected
+                              ? FontWeight.bold
+                              : FontWeight.normal,
+                          color: isSelected
+                              ? colorScheme.primary
+                              : colorScheme.onSurface,
                           fontSize: 16,
                         ),
                       ),
-                      trailing: isSelected ? Icon(Icons.check_circle, color: colorScheme.primary) : null,
+                      trailing: isSelected
+                          ? Icon(Icons.check_circle, color: colorScheme.primary)
+                          : null,
                       onTap: () {
                         Navigator.pop(context);
                         _navigateToYear(yr);
@@ -254,8 +258,18 @@ class _SpendingHeatmapExplorerState extends State<SpendingHeatmapExplorer> {
   void _showMonthPickerSelector() {
     final colorScheme = Theme.of(context).colorScheme;
     final months = [
-      'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December'
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
     ];
 
     showModalBottomSheet(
@@ -282,9 +296,9 @@ class _SpendingHeatmapExplorerState extends State<SpendingHeatmapExplorer> {
               Text(
                 'Select Month',
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: colorScheme.onSurface,
-                    ),
+                  fontWeight: FontWeight.bold,
+                  color: colorScheme.onSurface,
+                ),
               ),
               const SizedBox(height: 12),
               const Divider(height: 1),
@@ -300,12 +314,18 @@ class _SpendingHeatmapExplorerState extends State<SpendingHeatmapExplorer> {
                         months[index],
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                          color: isSelected ? colorScheme.primary : colorScheme.onSurface,
+                          fontWeight: isSelected
+                              ? FontWeight.bold
+                              : FontWeight.normal,
+                          color: isSelected
+                              ? colorScheme.primary
+                              : colorScheme.onSurface,
                           fontSize: 16,
                         ),
                       ),
-                      trailing: isSelected ? Icon(Icons.check_circle, color: colorScheme.primary) : null,
+                      trailing: isSelected
+                          ? Icon(Icons.check_circle, color: colorScheme.primary)
+                          : null,
                       onTap: () {
                         Navigator.pop(context);
                         _navigateToMonth(monthNum);
@@ -343,7 +363,7 @@ class _SpendingHeatmapExplorerState extends State<SpendingHeatmapExplorer> {
               color: Colors.black.withValues(alpha: 0.15),
               blurRadius: 20,
               offset: const Offset(0, -4),
-            )
+            ),
           ],
         ),
         child: SafeArea(
@@ -405,8 +425,18 @@ class _SpendingHeatmapExplorerState extends State<SpendingHeatmapExplorer> {
   Widget _buildHeaderBar(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final monthNames = [
-      'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December'
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
     ];
 
     return Padding(
@@ -417,7 +447,9 @@ class _SpendingHeatmapExplorerState extends State<SpendingHeatmapExplorer> {
             children: [
               // Back Button (Drill-Up or Close)
               IconButton(
-                tooltip: _level == ExplorerLevel.year ? 'Close Explorer' : 'Go Back',
+                tooltip: _level == ExplorerLevel.year
+                    ? 'Close Explorer'
+                    : 'Go Back',
                 icon: Icon(
                   _level == ExplorerLevel.year ? Icons.close : Icons.arrow_back,
                   color: colorScheme.onSurface,
@@ -443,19 +475,29 @@ class _SpendingHeatmapExplorerState extends State<SpendingHeatmapExplorer> {
                           : null,
                       borderRadius: BorderRadius.circular(4),
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 4,
+                          vertical: 2,
+                        ),
                         child: Text(
                           '$_selectedYear',
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
-                            color: _level == ExplorerLevel.year ? colorScheme.primary : colorScheme.onSurfaceVariant,
+                            color: _level == ExplorerLevel.year
+                                ? colorScheme.primary
+                                : colorScheme.onSurfaceVariant,
                           ),
                         ),
                       ),
                     ),
-                    if (_level == ExplorerLevel.month || _level == ExplorerLevel.day) ...[
-                      Icon(Icons.chevron_right, size: 18, color: colorScheme.onSurfaceVariant),
+                    if (_level == ExplorerLevel.month ||
+                        _level == ExplorerLevel.day) ...[
+                      Icon(
+                        Icons.chevron_right,
+                        size: 18,
+                        color: colorScheme.onSurfaceVariant,
+                      ),
                       InkWell(
                         onTap: _level == ExplorerLevel.day
                             ? () {
@@ -467,22 +509,35 @@ class _SpendingHeatmapExplorerState extends State<SpendingHeatmapExplorer> {
                             : null,
                         borderRadius: BorderRadius.circular(4),
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 4,
+                            vertical: 2,
+                          ),
                           child: Text(
                             monthNames[_selectedMonth! - 1],
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
-                              color: _level == ExplorerLevel.month ? colorScheme.primary : colorScheme.onSurfaceVariant,
+                              color: _level == ExplorerLevel.month
+                                  ? colorScheme.primary
+                                  : colorScheme.onSurfaceVariant,
                             ),
                           ),
                         ),
                       ),
                     ],
-                    if (_level == ExplorerLevel.day && _selectedDay != null) ...[
-                      Icon(Icons.chevron_right, size: 18, color: colorScheme.onSurfaceVariant),
+                    if (_level == ExplorerLevel.day &&
+                        _selectedDay != null) ...[
+                      Icon(
+                        Icons.chevron_right,
+                        size: 18,
+                        color: colorScheme.onSurfaceVariant,
+                      ),
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 4,
+                          vertical: 2,
+                        ),
                         child: Text(
                           '$_selectedDay',
                           style: TextStyle(
@@ -500,7 +555,10 @@ class _SpendingHeatmapExplorerState extends State<SpendingHeatmapExplorer> {
               // Filter Badge if member filter active
               if (widget.activeMemberName != null)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: colorScheme.primaryContainer,
                     borderRadius: BorderRadius.circular(12),
@@ -536,7 +594,11 @@ class _SpendingHeatmapExplorerState extends State<SpendingHeatmapExplorer> {
   // YEAR VIEW
   // ==========================================
   Widget _buildYearView(BuildContext context) {
-    final currencyFmt = NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 0);
+    final currencyFmt = NumberFormat.currency(
+      locale: 'en_IN',
+      symbol: '₹',
+      decimalDigits: 0,
+    );
     final colorScheme = Theme.of(context).colorScheme;
 
     // Calculate Year Statistics
@@ -560,7 +622,20 @@ class _SpendingHeatmapExplorerState extends State<SpendingHeatmapExplorer> {
     }
 
     final avgPerMonth = totalYearSpent / 12;
-    final monthNamesShort = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    final monthNamesShort = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16.0),
@@ -580,13 +655,17 @@ class _SpendingHeatmapExplorerState extends State<SpendingHeatmapExplorer> {
                 onTap: _showYearPickerSelector,
                 borderRadius: BorderRadius.circular(12),
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
                         '$_selectedYear',
-                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                        style: Theme.of(context).textTheme.headlineSmall
+                            ?.copyWith(
                               fontWeight: FontWeight.bold,
                               color: colorScheme.onSurface,
                             ),
@@ -612,7 +691,9 @@ class _SpendingHeatmapExplorerState extends State<SpendingHeatmapExplorer> {
             decoration: BoxDecoration(
               color: colorScheme.surfaceContainerHigh.withValues(alpha: 0.4),
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: colorScheme.outline.withValues(alpha: 0.2)),
+              border: Border.all(
+                color: colorScheme.outline.withValues(alpha: 0.2),
+              ),
             ),
             child: Row(
               children: [
@@ -620,49 +701,98 @@ class _SpendingHeatmapExplorerState extends State<SpendingHeatmapExplorer> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Total Spent', style: TextStyle(fontSize: 11, color: colorScheme.onSurfaceVariant, fontWeight: FontWeight.w600)),
+                      Text(
+                        'Total Spent',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: colorScheme.onSurfaceVariant,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                       const SizedBox(height: 2),
                       FittedBox(
                         fit: BoxFit.scaleDown,
                         alignment: Alignment.centerLeft,
-                        child: Text(currencyFmt.format(totalYearSpent), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: colorScheme.primary)),
+                        child: Text(
+                          currencyFmt.format(totalYearSpent),
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w900,
+                            color: colorScheme.primary,
+                          ),
+                        ),
                       ),
                     ],
                   ),
                 ),
-                Container(height: 30, width: 1, color: colorScheme.outline.withValues(alpha: 0.2)),
+                Container(
+                  height: 30,
+                  width: 1,
+                  color: colorScheme.outline.withValues(alpha: 0.2),
+                ),
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 8.0),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Monthly Avg', style: TextStyle(fontSize: 11, color: colorScheme.onSurfaceVariant, fontWeight: FontWeight.w600)),
+                        Text(
+                          'Monthly Avg',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: colorScheme.onSurfaceVariant,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                         const SizedBox(height: 2),
                         FittedBox(
                           fit: BoxFit.scaleDown,
                           alignment: Alignment.centerLeft,
-                          child: Text(currencyFmt.format(avgPerMonth), style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: colorScheme.onSurface)),
+                          child: Text(
+                            currencyFmt.format(avgPerMonth),
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: colorScheme.onSurface,
+                            ),
+                          ),
                         ),
                       ],
                     ),
                   ),
                 ),
-                Container(height: 30, width: 1, color: colorScheme.outline.withValues(alpha: 0.2)),
+                Container(
+                  height: 30,
+                  width: 1,
+                  color: colorScheme.outline.withValues(alpha: 0.2),
+                ),
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.only(left: 8.0),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Peak Month', style: TextStyle(fontSize: 11, color: colorScheme.onSurfaceVariant, fontWeight: FontWeight.w600)),
+                        Text(
+                          'Peak Month',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: colorScheme.onSurfaceVariant,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                         const SizedBox(height: 2),
                         FittedBox(
                           fit: BoxFit.scaleDown,
                           alignment: Alignment.centerLeft,
                           child: Text(
-                            totalYearSpent > 0 ? '${monthNamesShort[highestMonth - 1]} (${currencyFmt.format(highestMonthSpent)})' : 'None',
-                            style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: colorScheme.onSurface),
+                            totalYearSpent > 0
+                                ? '${monthNamesShort[highestMonth - 1]} (${currencyFmt.format(highestMonthSpent)})'
+                                : 'None',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: colorScheme.onSurface,
+                            ),
                           ),
                         ),
                       ],
@@ -689,14 +819,17 @@ class _SpendingHeatmapExplorerState extends State<SpendingHeatmapExplorer> {
               final monthNum = index + 1;
               final mTotal = monthTotals[monthNum] ?? 0.0;
               return Semantics(
-                label: '${monthNamesShort[index]} $_selectedYear. Total spending ${currencyFmt.format(mTotal)}',
+                label:
+                    '${monthNamesShort[index]} $_selectedYear. Total spending ${currencyFmt.format(mTotal)}',
                 button: true,
                 child: GestureDetector(
                   onTap: () => _navigateToMonth(monthNum),
                   child: Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: colorScheme.surfaceContainerHigh.withValues(alpha: 0.2),
+                      color: colorScheme.surfaceContainerHigh.withValues(
+                        alpha: 0.2,
+                      ),
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
                         color: colorScheme.outline.withValues(alpha: 0.2),
@@ -711,21 +844,39 @@ class _SpendingHeatmapExplorerState extends State<SpendingHeatmapExplorer> {
                             Expanded(
                               child: Text(
                                 monthNamesShort[index],
-                                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: colorScheme.onSurface),
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 13,
+                                  color: colorScheme.onSurface,
+                                ),
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
-                            Icon(Icons.chevron_right, size: 14, color: colorScheme.onSurfaceVariant),
+                            Icon(
+                              Icons.chevron_right,
+                              size: 14,
+                              color: colorScheme.onSurfaceVariant,
+                            ),
                           ],
                         ),
                         Text(
                           mTotal > 0 ? currencyFmt.format(mTotal) : '₹0',
-                          style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: mTotal > 0 ? colorScheme.primary : colorScheme.onSurfaceVariant),
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w600,
+                            color: mTotal > 0
+                                ? colorScheme.primary
+                                : colorScheme.onSurfaceVariant,
+                          ),
                           overflow: TextOverflow.ellipsis,
                         ),
                         const SizedBox(height: 6),
                         Expanded(
-                          child: _buildMiniMonthHeatmap(context, _selectedYear, monthNum),
+                          child: _buildMiniMonthHeatmap(
+                            context,
+                            _selectedYear,
+                            monthNum,
+                          ),
                         ),
                       ],
                     ),
@@ -774,11 +925,25 @@ class _SpendingHeatmapExplorerState extends State<SpendingHeatmapExplorer> {
   // ==========================================
   Widget _buildMonthView(BuildContext context) {
     final month = _selectedMonth ?? 1;
-    final currencyFmt = NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 0);
+    final currencyFmt = NumberFormat.currency(
+      locale: 'en_IN',
+      symbol: '₹',
+      decimalDigits: 0,
+    );
     final colorScheme = Theme.of(context).colorScheme;
     final monthNames = [
-      'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December'
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
     ];
 
     final daysInMonth = DateUtils.getDaysInMonth(_selectedYear, month);
@@ -825,13 +990,17 @@ class _SpendingHeatmapExplorerState extends State<SpendingHeatmapExplorer> {
                 onTap: _showMonthPickerSelector,
                 borderRadius: BorderRadius.circular(12),
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
                         '${monthNames[month - 1]} $_selectedYear',
-                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                        style: Theme.of(context).textTheme.headlineSmall
+                            ?.copyWith(
                               fontWeight: FontWeight.bold,
                               color: colorScheme.onSurface,
                             ),
@@ -857,7 +1026,9 @@ class _SpendingHeatmapExplorerState extends State<SpendingHeatmapExplorer> {
             decoration: BoxDecoration(
               color: colorScheme.surfaceContainerHigh.withValues(alpha: 0.4),
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: colorScheme.outline.withValues(alpha: 0.2)),
+              border: Border.all(
+                color: colorScheme.outline.withValues(alpha: 0.2),
+              ),
             ),
             child: Row(
               children: [
@@ -865,49 +1036,98 @@ class _SpendingHeatmapExplorerState extends State<SpendingHeatmapExplorer> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Total Spent', style: TextStyle(fontSize: 11, color: colorScheme.onSurfaceVariant, fontWeight: FontWeight.w600)),
+                      Text(
+                        'Total Spent',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: colorScheme.onSurfaceVariant,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                       const SizedBox(height: 2),
                       FittedBox(
                         fit: BoxFit.scaleDown,
                         alignment: Alignment.centerLeft,
-                        child: Text(currencyFmt.format(totalMonthSpent), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: colorScheme.primary)),
+                        child: Text(
+                          currencyFmt.format(totalMonthSpent),
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w900,
+                            color: colorScheme.primary,
+                          ),
+                        ),
                       ),
                     ],
                   ),
                 ),
-                Container(height: 30, width: 1, color: colorScheme.outline.withValues(alpha: 0.2)),
+                Container(
+                  height: 30,
+                  width: 1,
+                  color: colorScheme.outline.withValues(alpha: 0.2),
+                ),
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 8.0),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Daily Avg', style: TextStyle(fontSize: 11, color: colorScheme.onSurfaceVariant, fontWeight: FontWeight.w600)),
+                        Text(
+                          'Daily Avg',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: colorScheme.onSurfaceVariant,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                         const SizedBox(height: 2),
                         FittedBox(
                           fit: BoxFit.scaleDown,
                           alignment: Alignment.centerLeft,
-                          child: Text(currencyFmt.format(dailyAvg), style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: colorScheme.onSurface)),
+                          child: Text(
+                            currencyFmt.format(dailyAvg),
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: colorScheme.onSurface,
+                            ),
+                          ),
                         ),
                       ],
                     ),
                   ),
                 ),
-                Container(height: 30, width: 1, color: colorScheme.outline.withValues(alpha: 0.2)),
+                Container(
+                  height: 30,
+                  width: 1,
+                  color: colorScheme.outline.withValues(alpha: 0.2),
+                ),
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.only(left: 8.0),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Peak Day', style: TextStyle(fontSize: 11, color: colorScheme.onSurfaceVariant, fontWeight: FontWeight.w600)),
+                        Text(
+                          'Peak Day',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: colorScheme.onSurfaceVariant,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                         const SizedBox(height: 2),
                         FittedBox(
                           fit: BoxFit.scaleDown,
                           alignment: Alignment.centerLeft,
                           child: Text(
-                            totalMonthSpent > 0 ? '$highestDay ${monthNames[month - 1].substring(0, 3)} (${currencyFmt.format(highestDaySpent)})' : 'None',
-                            style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: colorScheme.onSurface),
+                            totalMonthSpent > 0
+                                ? '$highestDay ${monthNames[month - 1].substring(0, 3)} (${currencyFmt.format(highestDaySpent)})'
+                                : 'None',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: colorScheme.onSurface,
+                            ),
                           ),
                         ),
                       ],
@@ -958,11 +1178,15 @@ class _SpendingHeatmapExplorerState extends State<SpendingHeatmapExplorer> {
               }
 
               final amt = _getDayTotal(_selectedYear, month, dayNum);
-              final isToday = now.year == _selectedYear && now.month == month && now.day == dayNum;
+              final isToday =
+                  now.year == _selectedYear &&
+                  now.month == month &&
+                  now.day == dayNum;
               final semanticIntensity = _getSemanticIntensityLabel(amt);
 
               return Semantics(
-                label: '${monthNames[month - 1]} $dayNum, $_selectedYear. Spending ${currencyFmt.format(amt)}. $semanticIntensity',
+                label:
+                    '${monthNames[month - 1]} $dayNum, $_selectedYear. Spending ${currencyFmt.format(amt)}. $semanticIntensity',
                 button: true,
                 child: GestureDetector(
                   onTap: () => _navigateToDay(dayNum),
@@ -971,16 +1195,20 @@ class _SpendingHeatmapExplorerState extends State<SpendingHeatmapExplorer> {
                       color: _getIntensityColor(context, amt),
                       borderRadius: BorderRadius.circular(10),
                       border: Border.all(
-                        color: isToday ? colorScheme.primary : colorScheme.outline.withValues(alpha: 0.2),
+                        color: isToday
+                            ? colorScheme.primary
+                            : colorScheme.outline.withValues(alpha: 0.2),
                         width: isToday ? 2.0 : 0.5,
                       ),
                       boxShadow: isToday
                           ? [
                               BoxShadow(
-                                color: colorScheme.primary.withValues(alpha: 0.3),
+                                color: colorScheme.primary.withValues(
+                                  alpha: 0.3,
+                                ),
                                 blurRadius: 4,
                                 spreadRadius: 1,
-                              )
+                              ),
                             ]
                           : null,
                     ),
@@ -991,9 +1219,13 @@ class _SpendingHeatmapExplorerState extends State<SpendingHeatmapExplorer> {
                         Text(
                           '$dayNum',
                           style: TextStyle(
-                            fontWeight: isToday ? FontWeight.w900 : FontWeight.bold,
+                            fontWeight: isToday
+                                ? FontWeight.w900
+                                : FontWeight.bold,
                             fontSize: 13,
-                            color: amt > 2000 ? colorScheme.onPrimary : colorScheme.onSurface,
+                            color: amt > 2000
+                                ? colorScheme.onPrimary
+                                : colorScheme.onSurface,
                           ),
                         ),
                         if (amt > 0) ...[
@@ -1005,7 +1237,11 @@ class _SpendingHeatmapExplorerState extends State<SpendingHeatmapExplorer> {
                               style: TextStyle(
                                 fontSize: 9,
                                 fontWeight: FontWeight.w600,
-                                color: amt > 2000 ? colorScheme.onPrimary.withValues(alpha: 0.9) : colorScheme.primary,
+                                color: amt > 2000
+                                    ? colorScheme.onPrimary.withValues(
+                                        alpha: 0.9,
+                                      )
+                                    : colorScheme.primary,
                               ),
                             ),
                           ),
@@ -1028,7 +1264,11 @@ class _SpendingHeatmapExplorerState extends State<SpendingHeatmapExplorer> {
   Widget _buildDayView(BuildContext context) {
     final month = _selectedMonth ?? 1;
     final day = _selectedDay ?? 1;
-    final currencyFmt = NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 0);
+    final currencyFmt = NumberFormat.currency(
+      locale: 'en_IN',
+      symbol: '₹',
+      decimalDigits: 0,
+    );
     final dateFmt = DateFormat('MMM d, yyyy');
     final colorScheme = Theme.of(context).colorScheme;
 
@@ -1041,8 +1281,10 @@ class _SpendingHeatmapExplorerState extends State<SpendingHeatmapExplorer> {
     final Map<String, double> categoryBreakdown = {};
 
     for (final exp in dayExpenses) {
-      memberContributions[exp.createdByName] = (memberContributions[exp.createdByName] ?? 0) + exp.amount;
-      categoryBreakdown[exp.category] = (categoryBreakdown[exp.category] ?? 0) + exp.amount;
+      memberContributions[exp.createdByName] =
+          (memberContributions[exp.createdByName] ?? 0) + exp.amount;
+      categoryBreakdown[exp.category] =
+          (categoryBreakdown[exp.category] ?? 0) + exp.amount;
     }
 
     String topCategory = 'None';
@@ -1054,7 +1296,8 @@ class _SpendingHeatmapExplorerState extends State<SpendingHeatmapExplorer> {
       }
     });
 
-    final sortedMembers = memberContributions.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
+    final sortedMembers = memberContributions.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
 
     return ListView(
       padding: const EdgeInsets.all(16.0),
@@ -1065,7 +1308,9 @@ class _SpendingHeatmapExplorerState extends State<SpendingHeatmapExplorer> {
           decoration: BoxDecoration(
             color: colorScheme.primaryContainer.withValues(alpha: 0.3),
             borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: colorScheme.primary.withValues(alpha: 0.3)),
+            border: Border.all(
+              color: colorScheme.primary.withValues(alpha: 0.3),
+            ),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1076,12 +1321,19 @@ class _SpendingHeatmapExplorerState extends State<SpendingHeatmapExplorer> {
                   children: [
                     Text(
                       dateFmt.format(targetDate),
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: colorScheme.onSurface),
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: colorScheme.onSurface,
+                      ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       '${dayExpenses.length} transactions recorded',
-                      style: TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: colorScheme.onSurfaceVariant,
+                      ),
                     ),
                   ],
                 ),
@@ -1091,7 +1343,11 @@ class _SpendingHeatmapExplorerState extends State<SpendingHeatmapExplorer> {
                 fit: BoxFit.scaleDown,
                 child: Text(
                   currencyFmt.format(totalSpent),
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: colorScheme.primary),
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w900,
+                    color: colorScheme.primary,
+                  ),
                 ),
               ),
             ],
@@ -1105,11 +1361,19 @@ class _SpendingHeatmapExplorerState extends State<SpendingHeatmapExplorer> {
             alignment: Alignment.center,
             child: Column(
               children: [
-                Icon(Icons.event_available, size: 48, color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5)),
+                Icon(
+                  Icons.event_available,
+                  size: 48,
+                  color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                ),
                 const SizedBox(height: 12),
                 Text(
                   'No expenses recorded on this day',
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: colorScheme.onSurfaceVariant),
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: colorScheme.onSurfaceVariant,
+                  ),
                 ),
               ],
             ),
@@ -1119,11 +1383,23 @@ class _SpendingHeatmapExplorerState extends State<SpendingHeatmapExplorer> {
           Row(
             children: [
               Expanded(
-                child: _buildDetailStatBox(context, 'Top Category', topCategory, Icons.category, Colors.orange),
+                child: _buildDetailStatBox(
+                  context,
+                  'Top Category',
+                  topCategory,
+                  Icons.category,
+                  Colors.orange,
+                ),
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: _buildDetailStatBox(context, 'Peak Category Spend', currencyFmt.format(topCategoryAmt), Icons.monetization_on, Colors.teal),
+                child: _buildDetailStatBox(
+                  context,
+                  'Peak Category Spend',
+                  currencyFmt.format(topCategoryAmt),
+                  Icons.monetization_on,
+                  Colors.teal,
+                ),
               ),
             ],
           ),
@@ -1131,7 +1407,14 @@ class _SpendingHeatmapExplorerState extends State<SpendingHeatmapExplorer> {
 
           // Family Contribution Breakdown
           if (sortedMembers.length > 1) ...[
-            Text('Family Member Contribution', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: colorScheme.onSurface)),
+            Text(
+              'Family Member Contribution',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: colorScheme.onSurface,
+              ),
+            ),
             const SizedBox(height: 12),
             ...sortedMembers.map((m) {
               final pct = totalSpent > 0 ? (m.value / totalSpent) : 0.0;
@@ -1141,7 +1424,15 @@ class _SpendingHeatmapExplorerState extends State<SpendingHeatmapExplorer> {
                   children: [
                     SizedBox(
                       width: 80,
-                      child: Text(m.key, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: colorScheme.onSurface), overflow: TextOverflow.ellipsis),
+                      child: Text(
+                        m.key,
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: colorScheme.onSurface,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
                     Expanded(
                       child: ClipRRect(
@@ -1155,7 +1446,14 @@ class _SpendingHeatmapExplorerState extends State<SpendingHeatmapExplorer> {
                       ),
                     ),
                     const SizedBox(width: 12),
-                    Text(currencyFmt.format(m.value), style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: colorScheme.onSurface)),
+                    Text(
+                      currencyFmt.format(m.value),
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                        color: colorScheme.onSurface,
+                      ),
+                    ),
                   ],
                 ),
               );
@@ -1164,7 +1462,14 @@ class _SpendingHeatmapExplorerState extends State<SpendingHeatmapExplorer> {
           ],
 
           // Detailed Transactions List
-          Text('Transactions List', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: colorScheme.onSurface)),
+          Text(
+            'Transactions List',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: colorScheme.onSurface,
+            ),
+          ),
           const SizedBox(height: 12),
           ...dayExpenses.map((exp) {
             return Card(
@@ -1173,27 +1478,45 @@ class _SpendingHeatmapExplorerState extends State<SpendingHeatmapExplorer> {
               color: colorScheme.surfaceContainerHigh.withValues(alpha: 0.3),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
-                side: BorderSide(color: colorScheme.outline.withValues(alpha: 0.15)),
+                side: BorderSide(
+                  color: colorScheme.outline.withValues(alpha: 0.15),
+                ),
               ),
               child: ListTile(
                 leading: CircleAvatar(
                   backgroundColor: colorScheme.primaryContainer,
                   child: Text(
-                    exp.createdByName.isNotEmpty ? exp.createdByName.substring(0, 1).toUpperCase() : 'M',
-                    style: TextStyle(fontWeight: FontWeight.bold, color: colorScheme.onPrimaryContainer),
+                    exp.createdByName.isNotEmpty
+                        ? exp.createdByName.substring(0, 1).toUpperCase()
+                        : 'M',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: colorScheme.onPrimaryContainer,
+                    ),
                   ),
                 ),
                 title: Text(
                   exp.description.isEmpty ? exp.category : exp.description,
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: colorScheme.onSurface),
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                    color: colorScheme.onSurface,
+                  ),
                 ),
                 subtitle: Text(
                   '${exp.category} • ${exp.paymentMethod} • ${exp.createdByName}',
-                  style: TextStyle(fontSize: 11, color: colorScheme.onSurfaceVariant),
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: colorScheme.onSurfaceVariant,
+                  ),
                 ),
                 trailing: Text(
                   currencyFmt.format(exp.amount),
-                  style: TextStyle(fontWeight: FontWeight.w900, fontSize: 14, color: colorScheme.primary),
+                  style: TextStyle(
+                    fontWeight: FontWeight.w900,
+                    fontSize: 14,
+                    color: colorScheme.primary,
+                  ),
                 ),
               ),
             );
@@ -1203,7 +1526,13 @@ class _SpendingHeatmapExplorerState extends State<SpendingHeatmapExplorer> {
     );
   }
 
-  Widget _buildDetailStatBox(BuildContext context, String label, String value, IconData icon, Color color) {
+  Widget _buildDetailStatBox(
+    BuildContext context,
+    String label,
+    String value,
+    IconData icon,
+    Color color,
+  ) {
     final colorScheme = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.all(12),
@@ -1220,7 +1549,15 @@ class _SpendingHeatmapExplorerState extends State<SpendingHeatmapExplorer> {
               Icon(icon, size: 16, color: color),
               const SizedBox(width: 6),
               Expanded(
-                child: Text(label, style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: colorScheme.onSurfaceVariant), overflow: TextOverflow.ellipsis),
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
             ],
           ),
@@ -1228,7 +1565,14 @@ class _SpendingHeatmapExplorerState extends State<SpendingHeatmapExplorer> {
           FittedBox(
             fit: BoxFit.scaleDown,
             alignment: Alignment.centerLeft,
-            child: Text(value, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: color)),
+            child: Text(
+              value,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w900,
+                color: color,
+              ),
+            ),
           ),
         ],
       ),
@@ -1244,22 +1588,72 @@ class _SpendingHeatmapExplorerState extends State<SpendingHeatmapExplorer> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Flexible(
-            child: Text('Spending Scale:', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: colorScheme.onSurfaceVariant), overflow: TextOverflow.ellipsis),
+            child: Text(
+              'Spending Scale:',
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                color: colorScheme.onSurfaceVariant,
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('Less', style: TextStyle(fontSize: 11, color: colorScheme.onSurfaceVariant)),
+              Text(
+                'Less',
+                style: TextStyle(
+                  fontSize: 11,
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              ),
               const SizedBox(width: 4),
-              Container(width: 10, height: 10, decoration: BoxDecoration(color: colorScheme.surfaceContainerHigh.withValues(alpha: 0.5), borderRadius: BorderRadius.circular(2))),
+              Container(
+                width: 10,
+                height: 10,
+                decoration: BoxDecoration(
+                  color: colorScheme.surfaceContainerHigh.withValues(
+                    alpha: 0.5,
+                  ),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
               const SizedBox(width: 2),
-              Container(width: 10, height: 10, decoration: BoxDecoration(color: colorScheme.primary.withValues(alpha: 0.30), borderRadius: BorderRadius.circular(2))),
+              Container(
+                width: 10,
+                height: 10,
+                decoration: BoxDecoration(
+                  color: colorScheme.primary.withValues(alpha: 0.30),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
               const SizedBox(width: 2),
-              Container(width: 10, height: 10, decoration: BoxDecoration(color: colorScheme.primary.withValues(alpha: 0.65), borderRadius: BorderRadius.circular(2))),
+              Container(
+                width: 10,
+                height: 10,
+                decoration: BoxDecoration(
+                  color: colorScheme.primary.withValues(alpha: 0.65),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
               const SizedBox(width: 2),
-              Container(width: 10, height: 10, decoration: BoxDecoration(color: colorScheme.primary, borderRadius: BorderRadius.circular(2))),
+              Container(
+                width: 10,
+                height: 10,
+                decoration: BoxDecoration(
+                  color: colorScheme.primary,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
               const SizedBox(width: 4),
-              Text('More', style: TextStyle(fontSize: 11, color: colorScheme.onSurfaceVariant)),
+              Text(
+                'More',
+                style: TextStyle(
+                  fontSize: 11,
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              ),
             ],
           ),
         ],

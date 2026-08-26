@@ -30,14 +30,18 @@ class MemberComparisonChart extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
-    final currencyFmt = NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 0);
+    final currencyFmt = NumberFormat.currency(
+      locale: 'en_IN',
+      symbol: '₹',
+      decimalDigits: 0,
+    );
 
     double maxSpending = 100.0;
     final List<BarChartGroupData> barGroups = [];
     for (int i = 0; i < state.memberShares.length; i++) {
       final member = state.memberShares[i];
       maxSpending = max(maxSpending, member.totalSpent);
-      
+
       barGroups.add(
         BarChartGroupData(
           x: i,
@@ -46,7 +50,9 @@ class MemberComparisonChart extends StatelessWidget {
               toY: member.totalSpent,
               color: _getMemberColor(i),
               width: 24,
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(6)),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(6),
+              ),
             ),
           ],
         ),
@@ -78,14 +84,17 @@ class MemberComparisonChart extends StatelessWidget {
                     Text(
                       'Member Spend Chart',
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: colorScheme.onSurface,
-                          ),
+                        fontWeight: FontWeight.bold,
+                        color: colorScheme.onSurface,
+                      ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       'Compare totals and usage patterns',
-                      style: TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: colorScheme.onSurfaceVariant,
+                      ),
                     ),
                   ],
                 ),
@@ -103,22 +112,32 @@ class MemberComparisonChart extends StatelessWidget {
                   maxY: maxSpending,
                   barTouchData: BarTouchData(
                     touchTooltipData: BarTouchTooltipData(
-                      getTooltipColor: (group) => colorScheme.surfaceContainerHigh.withOpacity(0.95),
+                      getTooltipColor: (group) =>
+                          colorScheme.surfaceContainerHigh.withOpacity(0.95),
                       getTooltipItem: (group, groupIndex, rod, rodIndex) {
                         final idx = group.x.toInt();
-                        if (idx < 0 || idx >= state.memberShares.length) return null;
+                        if (idx < 0 || idx >= state.memberShares.length)
+                          return null;
                         final member = state.memberShares[idx];
                         return BarTooltipItem(
                           '${member.name}\nTotal: ${currencyFmt.format(member.totalSpent)}\nAvg: ${currencyFmt.format(member.average)}\nEntries: ${member.count}',
-                          TextStyle(color: colorScheme.onSurface, fontSize: 11, fontWeight: FontWeight.bold),
+                          TextStyle(
+                            color: colorScheme.onSurface,
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                          ),
                         );
                       },
                     ),
                   ),
                   titlesData: FlTitlesData(
                     show: true,
-                    rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                    topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                    rightTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
+                    topTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
                     leftTitles: AxisTitles(
                       sideTitles: SideTitles(
                         showTitles: true,
@@ -127,7 +146,8 @@ class MemberComparisonChart extends StatelessWidget {
                           if (value == 0) return const SizedBox.shrink();
                           String formatted = '';
                           if (value >= 1000) {
-                            formatted = '₹${(value / 1000).toStringAsFixed(0)}k';
+                            formatted =
+                                '₹${(value / 1000).toStringAsFixed(0)}k';
                           } else {
                             formatted = '₹${value.toStringAsFixed(0)}';
                           }
@@ -135,7 +155,11 @@ class MemberComparisonChart extends StatelessWidget {
                             axisSide: meta.axisSide,
                             child: Text(
                               formatted,
-                              style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 10, fontWeight: FontWeight.bold),
+                              style: TextStyle(
+                                color: colorScheme.onSurfaceVariant,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           );
                         },
@@ -154,7 +178,11 @@ class MemberComparisonChart extends StatelessWidget {
                               axisSide: meta.axisSide,
                               child: Text(
                                 shortName,
-                                style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 11, fontWeight: FontWeight.bold),
+                                style: TextStyle(
+                                  color: colorScheme.onSurfaceVariant,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             );
                           }

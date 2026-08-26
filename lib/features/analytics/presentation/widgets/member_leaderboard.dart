@@ -29,10 +29,17 @@ class FamilyMemberLeaderboard extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
-    final currencyFmt = NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 0);
+    final currencyFmt = NumberFormat.currency(
+      locale: 'en_IN',
+      symbol: '₹',
+      decimalDigits: 0,
+    );
 
     // Sum of all member spending to compute percentages
-    final membersTotal = state.memberShares.fold<double>(0, (sum, m) => sum + m.totalSpent);
+    final membersTotal = state.memberShares.fold<double>(
+      0,
+      (sum, m) => sum + m.totalSpent,
+    );
 
     final colorScheme = Theme.of(context).colorScheme;
 
@@ -57,18 +64,25 @@ class FamilyMemberLeaderboard extends StatelessWidget {
                     Text(
                       'Family Leaderboard',
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: colorScheme.onSurface,
-                          ),
+                        fontWeight: FontWeight.bold,
+                        color: colorScheme.onSurface,
+                      ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       'Ranked by contribution this period',
-                      style: TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: colorScheme.onSurfaceVariant,
+                      ),
                     ),
                   ],
                 ),
-                Icon(Icons.emoji_events_outlined, size: 20, color: Colors.amber[700]),
+                Icon(
+                  Icons.emoji_events_outlined,
+                  size: 20,
+                  color: Colors.amber[700],
+                ),
               ],
             ),
             const SizedBox(height: 20),
@@ -80,19 +94,26 @@ class FamilyMemberLeaderboard extends StatelessWidget {
               itemCount: state.memberShares.length,
               itemBuilder: (context, idx) {
                 final member = state.memberShares[idx];
-                final progress = membersTotal > 0 ? (member.totalSpent / membersTotal) : 0.0;
+                final progress = membersTotal > 0
+                    ? (member.totalSpent / membersTotal)
+                    : 0.0;
                 final color = _getMemberColor(idx);
-                final initial = member.name.isNotEmpty ? member.name.substring(0, 1).toUpperCase() : 'M';
+                final initial = member.name.isNotEmpty
+                    ? member.name.substring(0, 1).toUpperCase()
+                    : 'M';
 
                 return Padding(
                   padding: const EdgeInsets.symmetric(vertical: 4.0),
                   child: InkWell(
                     borderRadius: BorderRadius.circular(16),
                     onTap: () {
-                      final memberExpenses = state.filteredExpenses
-                          .where((e) => e.createdByName == member.name)
-                          .toList()
-                        ..sort((a, b) => b.expenseDate.compareTo(a.expenseDate));
+                      final memberExpenses =
+                          state.filteredExpenses
+                              .where((e) => e.createdByName == member.name)
+                              .toList()
+                            ..sort(
+                              (a, b) => b.expenseDate.compareTo(a.expenseDate),
+                            );
 
                       DrillDownSheet.show(
                         context,
@@ -102,7 +123,8 @@ class FamilyMemberLeaderboard extends StatelessWidget {
                         color: color,
                         totalAmount: member.totalSpent,
                         expenses: memberExpenses,
-                        aiSummary: '${member.name} has logged ${member.count} expenses with an average of ${currencyFmt.format(member.average)}. Their top category is ${member.favoriteCategory}.',
+                        aiSummary:
+                            '${member.name} has logged ${member.count} expenses with an average of ${currencyFmt.format(member.average)}. Their top category is ${member.favoriteCategory}.',
                       );
                     },
                     child: Padding(
@@ -119,7 +141,11 @@ class FamilyMemberLeaderboard extends StatelessWidget {
                                 backgroundColor: color.withOpacity(0.15),
                                 child: Text(
                                   initial,
-                                  style: TextStyle(fontWeight: FontWeight.bold, color: color, fontSize: 16),
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: color,
+                                    fontSize: 16,
+                                  ),
                                 ),
                               ),
                               Positioned(
@@ -130,10 +156,18 @@ class FamilyMemberLeaderboard extends StatelessWidget {
                                   backgroundColor: colorScheme.surface,
                                   child: CircleAvatar(
                                     radius: 7,
-                                    backgroundColor: idx == 0 ? Colors.amber : colorScheme.surfaceContainerHigh,
+                                    backgroundColor: idx == 0
+                                        ? Colors.amber
+                                        : colorScheme.surfaceContainerHigh,
                                     child: Text(
                                       '${idx + 1}',
-                                      style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold, color: idx == 0 ? Colors.black : colorScheme.onSurface),
+                                      style: TextStyle(
+                                        fontSize: 8,
+                                        fontWeight: FontWeight.bold,
+                                        color: idx == 0
+                                            ? Colors.black
+                                            : colorScheme.onSurface,
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -148,27 +182,43 @@ class FamilyMemberLeaderboard extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                                   children: [
                                     Text(
                                       member.name,
-                                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: colorScheme.onSurface),
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14,
+                                        color: colorScheme.onSurface,
+                                      ),
                                     ),
                                     Text(
                                       currencyFmt.format(member.totalSpent),
-                                      style: TextStyle(fontWeight: FontWeight.w900, fontSize: 14, color: colorScheme.onSurface),
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w900,
+                                        fontSize: 14,
+                                        color: colorScheme.onSurface,
+                                      ),
                                     ),
                                   ],
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
                                   '${member.count} Expenses • Avg ${currencyFmt.format(member.average)} • Max ${currencyFmt.format(member.largest)}',
-                                  style: TextStyle(fontSize: 11, color: colorScheme.onSurfaceVariant),
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: colorScheme.onSurfaceVariant,
+                                  ),
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
                                   'Top Category: ${member.favoriteCategory} • Prefers ${member.preferredPaymentMethod}',
-                                  style: TextStyle(fontSize: 11, color: colorScheme.onSurfaceVariant, fontStyle: FontStyle.italic),
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: colorScheme.onSurfaceVariant,
+                                    fontStyle: FontStyle.italic,
+                                  ),
                                 ),
                                 const SizedBox(height: 8),
                                 // Progress bar
@@ -178,7 +228,8 @@ class FamilyMemberLeaderboard extends StatelessWidget {
                                     value: progress,
                                     minHeight: 4,
                                     color: color,
-                                    backgroundColor: colorScheme.surfaceContainerHigh,
+                                    backgroundColor:
+                                        colorScheme.surfaceContainerHigh,
                                   ),
                                 ),
                               ],

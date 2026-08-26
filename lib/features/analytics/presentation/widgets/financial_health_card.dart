@@ -43,14 +43,17 @@ class FinancialHealthCard extends StatelessWidget {
                     Text(
                       'Financial Health Score',
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: colorScheme.onSurface,
-                          ),
+                        fontWeight: FontWeight.bold,
+                        color: colorScheme.onSurface,
+                      ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       'Calculated using budget discipline metrics',
-                      style: TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: colorScheme.onSurfaceVariant,
+                      ),
                     ),
                   ],
                 ),
@@ -68,7 +71,9 @@ class FinancialHealthCard extends StatelessWidget {
                   painter: _GaugePainter(
                     score: score,
                     color: color,
-                    trackColor: colorScheme.surfaceContainerHigh.withOpacity(0.5),
+                    trackColor: colorScheme.surfaceContainerHigh.withOpacity(
+                      0.5,
+                    ),
                   ),
                   child: Align(
                     alignment: Alignment.bottomCenter,
@@ -107,20 +112,49 @@ class FinancialHealthCard extends StatelessWidget {
             // Factors Breakdown list
             Text(
               'Detailed Metrics',
-              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: colorScheme.onSurfaceVariant),
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: colorScheme.onSurfaceVariant,
+              ),
             ),
             const SizedBox(height: 10),
-            _buildScoreBar(context, 'Budget Control', state.healthMetrics.budgetControl, _getScoreColor(state.healthMetrics.budgetControl)),
-            _buildScoreBar(context, 'Saving Potential', state.healthMetrics.savingPotential, _getScoreColor(state.healthMetrics.savingPotential)),
-            _buildScoreBar(context, 'Category Diversity', state.healthMetrics.categoryDiversity, _getScoreColor(state.healthMetrics.categoryDiversity)),
-            _buildScoreBar(context, 'Weekend Discipline', state.healthMetrics.weekendDiscipline, _getScoreColor(state.healthMetrics.weekendDiscipline)),
+            _buildScoreBar(
+              context,
+              'Budget Control',
+              state.healthMetrics.budgetControl,
+              _getScoreColor(state.healthMetrics.budgetControl),
+            ),
+            _buildScoreBar(
+              context,
+              'Saving Potential',
+              state.healthMetrics.savingPotential,
+              _getScoreColor(state.healthMetrics.savingPotential),
+            ),
+            _buildScoreBar(
+              context,
+              'Category Diversity',
+              state.healthMetrics.categoryDiversity,
+              _getScoreColor(state.healthMetrics.categoryDiversity),
+            ),
+            _buildScoreBar(
+              context,
+              'Weekend Discipline',
+              state.healthMetrics.weekendDiscipline,
+              _getScoreColor(state.healthMetrics.weekendDiscipline),
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildScoreBar(BuildContext context, String name, int score, Color color) {
+  Widget _buildScoreBar(
+    BuildContext context,
+    String name,
+    int score,
+    Color color,
+  ) {
     final colorScheme = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -130,8 +164,22 @@ class FinancialHealthCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(name, style: TextStyle(fontSize: 12, color: colorScheme.onSurface, fontWeight: FontWeight.w600)),
-              Text('$score', style: TextStyle(fontSize: 12, color: color, fontWeight: FontWeight.bold)),
+              Text(
+                name,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: colorScheme.onSurface,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              Text(
+                '$score',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: color,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 6),
@@ -155,7 +203,11 @@ class _GaugePainter extends CustomPainter {
   final Color color;
   final Color trackColor;
 
-  _GaugePainter({required this.score, required this.color, required this.trackColor});
+  _GaugePainter({
+    required this.score,
+    required this.color,
+    required this.trackColor,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {

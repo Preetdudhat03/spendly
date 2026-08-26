@@ -35,7 +35,8 @@ class AiInsightCard extends StatelessWidget {
                       children: [
                         Text(
                           'AI Spending Insights',
-                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          style: Theme.of(context).textTheme.titleLarge
+                              ?.copyWith(
                                 fontWeight: FontWeight.bold,
                                 color: colorScheme.onSurface,
                               ),
@@ -43,17 +44,29 @@ class AiInsightCard extends StatelessWidget {
                         const SizedBox(height: 2),
                         Text(
                           'Automated observations on spending habits',
-                          style: TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant),
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: colorScheme.onSurfaceVariant,
+                          ),
                         ),
                       ],
                     ),
-                    Icon(Icons.auto_awesome, size: 20, color: colorScheme.primary),
+                    Icon(
+                      Icons.auto_awesome,
+                      size: 20,
+                      color: colorScheme.primary,
+                    ),
                   ],
                 ),
                 const SizedBox(height: 16),
-                
+
                 if (insights.isEmpty)
-                  Center(child: Text('Insufficient historical records to build AI insights.', style: TextStyle(color: colorScheme.onSurfaceVariant)))
+                  Center(
+                    child: Text(
+                      'Insufficient historical records to build AI insights.',
+                      style: TextStyle(color: colorScheme.onSurfaceVariant),
+                    ),
+                  )
                 else
                   ListView.builder(
                     shrinkWrap: true,
@@ -66,12 +79,18 @@ class AiInsightCard extends StatelessWidget {
                         decoration: BoxDecoration(
                           color: Colors.blue.withOpacity(0.12),
                           borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: Colors.blue.withOpacity(0.2)),
+                          border: Border.all(
+                            color: Colors.blue.withOpacity(0.2),
+                          ),
                         ),
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Icon(Icons.info_outline, size: 16, color: Colors.blue),
+                            const Icon(
+                              Icons.info_outline,
+                              size: 16,
+                              color: Colors.blue,
+                            ),
                             const SizedBox(width: 10),
                             Expanded(
                               child: Text(
@@ -93,7 +112,7 @@ class AiInsightCard extends StatelessWidget {
             ),
           ),
         ),
-        
+
         const SizedBox(height: 16),
 
         // 2. Recommendations Section Card
@@ -116,7 +135,8 @@ class AiInsightCard extends StatelessWidget {
                       children: [
                         Text(
                           'AI Recommendations',
-                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          style: Theme.of(context).textTheme.titleLarge
+                              ?.copyWith(
                                 fontWeight: FontWeight.bold,
                                 color: colorScheme.onSurface,
                               ),
@@ -124,17 +144,29 @@ class AiInsightCard extends StatelessWidget {
                         const SizedBox(height: 2),
                         Text(
                           'Actionable tasks to improve health scores',
-                          style: TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant),
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: colorScheme.onSurfaceVariant,
+                          ),
                         ),
                       ],
                     ),
-                    const Icon(Icons.tips_and_updates_outlined, size: 20, color: Colors.green),
+                    const Icon(
+                      Icons.tips_and_updates_outlined,
+                      size: 20,
+                      color: Colors.green,
+                    ),
                   ],
                 ),
                 const SizedBox(height: 16),
-                
+
                 if (recommendations.isEmpty)
-                  Center(child: Text('Everything looks perfect! No new tips today.', style: TextStyle(color: colorScheme.onSurfaceVariant)))
+                  Center(
+                    child: Text(
+                      'Everything looks perfect! No new tips today.',
+                      style: TextStyle(color: colorScheme.onSurfaceVariant),
+                    ),
+                  )
                 else
                   ListView.builder(
                     shrinkWrap: true,
@@ -147,12 +179,18 @@ class AiInsightCard extends StatelessWidget {
                         decoration: BoxDecoration(
                           color: Colors.green.withOpacity(0.12),
                           borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: Colors.green.withOpacity(0.2)),
+                          border: Border.all(
+                            color: Colors.green.withOpacity(0.2),
+                          ),
                         ),
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Icon(Icons.check_circle_outline_rounded, size: 16, color: Colors.green),
+                            const Icon(
+                              Icons.check_circle_outline_rounded,
+                              size: 16,
+                              color: Colors.green,
+                            ),
                             const SizedBox(width: 10),
                             Expanded(
                               child: Text(

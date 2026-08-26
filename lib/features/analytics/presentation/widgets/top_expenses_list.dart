@@ -22,7 +22,11 @@ class _TopExpensesListState extends State<TopExpensesList> {
       return const SizedBox.shrink();
     }
 
-    final currencyFmt = NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 0);
+    final currencyFmt = NumberFormat.currency(
+      locale: 'en_IN',
+      symbol: '₹',
+      decimalDigits: 0,
+    );
     final dateFmt = DateFormat('MMM d, yyyy • h:mm a');
     final colorScheme = Theme.of(context).colorScheme;
 
@@ -47,14 +51,17 @@ class _TopExpensesListState extends State<TopExpensesList> {
                     Text(
                       'Top 10 Expenses',
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: colorScheme.onSurface,
-                          ),
+                        fontWeight: FontWeight.bold,
+                        color: colorScheme.onSurface,
+                      ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       'Highest value transactions this period',
-                      style: TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: colorScheme.onSurfaceVariant,
+                      ),
                     ),
                   ],
                 ),
@@ -73,7 +80,9 @@ class _TopExpensesListState extends State<TopExpensesList> {
                 final meta = getCategoryMetadata(context, exp.category);
                 final isExpanded = idx == expandedIndex;
 
-                final title = exp.description.trim().isEmpty ? meta.name : exp.description;
+                final title = exp.description.trim().isEmpty
+                    ? meta.name
+                    : exp.description;
 
                 return Column(
                   children: [
@@ -85,7 +94,10 @@ class _TopExpensesListState extends State<TopExpensesList> {
                         });
                       },
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 8.0),
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 10.0,
+                          horizontal: 8.0,
+                        ),
                         child: Row(
                           children: [
                             // Category Icon Circle
@@ -101,7 +113,10 @@ class _TopExpensesListState extends State<TopExpensesList> {
                                 meta.iconPath,
                                 width: 22,
                                 height: 22,
-                                colorFilter: ColorFilter.mode(meta.color, BlendMode.srcIn),
+                                colorFilter: ColorFilter.mode(
+                                  meta.color,
+                                  BlendMode.srcIn,
+                                ),
                               ),
                             ),
                             const SizedBox(width: 14),
@@ -147,7 +162,9 @@ class _TopExpensesListState extends State<TopExpensesList> {
                                 ),
                                 const SizedBox(height: 2),
                                 Icon(
-                                  isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+                                  isExpanded
+                                      ? Icons.keyboard_arrow_up
+                                      : Icons.keyboard_arrow_down,
                                   size: 16,
                                   color: colorScheme.onSurfaceVariant,
                                 ),
@@ -157,13 +174,16 @@ class _TopExpensesListState extends State<TopExpensesList> {
                         ),
                       ),
                     ),
-                    
+
                     // Expanded details section
                     AnimatedCrossFade(
                       firstChild: const SizedBox.shrink(),
                       secondChild: Container(
                         width: double.infinity,
-                        margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        margin: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
                         padding: const EdgeInsets.all(14),
                         decoration: BoxDecoration(
                           color: const Color(0xFFF8FAFC),
@@ -173,17 +193,35 @@ class _TopExpensesListState extends State<TopExpensesList> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            _buildDetailRow('Category', meta.name, Icons.folder_open_outlined),
+                            _buildDetailRow(
+                              'Category',
+                              meta.name,
+                              Icons.folder_open_outlined,
+                            ),
                             const SizedBox(height: 8),
-                            _buildDetailRow('Payment Mode', exp.paymentMethod, Icons.payments_outlined),
+                            _buildDetailRow(
+                              'Payment Mode',
+                              exp.paymentMethod,
+                              Icons.payments_outlined,
+                            ),
                             const SizedBox(height: 8),
-                            _buildDetailRow('Date/Time', dateFmt.format(exp.expenseDate), Icons.calendar_month_outlined),
+                            _buildDetailRow(
+                              'Date/Time',
+                              dateFmt.format(exp.expenseDate),
+                              Icons.calendar_month_outlined,
+                            ),
                             const SizedBox(height: 8),
-                            _buildDetailRow('Transaction ID', exp.id, Icons.tag),
+                            _buildDetailRow(
+                              'Transaction ID',
+                              exp.id,
+                              Icons.tag,
+                            ),
                           ],
                         ),
                       ),
-                      crossFadeState: isExpanded ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+                      crossFadeState: isExpanded
+                          ? CrossFadeState.showSecond
+                          : CrossFadeState.showFirst,
                       duration: const Duration(milliseconds: 250),
                     ),
                     if (idx < widget.state.topExpenses.length - 1)
@@ -215,10 +253,7 @@ class _TopExpensesListState extends State<TopExpensesList> {
         Expanded(
           child: Text(
             value,
-            style: const TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.bold,
-            ),
+            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),

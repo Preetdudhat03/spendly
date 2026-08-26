@@ -34,7 +34,11 @@ class _StackedChartConsumer extends ConsumerWidget {
       return const SizedBox.shrink();
     }
 
-    final currencyFmt = NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 0);
+    final currencyFmt = NumberFormat.currency(
+      locale: 'en_IN',
+      symbol: '₹',
+      decimalDigits: 0,
+    );
 
     // Calculate last 6 months
     final now = DateTime.now();
@@ -54,7 +58,8 @@ class _StackedChartConsumer extends ConsumerWidget {
     for (int i = 0; i < months.length; i++) {
       final month = months[i];
       final monthExpenses = allExpenses.where((e) {
-        return e.expenseDate.year == month.year && e.expenseDate.month == month.month;
+        return e.expenseDate.year == month.year &&
+            e.expenseDate.month == month.month;
       }).toList();
 
       final Map<String, double> catSums = {};
@@ -79,11 +84,7 @@ class _StackedChartConsumer extends ConsumerWidget {
         if (amt > 0) {
           final meta = getCategoryMetadata(context, cat);
           stackItems.add(
-            BarChartRodStackItem(
-              currentSum,
-              currentSum + amt,
-              meta.color,
-            ),
+            BarChartRodStackItem(currentSum, currentSum + amt, meta.color),
           );
           currentSum += amt;
         }
@@ -96,7 +97,8 @@ class _StackedChartConsumer extends ConsumerWidget {
             BarChartRodData(
               toY: monthTotal,
               rodStackItems: stackItems,
-              color: Colors.transparent, // Background color when stack items don't cover
+              color: Colors
+                  .transparent, // Background color when stack items don't cover
               width: 22,
               borderRadius: BorderRadius.circular(4),
             ),
@@ -136,14 +138,17 @@ class _StackedChartConsumer extends ConsumerWidget {
                     Text(
                       'Monthly Distribution',
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: colorScheme.onSurface,
-                          ),
+                        fontWeight: FontWeight.bold,
+                        color: colorScheme.onSurface,
+                      ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       'Category splits over the last 6 months',
-                      style: TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: colorScheme.onSurfaceVariant,
+                      ),
                     ),
                   ],
                 ),
@@ -161,37 +166,51 @@ class _StackedChartConsumer extends ConsumerWidget {
                   maxY: maxMonthTotal,
                   barTouchData: BarTouchData(
                     touchTooltipData: BarTouchTooltipData(
-                      getTooltipColor: (group) => colorScheme.surfaceContainerHigh.withOpacity(0.95),
+                      getTooltipColor: (group) =>
+                          colorScheme.surfaceContainerHigh.withOpacity(0.95),
                       getTooltipItem: (group, groupIndex, rod, rodIndex) {
                         final monthIdx = group.x.toInt();
-                        if (monthIdx < 0 || monthIdx >= months.length) return null;
-                        
+                        if (monthIdx < 0 || monthIdx >= months.length)
+                          return null;
+
                         final month = months[monthIdx];
                         final monthExpenses = allExpenses.where((e) {
-                          return e.expenseDate.year == month.year && e.expenseDate.month == month.month;
+                          return e.expenseDate.year == month.year &&
+                              e.expenseDate.month == month.month;
                         }).toList();
 
                         // Group spending by category to compile tooltip text
                         final Map<String, double> catSums = {};
                         for (var e in monthExpenses) {
-                          catSums[e.category] = (catSums[e.category] ?? 0) + e.amount;
+                          catSums[e.category] =
+                              (catSums[e.category] ?? 0) + e.amount;
                         }
 
                         final listLines = catSums.entries
-                            .map((e) => '${e.key}: ${currencyFmt.format(e.value)}')
+                            .map(
+                              (e) => '${e.key}: ${currencyFmt.format(e.value)}',
+                            )
                             .join('\n');
 
                         return BarTooltipItem(
                           '${DateFormat('MMMM yyyy').format(month)}\nTotal: ${currencyFmt.format(rod.toY)}\n\n$listLines',
-                          TextStyle(color: colorScheme.onSurface, fontSize: 10, fontWeight: FontWeight.bold),
+                          TextStyle(
+                            color: colorScheme.onSurface,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
                         );
                       },
                     ),
                   ),
                   titlesData: FlTitlesData(
                     show: true,
-                    rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                    topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                    rightTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
+                    topTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
                     leftTitles: AxisTitles(
                       sideTitles: SideTitles(
                         showTitles: true,
@@ -200,7 +219,8 @@ class _StackedChartConsumer extends ConsumerWidget {
                           if (value == 0) return const SizedBox.shrink();
                           String formatted = '';
                           if (value >= 1000) {
-                            formatted = '₹${(value / 1000).toStringAsFixed(0)}k';
+                            formatted =
+                                '₹${(value / 1000).toStringAsFixed(0)}k';
                           } else {
                             formatted = '₹${value.toStringAsFixed(0)}';
                           }
@@ -208,7 +228,11 @@ class _StackedChartConsumer extends ConsumerWidget {
                             axisSide: meta.axisSide,
                             child: Text(
                               formatted,
-                              style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 10, fontWeight: FontWeight.bold),
+                              style: TextStyle(
+                                color: colorScheme.onSurfaceVariant,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           );
                         },
@@ -225,7 +249,11 @@ class _StackedChartConsumer extends ConsumerWidget {
                               axisSide: meta.axisSide,
                               child: Text(
                                 monthFormat.format(months[idx]),
-                                style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 11, fontWeight: FontWeight.bold),
+                                style: TextStyle(
+                                  color: colorScheme.onSurfaceVariant,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             );
                           }
@@ -262,12 +290,19 @@ class _StackedChartConsumer extends ConsumerWidget {
                       meta.iconPath,
                       width: 12,
                       height: 12,
-                      colorFilter: ColorFilter.mode(meta.color, BlendMode.srcIn),
+                      colorFilter: ColorFilter.mode(
+                        meta.color,
+                        BlendMode.srcIn,
+                      ),
                     ),
                     const SizedBox(width: 4),
                     Text(
                       meta.name,
-                      style: TextStyle(fontSize: 10.5, color: colorScheme.onSurfaceVariant, fontWeight: FontWeight.w600),
+                      style: TextStyle(
+                        fontSize: 10.5,
+                        color: colorScheme.onSurfaceVariant,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ],
                 );

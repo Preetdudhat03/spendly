@@ -14,49 +14,119 @@ class CategoryMetadata {
   final Color color;
   final String iconPath;
 
-  CategoryMetadata(this.name, this.emoji, this.color, [this.iconPath = 'assets/category/others.svg']);
+  CategoryMetadata(
+    this.name,
+    this.emoji,
+    this.color, [
+    this.iconPath = 'assets/category/others.svg',
+  ]);
 }
 
 CategoryMetadata getCategoryMetadata(BuildContext context, String category) {
   final charts = context.spendly.charts;
   final color = charts.getCategoryColor(category);
-  
+
   switch (category.toLowerCase()) {
     case 'food':
       return CategoryMetadata('Food', '🍔', color, 'assets/category/food.svg');
     case 'groceries':
-      return CategoryMetadata('Groceries', '🛒', color, 'assets/category/groceries.svg');
+      return CategoryMetadata(
+        'Groceries',
+        '🛒',
+        color,
+        'assets/category/groceries.svg',
+      );
     case 'petrol':
     case 'fuel':
-      return CategoryMetadata('Petrol', '🚗', color, 'assets/category/fuel.svg');
+      return CategoryMetadata(
+        'Petrol',
+        '🚗',
+        color,
+        'assets/category/fuel.svg',
+      );
     case 'recharges':
-      return CategoryMetadata('Recharges', '📱', color, 'assets/category/recharge.svg');
+      return CategoryMetadata(
+        'Recharges',
+        '📱',
+        color,
+        'assets/category/recharge.svg',
+      );
     case 'travel':
-      return CategoryMetadata('Travel', '✈️', color, 'assets/category/travel.svg');
+      return CategoryMetadata(
+        'Travel',
+        '✈️',
+        color,
+        'assets/category/travel.svg',
+      );
     case 'gas':
       return CategoryMetadata('Gas', '⛽', color, 'assets/category/gas.svg');
     case 'electricity':
     case 'utility':
-      return CategoryMetadata('Utilities', '⚡', color, 'assets/category/electricity.svg');
+      return CategoryMetadata(
+        'Utilities',
+        '⚡',
+        color,
+        'assets/category/electricity.svg',
+      );
     case 'medical':
-      return CategoryMetadata('Medical', '🏥', color, 'assets/category/medical.svg');
+      return CategoryMetadata(
+        'Medical',
+        '🏥',
+        color,
+        'assets/category/medical.svg',
+      );
     case 'insurances':
-      return CategoryMetadata('Insurances', '🛡️', color, 'assets/category/insurances.svg');
+      return CategoryMetadata(
+        'Insurances',
+        '🛡️',
+        color,
+        'assets/category/insurances.svg',
+      );
     case 'shopping':
-      return CategoryMetadata('Shopping', '🛍️', color, 'assets/category/shopping.svg');
+      return CategoryMetadata(
+        'Shopping',
+        '🛍️',
+        color,
+        'assets/category/shopping.svg',
+      );
     case 'rent':
       return CategoryMetadata('Rent', '🏠', color, 'assets/category/rent.svg');
     case 'bills':
-      return CategoryMetadata('Bills', '📄', color, 'assets/category/others.svg');
+      return CategoryMetadata(
+        'Bills',
+        '📄',
+        color,
+        'assets/category/others.svg',
+      );
     case 'entertainment':
-      return CategoryMetadata('Entertainment', '🎬', color, 'assets/category/entertainment.svg');
+      return CategoryMetadata(
+        'Entertainment',
+        '🎬',
+        color,
+        'assets/category/entertainment.svg',
+      );
     case 'education':
-      return CategoryMetadata('Education', '📚', color, 'assets/category/education.svg');
+      return CategoryMetadata(
+        'Education',
+        '📚',
+        color,
+        'assets/category/education.svg',
+      );
     case 'college':
     case 'collage':
-      return CategoryMetadata('College', '🎓', color, 'assets/category/college.svg');
+      return CategoryMetadata(
+        'College',
+        '🎓',
+        color,
+        'assets/category/college.svg',
+      );
     default:
-      return CategoryMetadata(category, '📦', color, 'assets/category/others.svg');
+      return CategoryMetadata(
+        category,
+        '📦',
+        color,
+        'assets/category/others.svg',
+      );
   }
 }
 
@@ -76,26 +146,35 @@ class _CategoryDonutChartState extends State<CategoryDonutChart> {
     final meta = getCategoryMetadata(context, share.category);
 
     // Filter transactions for this category in current range
-    final categoryExpenses = widget.state.filteredExpenses
-        .where((e) => e.category.toLowerCase() == share.category.toLowerCase())
-        .toList()
-      ..sort((a, b) => b.expenseDate.compareTo(a.expenseDate));
+    final categoryExpenses =
+        widget.state.filteredExpenses
+            .where(
+              (e) => e.category.toLowerCase() == share.category.toLowerCase(),
+            )
+            .toList()
+          ..sort((a, b) => b.expenseDate.compareTo(a.expenseDate));
 
     DrillDownSheet.show(
       context,
       title: meta.name,
       subtitle: '${share.percentage.toStringAsFixed(0)}% of total spending',
-      icon: Icons.category, // You could use a specific icon or just use the emoji text in a custom way. We'll use a generic icon for now.
+      icon: Icons
+          .category, // You could use a specific icon or just use the emoji text in a custom way. We'll use a generic icon for now.
       color: meta.color,
       totalAmount: share.amount,
       expenses: categoryExpenses,
-      aiSummary: 'This category makes up ${share.percentage.toStringAsFixed(0)}% of your expenses. Consider looking for bulk discounts if applicable.',
+      aiSummary:
+          'This category makes up ${share.percentage.toStringAsFixed(0)}% of your expenses. Consider looking for bulk discounts if applicable.',
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final currencyFmt = NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 0);
+    final currencyFmt = NumberFormat.currency(
+      locale: 'en_IN',
+      symbol: '₹',
+      decimalDigits: 0,
+    );
 
     if (widget.state.categoryShares.isEmpty) {
       return const SizedBox.shrink();
@@ -118,7 +197,12 @@ class _CategoryDonutChartState extends State<CategoryDonutChart> {
           value: share.amount,
           title: '', // Empty because we show labels in the legend below
           radius: radius,
-          borderSide: strokeWidth > 0 ? BorderSide(color: meta.color.withOpacity(0.4), width: strokeWidth) : BorderSide.none,
+          borderSide: strokeWidth > 0
+              ? BorderSide(
+                  color: meta.color.withOpacity(0.4),
+                  width: strokeWidth,
+                )
+              : BorderSide.none,
         );
       },
     );
@@ -146,14 +230,17 @@ class _CategoryDonutChartState extends State<CategoryDonutChart> {
                     Text(
                       'Category Breakdown',
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: colorScheme.onSurface,
-                          ),
+                        fontWeight: FontWeight.bold,
+                        color: colorScheme.onSurface,
+                      ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       'Share of monthly budget expenditures',
-                      style: TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: colorScheme.onSurfaceVariant,
+                      ),
                     ),
                   ],
                 ),
@@ -175,22 +262,31 @@ class _CategoryDonutChartState extends State<CategoryDonutChart> {
                         sectionsSpace: 4,
                         borderData: FlBorderData(show: false),
                         pieTouchData: PieTouchData(
-                          touchCallback: (FlTouchEvent event, pieTouchResponse) {
-                            setState(() {
-                              if (!event.isInterestedForInteractions ||
-                                  pieTouchResponse == null ||
-                                  pieTouchResponse.touchedSection == null) {
-                                touchedIndex = -1;
-                                return;
-                              }
-                              touchedIndex = pieTouchResponse.touchedSection!.touchedSectionIndex;
-                              
-                              // Trigger click drill down on single tap up
-                              if (event is FlTapUpEvent && touchedIndex >= 0 && touchedIndex < widget.state.categoryShares.length) {
-                                _showCategoryDetails(context, widget.state.categoryShares[touchedIndex]);
-                              }
-                            });
-                          },
+                          touchCallback:
+                              (FlTouchEvent event, pieTouchResponse) {
+                                setState(() {
+                                  if (!event.isInterestedForInteractions ||
+                                      pieTouchResponse == null ||
+                                      pieTouchResponse.touchedSection == null) {
+                                    touchedIndex = -1;
+                                    return;
+                                  }
+                                  touchedIndex = pieTouchResponse
+                                      .touchedSection!
+                                      .touchedSectionIndex;
+
+                                  // Trigger click drill down on single tap up
+                                  if (event is FlTapUpEvent &&
+                                      touchedIndex >= 0 &&
+                                      touchedIndex <
+                                          widget.state.categoryShares.length) {
+                                    _showCategoryDetails(
+                                      context,
+                                      widget.state.categoryShares[touchedIndex],
+                                    );
+                                  }
+                                });
+                              },
                         ),
                       ),
                     ),
@@ -234,14 +330,17 @@ class _CategoryDonutChartState extends State<CategoryDonutChart> {
               itemBuilder: (context, idx) {
                 final share = widget.state.categoryShares[idx];
                 final meta = getCategoryMetadata(context, share.category);
-                
+
                 return Padding(
                   padding: const EdgeInsets.symmetric(vertical: 4.0),
                   child: InkWell(
                     borderRadius: BorderRadius.circular(12),
                     onTap: () => _showCategoryDetails(context, share),
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8.0,
+                        vertical: 8.0,
+                      ),
                       child: Row(
                         children: [
                           Container(
@@ -256,14 +355,21 @@ class _CategoryDonutChartState extends State<CategoryDonutChart> {
                               meta.iconPath,
                               width: 18,
                               height: 18,
-                              colorFilter: ColorFilter.mode(meta.color, BlendMode.srcIn),
+                              colorFilter: ColorFilter.mode(
+                                meta.color,
+                                BlendMode.srcIn,
+                              ),
                             ),
                           ),
                           const SizedBox(width: 12),
                           Expanded(
                             child: Text(
                               meta.name,
-                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: colorScheme.onSurface),
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                                color: colorScheme.onSurface,
+                              ),
                             ),
                           ),
                           Column(
@@ -271,17 +377,29 @@ class _CategoryDonutChartState extends State<CategoryDonutChart> {
                             children: [
                               Text(
                                 currencyFmt.format(share.amount),
-                                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: colorScheme.onSurface),
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                  color: colorScheme.onSurface,
+                                ),
                               ),
                               const SizedBox(height: 2),
                               Text(
                                 '${share.percentage.toStringAsFixed(0)}%',
-                                style: TextStyle(fontSize: 11, color: colorScheme.onSurfaceVariant, fontWeight: FontWeight.w600),
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: colorScheme.onSurfaceVariant,
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
                             ],
                           ),
                           const SizedBox(width: 4),
-                          Icon(Icons.chevron_right, size: 16, color: colorScheme.onSurfaceVariant),
+                          Icon(
+                            Icons.chevron_right,
+                            size: 16,
+                            color: colorScheme.onSurfaceVariant,
+                          ),
                         ],
                       ),
                     ),

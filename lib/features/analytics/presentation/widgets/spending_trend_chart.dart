@@ -15,7 +15,11 @@ class SpendingTrendChart extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
-    final currencyFmt = NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 0);
+    final currencyFmt = NumberFormat.currency(
+      locale: 'en_IN',
+      symbol: '₹',
+      decimalDigits: 0,
+    );
     final dateFmt = DateFormat('MMM d');
 
     // Find min and max for chart styling
@@ -32,12 +36,16 @@ class SpendingTrendChart extends StatelessWidget {
     // Build fl spots
     final List<FlSpot> currentSpots = [];
     for (int i = 0; i < state.trendSpots.length; i++) {
-      currentSpots.add(FlSpot(i.toDouble(), state.trendSpots[i].cumulativeAmount));
+      currentSpots.add(
+        FlSpot(i.toDouble(), state.trendSpots[i].cumulativeAmount),
+      );
     }
 
     final List<FlSpot> prevSpots = [];
     for (int i = 0; i < state.prevTrendSpots.length; i++) {
-      prevSpots.add(FlSpot(i.toDouble(), state.prevTrendSpots[i].cumulativeAmount));
+      prevSpots.add(
+        FlSpot(i.toDouble(), state.prevTrendSpots[i].cumulativeAmount),
+      );
     }
 
     // Daily stats calculations
@@ -62,7 +70,10 @@ class SpendingTrendChart extends StatelessWidget {
 
     // Responsive width based on data count to allow horizontal scrolling
     final screenWidth = MediaQuery.of(context).size.width;
-    final chartContentWidth = max(screenWidth - 48, state.trendSpots.length * 36.0);
+    final chartContentWidth = max(
+      screenWidth - 48,
+      state.trendSpots.length * 36.0,
+    );
 
     final colorScheme = Theme.of(context).colorScheme;
 
@@ -87,30 +98,43 @@ class SpendingTrendChart extends StatelessWidget {
                     Text(
                       'Spending Trend',
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: colorScheme.onSurface,
-                          ),
+                        fontWeight: FontWeight.bold,
+                        color: colorScheme.onSurface,
+                      ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       'Cumulative spending trajectory',
-                      style: TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: colorScheme.onSurfaceVariant,
+                      ),
                     ),
                   ],
                 ),
                 // Legend indicators
                 Row(
                   children: [
-                    _buildLegendItem(context, 'This Period', colorScheme.primary, false),
+                    _buildLegendItem(
+                      context,
+                      'This Period',
+                      colorScheme.primary,
+                      false,
+                    ),
                     const SizedBox(width: 12),
                     if (prevSpots.isNotEmpty)
-                      _buildLegendItem(context, 'Last Period', colorScheme.onSurfaceVariant, true),
+                      _buildLegendItem(
+                        context,
+                        'Last Period',
+                        colorScheme.onSurfaceVariant,
+                        true,
+                      ),
                   ],
                 ),
               ],
             ),
             const SizedBox(height: 24),
-            
+
             // Interactive Chart Area with scroll
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
@@ -130,13 +154,20 @@ class SpendingTrendChart extends StatelessWidget {
                     ),
                     titlesData: FlTitlesData(
                       show: true,
-                      rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                      topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                      rightTitles: const AxisTitles(
+                        sideTitles: SideTitles(showTitles: false),
+                      ),
+                      topTitles: const AxisTitles(
+                        sideTitles: SideTitles(showTitles: false),
+                      ),
                       bottomTitles: AxisTitles(
                         sideTitles: SideTitles(
                           showTitles: true,
                           reservedSize: 28,
-                          interval: max(1.0, (state.trendSpots.length / 6).floorToDouble()),
+                          interval: max(
+                            1.0,
+                            (state.trendSpots.length / 6).floorToDouble(),
+                          ),
                           getTitlesWidget: (value, meta) {
                             final idx = value.toInt();
                             if (idx >= 0 && idx < state.trendSpots.length) {
@@ -144,7 +175,11 @@ class SpendingTrendChart extends StatelessWidget {
                                 axisSide: meta.axisSide,
                                 child: Text(
                                   dateFmt.format(state.trendSpots[idx].date),
-                                  style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 10, fontWeight: FontWeight.bold),
+                                  style: TextStyle(
+                                    color: colorScheme.onSurfaceVariant,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                               );
                             }
@@ -161,7 +196,8 @@ class SpendingTrendChart extends StatelessWidget {
                             if (value == 0) return const SizedBox.shrink();
                             String formatted = '';
                             if (value >= 1000) {
-                              formatted = '₹${(value / 1000).toStringAsFixed(1)}k';
+                              formatted =
+                                  '₹${(value / 1000).toStringAsFixed(1)}k';
                             } else {
                               formatted = '₹${value.toStringAsFixed(0)}';
                             }
@@ -169,7 +205,11 @@ class SpendingTrendChart extends StatelessWidget {
                               axisSide: meta.axisSide,
                               child: Text(
                                 formatted,
-                                style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 10, fontWeight: FontWeight.bold),
+                                style: TextStyle(
+                                  color: colorScheme.onSurfaceVariant,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             );
                           },
@@ -183,21 +223,24 @@ class SpendingTrendChart extends StatelessWidget {
                     maxY: maxAmount,
                     lineTouchData: LineTouchData(
                       touchTooltipData: LineTouchTooltipData(
-                        getTooltipColor: (touchedSpot) => colorScheme.surfaceContainerHigh.withOpacity(0.95),
+                        getTooltipColor: (touchedSpot) =>
+                            colorScheme.surfaceContainerHigh.withOpacity(0.95),
                         tooltipRoundedRadius: 12,
                         getTooltipItems: (touchedSpots) {
                           return touchedSpots.map((barSpot) {
                             final idx = barSpot.x.toInt();
                             final isPrev = barSpot.barIndex == 1;
-                            
+
                             DateTime date;
                             double totalAmt;
                             double dailyAmt;
 
                             if (isPrev) {
-                              if (idx >= 0 && idx < state.prevTrendSpots.length) {
+                              if (idx >= 0 &&
+                                  idx < state.prevTrendSpots.length) {
                                 date = state.prevTrendSpots[idx].date;
-                                totalAmt = state.prevTrendSpots[idx].cumulativeAmount;
+                                totalAmt =
+                                    state.prevTrendSpots[idx].cumulativeAmount;
                                 dailyAmt = state.prevTrendSpots[idx].amount;
                               } else {
                                 return null;
@@ -205,17 +248,24 @@ class SpendingTrendChart extends StatelessWidget {
                             } else {
                               if (idx >= 0 && idx < state.trendSpots.length) {
                                 date = state.trendSpots[idx].date;
-                                totalAmt = state.trendSpots[idx].cumulativeAmount;
+                                totalAmt =
+                                    state.trendSpots[idx].cumulativeAmount;
                                 dailyAmt = state.trendSpots[idx].amount;
                               } else {
                                 return null;
                               }
                             }
 
-                            final title = isPrev ? 'Last Period' : 'This Period';
+                            final title = isPrev
+                                ? 'Last Period'
+                                : 'This Period';
                             return LineTooltipItem(
                               '$title\n${dateFmt.format(date)}\nCum: ${currencyFmt.format(totalAmt)}\nDaily: ${currencyFmt.format(dailyAmt)}',
-                              TextStyle(color: colorScheme.onSurface, fontSize: 11, fontWeight: FontWeight.bold),
+                              TextStyle(
+                                color: colorScheme.onSurface,
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                              ),
                             );
                           }).toList();
                         },
@@ -262,7 +312,7 @@ class SpendingTrendChart extends StatelessWidget {
             const SizedBox(height: 24),
             Divider(color: colorScheme.outline),
             const SizedBox(height: 12),
-            
+
             // Statistics Grid below
             LayoutBuilder(
               builder: (context, constraints) {
@@ -280,14 +330,22 @@ class SpendingTrendChart extends StatelessWidget {
                     _buildStatItem(
                       context,
                       label: 'Highest Spend Day',
-                      value: highestDayAmount > 0 ? currencyFmt.format(highestDayAmount) : '₹0',
-                      subtext: highestDayDate != null ? dateFmt.format(highestDayDate) : '-',
+                      value: highestDayAmount > 0
+                          ? currencyFmt.format(highestDayAmount)
+                          : '₹0',
+                      subtext: highestDayDate != null
+                          ? dateFmt.format(highestDayDate)
+                          : '-',
                     ),
                     _buildStatItem(
                       context,
                       label: 'Lowest Spend Day',
-                      value: lowestDayAmount > 0 ? currencyFmt.format(lowestDayAmount) : '₹0',
-                      subtext: lowestDayDate != null ? dateFmt.format(lowestDayDate) : '-',
+                      value: lowestDayAmount > 0
+                          ? currencyFmt.format(lowestDayAmount)
+                          : '₹0',
+                      subtext: lowestDayDate != null
+                          ? dateFmt.format(lowestDayDate)
+                          : '-',
                     ),
                     _buildStatItem(
                       context,
@@ -311,7 +369,12 @@ class SpendingTrendChart extends StatelessWidget {
     );
   }
 
-  Widget _buildLegendItem(BuildContext context, String label, Color color, bool isDotted) {
+  Widget _buildLegendItem(
+    BuildContext context,
+    String label,
+    Color color,
+    bool isDotted,
+  ) {
     final colorScheme = Theme.of(context).colorScheme;
     return Row(
       children: [
@@ -349,7 +412,12 @@ class SpendingTrendChart extends StatelessWidget {
     );
   }
 
-  Widget _buildStatItem(BuildContext context, {required String label, required String value, required String subtext}) {
+  Widget _buildStatItem(
+    BuildContext context, {
+    required String label,
+    required String value,
+    required String subtext,
+  }) {
     final colorScheme = Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -374,10 +442,7 @@ class SpendingTrendChart extends StatelessWidget {
         const SizedBox(height: 2),
         Text(
           subtext,
-          style: TextStyle(
-            fontSize: 10,
-            color: colorScheme.onSurfaceVariant,
-          ),
+          style: TextStyle(fontSize: 10, color: colorScheme.onSurfaceVariant),
         ),
       ],
     );

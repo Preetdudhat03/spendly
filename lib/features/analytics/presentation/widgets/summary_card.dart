@@ -9,8 +9,12 @@ class FinancialSummaryCards extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final currencyFmt = NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 0);
-    
+    final currencyFmt = NumberFormat.currency(
+      locale: 'en_IN',
+      symbol: '₹',
+      decimalDigits: 0,
+    );
+
     // Calculate budget status color
     final progress = state.budgetProgressPercent;
     Color budgetProgressColor = Colors.green;
@@ -40,9 +44,13 @@ class FinancialSummaryCards extends StatelessWidget {
             bottomWidget: Row(
               children: [
                 Icon(
-                  state.totalSpentDiffPercent >= 0 ? Icons.arrow_upward : Icons.arrow_downward,
+                  state.totalSpentDiffPercent >= 0
+                      ? Icons.arrow_upward
+                      : Icons.arrow_downward,
                   size: 14,
-                  color: state.totalSpentDiffPercent >= 0 ? Colors.red : Colors.green,
+                  color: state.totalSpentDiffPercent >= 0
+                      ? Colors.red
+                      : Colors.green,
                 ),
                 const SizedBox(width: 4),
                 Text(
@@ -50,13 +58,15 @@ class FinancialSummaryCards extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
-                    color: state.totalSpentDiffPercent >= 0 ? Colors.red : Colors.green,
+                    color: state.totalSpentDiffPercent >= 0
+                        ? Colors.red
+                        : Colors.green,
                   ),
                 ),
               ],
             ),
           ),
-          
+
           // 2. Daily Average Card
           _buildSummaryCard(
             context,
@@ -68,9 +78,13 @@ class FinancialSummaryCards extends StatelessWidget {
             bottomWidget: Row(
               children: [
                 Icon(
-                  state.dailyAverageDiffPercent >= 0 ? Icons.arrow_upward : Icons.arrow_downward,
+                  state.dailyAverageDiffPercent >= 0
+                      ? Icons.arrow_upward
+                      : Icons.arrow_downward,
                   size: 14,
-                  color: state.dailyAverageDiffPercent >= 0 ? Colors.red : Colors.green,
+                  color: state.dailyAverageDiffPercent >= 0
+                      ? Colors.red
+                      : Colors.green,
                 ),
                 const SizedBox(width: 4),
                 Text(
@@ -101,11 +115,18 @@ class FinancialSummaryCards extends StatelessWidget {
                   children: [
                     Text(
                       '₹${state.budgetLimit.toStringAsFixed(0)} Limit',
-                      style: TextStyle(fontSize: 10, color: colorScheme.onSurfaceVariant),
+                      style: TextStyle(
+                        fontSize: 10,
+                        color: colorScheme.onSurfaceVariant,
+                      ),
                     ),
                     Text(
                       '${(progress * 100).toStringAsFixed(0)}%',
-                      style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: budgetProgressColor),
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        color: budgetProgressColor,
+                      ),
                     ),
                   ],
                 ),
@@ -133,7 +154,10 @@ class FinancialSummaryCards extends StatelessWidget {
             cardBg: Colors.orange.withOpacity(0.12),
             bottomWidget: Text(
               '${state.prevTotalTransactions} in last period',
-              style: TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant),
+              style: TextStyle(
+                fontSize: 12,
+                color: colorScheme.onSurfaceVariant,
+              ),
             ),
           ),
 
@@ -147,7 +171,10 @@ class FinancialSummaryCards extends StatelessWidget {
             cardBg: Colors.purple.withOpacity(0.12),
             bottomWidget: Text(
               'Family Shared Account',
-              style: TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant),
+              style: TextStyle(
+                fontSize: 12,
+                color: colorScheme.onSurfaceVariant,
+              ),
             ),
           ),
         ],

@@ -11,7 +11,11 @@ class RecurringExpensesCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final currencyFmt = NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 0);
+    final currencyFmt = NumberFormat.currency(
+      locale: 'en_IN',
+      symbol: '₹',
+      decimalDigits: 0,
+    );
     final dateFmt = DateFormat('MMM d, yyyy');
 
     final items = state.recurringExpenses;
@@ -39,18 +43,25 @@ class RecurringExpensesCard extends StatelessWidget {
                     Text(
                       'Recurring Expenses',
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: colorScheme.onSurface,
-                          ),
+                        fontWeight: FontWeight.bold,
+                        color: colorScheme.onSurface,
+                      ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       'Auto-detected subscriptions and bills',
-                      style: TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: colorScheme.onSurfaceVariant,
+                      ),
                     ),
                   ],
                 ),
-                Icon(Icons.repeat_on_outlined, size: 20, color: colorScheme.primary),
+                Icon(
+                  Icons.repeat_on_outlined,
+                  size: 20,
+                  color: colorScheme.primary,
+                ),
               ],
             ),
             const SizedBox(height: 16),
@@ -62,11 +73,19 @@ class RecurringExpensesCard extends StatelessWidget {
                 child: Center(
                   child: Column(
                     children: [
-                      Icon(Icons.info_outline, size: 28, color: colorScheme.onSurfaceVariant),
+                      Icon(
+                        Icons.info_outline,
+                        size: 28,
+                        color: colorScheme.onSurfaceVariant,
+                      ),
                       const SizedBox(height: 8),
                       Text(
                         'No recurring expenses detected yet.',
-                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: colorScheme.onSurfaceVariant),
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: colorScheme.onSurfaceVariant,
+                        ),
                       ),
                       const SizedBox(height: 4),
                       Padding(
@@ -74,7 +93,10 @@ class RecurringExpensesCard extends StatelessWidget {
                         child: Text(
                           'Logging identical descriptions across multiple weeks or months will trigger automatic classification.',
                           textAlign: TextAlign.center,
-                          style: TextStyle(fontSize: 10.5, color: colorScheme.onSurfaceVariant),
+                          style: TextStyle(
+                            fontSize: 10.5,
+                            color: colorScheme.onSurfaceVariant,
+                          ),
                         ),
                       ),
                     ],
@@ -89,7 +111,7 @@ class RecurringExpensesCard extends StatelessWidget {
                 itemBuilder: (context, idx) {
                   final item = items[idx];
                   final meta = getCategoryMetadata(context, item.category);
-                  
+
                   // Emoji selection based on title/desc
                   String emoji = meta.emoji;
                   final titleLower = item.title.toLowerCase();
@@ -98,7 +120,9 @@ class RecurringExpensesCard extends StatelessWidget {
                   if (titleLower.contains('spotify')) emoji = '🎵';
                   if (titleLower.contains('electricity')) emoji = '⚡';
                   if (titleLower.contains('gas')) emoji = '⛽';
-                  if (titleLower.contains('wifi') || titleLower.contains('internet')) emoji = '🌐';
+                  if (titleLower.contains('wifi') ||
+                      titleLower.contains('internet'))
+                    emoji = '🌐';
                   if (titleLower.contains('rent')) emoji = '🏠';
 
                   return Padding(
@@ -118,7 +142,10 @@ class RecurringExpensesCard extends StatelessWidget {
                             meta.iconPath,
                             width: 20,
                             height: 20,
-                            colorFilter: ColorFilter.mode(meta.color, BlendMode.srcIn),
+                            colorFilter: ColorFilter.mode(
+                              meta.color,
+                              BlendMode.srcIn,
+                            ),
                           ),
                         ),
                         const SizedBox(width: 14),
@@ -130,14 +157,21 @@ class RecurringExpensesCard extends StatelessWidget {
                             children: [
                               Text(
                                 item.title,
-                                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: colorScheme.onSurface),
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 13,
+                                  color: colorScheme.onSurface,
+                                ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
                               const SizedBox(height: 2),
                               Text(
                                 '${item.frequency} • Expected: ${dateFmt.format(item.nextExpectedDate)}',
-                                style: TextStyle(fontSize: 11, color: colorScheme.onSurfaceVariant),
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: colorScheme.onSurfaceVariant,
+                                ),
                               ),
                             ],
                           ),
@@ -146,7 +180,11 @@ class RecurringExpensesCard extends StatelessWidget {
                         // Value
                         Text(
                           currencyFmt.format(item.amount),
-                          style: TextStyle(fontWeight: FontWeight.w900, fontSize: 14, color: colorScheme.onSurface),
+                          style: TextStyle(
+                            fontWeight: FontWeight.w900,
+                            fontSize: 14,
+                            color: colorScheme.onSurface,
+                          ),
                         ),
                       ],
                     ),

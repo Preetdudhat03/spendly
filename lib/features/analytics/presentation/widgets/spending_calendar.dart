@@ -5,6 +5,7 @@ import 'package:spendly/features/analytics/providers/analytics_providers.dart';
 import 'package:spendly/models/expense.dart';
 import 'package:spendly/features/analytics/presentation/widgets/category_donut_chart.dart';
 import 'package:spendly/features/analytics/presentation/widgets/drill_down_sheet.dart';
+
 class SpendingCalendar extends StatelessWidget {
   final AnalyticsState state;
 
@@ -24,10 +25,18 @@ class SpendingCalendar extends StatelessWidget {
     return colorScheme.onSurface;
   }
 
-  void _showDayExpenses(BuildContext context, DateTime date, double totalAmount) {
+  void _showDayExpenses(
+    BuildContext context,
+    DateTime date,
+    double totalAmount,
+  ) {
     if (totalAmount <= 0) return;
-    
-    final currencyFmt = NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 0);
+
+    final currencyFmt = NumberFormat.currency(
+      locale: 'en_IN',
+      symbol: '₹',
+      decimalDigits: 0,
+    );
     final dateFmt = DateFormat('EEEE, MMMM d, yyyy');
 
     // Filter all expenses for this specific day
@@ -54,7 +63,7 @@ class SpendingCalendar extends StatelessWidget {
     final now = DateTime.now();
     final firstDayOfMonth = DateTime(now.year, now.month, 1);
     final daysInMonth = DateUtils.getDaysInMonth(now.year, now.month);
-    
+
     final offset = firstDayOfMonth.weekday - 1;
 
     final List<Widget> gridItems = [];
@@ -82,7 +91,11 @@ class SpendingCalendar extends StatelessWidget {
     }
 
     // Days of the month
-    final currencyFmt = NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 0);
+    final currencyFmt = NumberFormat.currency(
+      locale: 'en_IN',
+      symbol: '₹',
+      decimalDigits: 0,
+    );
 
     for (int day = 1; day <= daysInMonth; day++) {
       final date = DateTime(now.year, now.month, day);
@@ -97,7 +110,9 @@ class SpendingCalendar extends StatelessWidget {
           child: Container(
             margin: const EdgeInsets.all(4),
             decoration: BoxDecoration(
-              color: bgColor == Colors.transparent ? colorScheme.surfaceContainerHigh.withOpacity(0.3) : bgColor,
+              color: bgColor == Colors.transparent
+                  ? colorScheme.surfaceContainerHigh.withOpacity(0.3)
+                  : bgColor,
               shape: BoxShape.circle,
               border: date.day == now.day
                   ? Border.all(color: colorScheme.primary, width: 1.5)
@@ -159,18 +174,25 @@ class SpendingCalendar extends StatelessWidget {
                     Text(
                       'Spending Calendar',
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: colorScheme.onSurface,
-                          ),
+                        fontWeight: FontWeight.bold,
+                        color: colorScheme.onSurface,
+                      ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       'Daily expense map for ${DateFormat('MMMM yyyy').format(now)}',
-                      style: TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: colorScheme.onSurfaceVariant,
+                      ),
                     ),
                   ],
                 ),
-                Icon(Icons.calendar_month, size: 20, color: colorScheme.primary),
+                Icon(
+                  Icons.calendar_month,
+                  size: 20,
+                  color: colorScheme.primary,
+                ),
               ],
             ),
             const SizedBox(height: 20),
@@ -192,19 +214,64 @@ class SpendingCalendar extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text('Intensity:', style: TextStyle(fontSize: 10.5, color: colorScheme.onSurfaceVariant)),
+                Text(
+                  'Intensity:',
+                  style: TextStyle(
+                    fontSize: 10.5,
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
                 const SizedBox(width: 6),
-                Container(width: 8, height: 8, decoration: BoxDecoration(color: colorScheme.primary.withOpacity(0.12), shape: BoxShape.circle)),
+                Container(
+                  width: 8,
+                  height: 8,
+                  decoration: BoxDecoration(
+                    color: colorScheme.primary.withOpacity(0.12),
+                    shape: BoxShape.circle,
+                  ),
+                ),
                 const SizedBox(width: 3),
-                Text('Under ₹500', style: TextStyle(fontSize: 9, color: colorScheme.onSurfaceVariant)),
+                Text(
+                  'Under ₹500',
+                  style: TextStyle(
+                    fontSize: 9,
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
                 const SizedBox(width: 10),
-                Container(width: 8, height: 8, decoration: BoxDecoration(color: colorScheme.primary.withOpacity(0.45), shape: BoxShape.circle)),
+                Container(
+                  width: 8,
+                  height: 8,
+                  decoration: BoxDecoration(
+                    color: colorScheme.primary.withOpacity(0.45),
+                    shape: BoxShape.circle,
+                  ),
+                ),
                 const SizedBox(width: 3),
-                Text('₹500 - ₹2000', style: TextStyle(fontSize: 9, color: colorScheme.onSurfaceVariant)),
+                Text(
+                  '₹500 - ₹2000',
+                  style: TextStyle(
+                    fontSize: 9,
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
                 const SizedBox(width: 10),
-                Container(width: 8, height: 8, decoration: BoxDecoration(color: colorScheme.primary, shape: BoxShape.circle)),
+                Container(
+                  width: 8,
+                  height: 8,
+                  decoration: BoxDecoration(
+                    color: colorScheme.primary,
+                    shape: BoxShape.circle,
+                  ),
+                ),
                 const SizedBox(width: 3),
-                Text('Above ₹2000', style: TextStyle(fontSize: 9, color: colorScheme.onSurfaceVariant)),
+                Text(
+                  'Above ₹2000',
+                  style: TextStyle(
+                    fontSize: 9,
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
               ],
             ),
           ],

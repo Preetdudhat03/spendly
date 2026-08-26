@@ -15,7 +15,8 @@ class SpendingPatternsCard extends StatelessWidget {
     IconData weekendIcon = Icons.wb_sunny_outlined;
     Color weekendColor = Colors.teal;
     if (state.weekendOverspendPercent > 0) {
-      weekendText = 'You spend ${state.weekendOverspendPercent.toStringAsFixed(0)}% more on weekends than weekdays.';
+      weekendText =
+          'You spend ${state.weekendOverspendPercent.toStringAsFixed(0)}% more on weekends than weekdays.';
       weekendIcon = Icons.trending_up_rounded;
       weekendColor = Colors.orange;
       if (state.weekendOverspendPercent > 40) {
@@ -32,7 +33,7 @@ class SpendingPatternsCard extends StatelessWidget {
       final amounts = state.timeOfDayCounts.entries.toList()
         ..sort((a, b) => b.value.compareTo(a.value));
       final topTime = amounts.first.key;
-      
+
       if (amounts.first.value > 0) {
         peakColor = Colors.purple;
         peakIcon = Icons.nights_stay_outlined;
@@ -59,14 +60,16 @@ class SpendingPatternsCard extends StatelessWidget {
     }
 
     // 3. Category concentration
-    String concentrationText = 'Your spending is well-diversified across categories.';
+    String concentrationText =
+        'Your spending is well-diversified across categories.';
     IconData concIcon = Icons.category_outlined;
     Color concColor = Colors.green;
 
     if (state.categoryShares.isNotEmpty) {
       final topCat = state.categoryShares.first;
       if (topCat.percentage > 40) {
-        concentrationText = 'High concentration: ${topCat.category} represents ${topCat.percentage.toStringAsFixed(0)}% of total spent.';
+        concentrationText =
+            'High concentration: ${topCat.category} represents ${topCat.percentage.toStringAsFixed(0)}% of total spent.';
         concIcon = Icons.warning_amber_rounded;
         concColor = Colors.orange;
       }
@@ -95,18 +98,25 @@ class SpendingPatternsCard extends StatelessWidget {
                     Text(
                       'Smart Patterns',
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: colorScheme.onSurface,
-                          ),
+                        fontWeight: FontWeight.bold,
+                        color: colorScheme.onSurface,
+                      ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       'Automated behavioral expense analysis',
-                      style: TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: colorScheme.onSurfaceVariant,
+                      ),
                     ),
                   ],
                 ),
-                Icon(Icons.psychology_outlined, size: 22, color: colorScheme.primary),
+                Icon(
+                  Icons.psychology_outlined,
+                  size: 22,
+                  color: colorScheme.primary,
+                ),
               ],
             ),
             const SizedBox(height: 20),

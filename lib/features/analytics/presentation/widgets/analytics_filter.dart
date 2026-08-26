@@ -29,7 +29,11 @@ class AnalyticsFilterHeader extends ConsumerWidget {
     }
   }
 
-  void _showFilterSelector(BuildContext context, WidgetRef ref, AnalyticsFilterType currentType) {
+  void _showFilterSelector(
+    BuildContext context,
+    WidgetRef ref,
+    AnalyticsFilterType currentType,
+  ) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -59,9 +63,9 @@ class AnalyticsFilterHeader extends ConsumerWidget {
                 Text(
                   'Select Time Range',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: colorScheme.onSurface,
-                      ),
+                    fontWeight: FontWeight.bold,
+                    color: colorScheme.onSurface,
+                  ),
                 ),
                 const SizedBox(height: 12),
                 const Divider(),
@@ -71,8 +75,12 @@ class AnalyticsFilterHeader extends ConsumerWidget {
                     title: Text(
                       _getFilterName(type),
                       style: TextStyle(
-                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                        color: isSelected ? colorScheme.primary : colorScheme.onSurface,
+                        fontWeight: isSelected
+                            ? FontWeight.bold
+                            : FontWeight.normal,
+                        color: isSelected
+                            ? colorScheme.primary
+                            : colorScheme.onSurface,
                       ),
                     ),
                     trailing: isSelected
@@ -84,7 +92,9 @@ class AnalyticsFilterHeader extends ConsumerWidget {
                         final picked = await showDateRangePicker(
                           context: context,
                           firstDate: DateTime(2020),
-                          lastDate: DateTime.now().add(const Duration(days: 365)),
+                          lastDate: DateTime.now().add(
+                            const Duration(days: 365),
+                          ),
                           builder: (context, child) {
                             return Theme(
                               data: Theme.of(context),
@@ -93,11 +103,18 @@ class AnalyticsFilterHeader extends ConsumerWidget {
                           },
                         );
                         if (picked != null) {
-                          ref.read(analyticsCustomDateRangeProvider.notifier).state = picked;
-                          ref.read(analyticsFilterTypeProvider.notifier).state = AnalyticsFilterType.customDate;
+                          ref
+                                  .read(
+                                    analyticsCustomDateRangeProvider.notifier,
+                                  )
+                                  .state =
+                              picked;
+                          ref.read(analyticsFilterTypeProvider.notifier).state =
+                              AnalyticsFilterType.customDate;
                         }
                       } else {
-                        ref.read(analyticsFilterTypeProvider.notifier).state = type;
+                        ref.read(analyticsFilterTypeProvider.notifier).state =
+                            type;
                       }
                     },
                   );
@@ -154,7 +171,8 @@ class AnalyticsFilterHeader extends ConsumerWidget {
                   children: [
                     Text(
                       'Analytics',
-                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                      style: Theme.of(context).textTheme.headlineMedium
+                          ?.copyWith(
                             fontWeight: FontWeight.w900,
                             letterSpacing: -0.5,
                             color: colorScheme.onSurface,
@@ -164,9 +182,9 @@ class AnalyticsFilterHeader extends ConsumerWidget {
                     Text(
                       "Understand where your family's money is going.",
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: colorScheme.onSurfaceVariant,
-                            fontSize: 13,
-                          ),
+                        color: colorScheme.onSurfaceVariant,
+                        fontSize: 13,
+                      ),
                     ),
                   ],
                 ),
@@ -175,14 +193,22 @@ class AnalyticsFilterHeader extends ConsumerWidget {
               // Right: Filter Button
               TextButton.icon(
                 style: TextButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 10,
+                  ),
                   backgroundColor: colorScheme.primary.withOpacity(0.12),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                   ),
                 ),
-                onPressed: () => _showFilterSelector(context, ref, state.filterType),
-                icon: Icon(Icons.calendar_today, size: 16, color: colorScheme.primary),
+                onPressed: () =>
+                    _showFilterSelector(context, ref, state.filterType),
+                icon: Icon(
+                  Icons.calendar_today,
+                  size: 16,
+                  color: colorScheme.primary,
+                ),
                 label: Text(
                   _getFilterLabel(state.filterType, state.dateRange),
                   style: TextStyle(
@@ -207,15 +233,22 @@ class AnalyticsFilterHeader extends ConsumerWidget {
                   selectedColor: colorScheme.primaryContainer,
                   backgroundColor: colorScheme.surface,
                   labelStyle: TextStyle(
-                    color: selectedMemberId == null ? colorScheme.onPrimaryContainer : colorScheme.onSurfaceVariant,
-                    fontWeight: selectedMemberId == null ? FontWeight.bold : FontWeight.normal,
+                    color: selectedMemberId == null
+                        ? colorScheme.onPrimaryContainer
+                        : colorScheme.onSurfaceVariant,
+                    fontWeight: selectedMemberId == null
+                        ? FontWeight.bold
+                        : FontWeight.normal,
                   ),
                   side: BorderSide(
-                    color: selectedMemberId == null ? colorScheme.primary : colorScheme.outline,
+                    color: selectedMemberId == null
+                        ? colorScheme.primary
+                        : colorScheme.outline,
                   ),
                   onSelected: (selected) {
                     if (selected) {
-                      ref.read(analyticsMemberFilterProvider.notifier).state = null;
+                      ref.read(analyticsMemberFilterProvider.notifier).state =
+                          null;
                     }
                   },
                 ),
@@ -230,14 +263,21 @@ class AnalyticsFilterHeader extends ConsumerWidget {
                       selectedColor: colorScheme.primaryContainer,
                       backgroundColor: colorScheme.surface,
                       labelStyle: TextStyle(
-                        color: isSelected ? colorScheme.onPrimaryContainer : colorScheme.onSurfaceVariant,
-                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                        color: isSelected
+                            ? colorScheme.onPrimaryContainer
+                            : colorScheme.onSurfaceVariant,
+                        fontWeight: isSelected
+                            ? FontWeight.bold
+                            : FontWeight.normal,
                       ),
                       side: BorderSide(
-                        color: isSelected ? colorScheme.primary : colorScheme.outline,
+                        color: isSelected
+                            ? colorScheme.primary
+                            : colorScheme.outline,
                       ),
                       onSelected: (selected) {
-                        ref.read(analyticsMemberFilterProvider.notifier).state = selected ? member.userId : null;
+                        ref.read(analyticsMemberFilterProvider.notifier).state =
+                            selected ? member.userId : null;
                       },
                     ),
                   );

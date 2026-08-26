@@ -15,23 +15,51 @@ class PaymentMethodMetadata {
 PaymentMethodMetadata getPaymentMethodMetadata(String method) {
   switch (method.toLowerCase()) {
     case 'upi':
-      return PaymentMethodMetadata('UPI', Icons.qr_code_2, const Color(0xFF636AE8));
+      return PaymentMethodMetadata(
+        'UPI',
+        Icons.qr_code_2,
+        const Color(0xFF636AE8),
+      );
     case 'cash':
-      return PaymentMethodMetadata('Cash', Icons.payments_outlined, const Color(0xFF10B981));
+      return PaymentMethodMetadata(
+        'Cash',
+        Icons.payments_outlined,
+        const Color(0xFF10B981),
+      );
     case 'credit card':
     case 'creditcard':
-      return PaymentMethodMetadata('Credit Card', Icons.credit_card_outlined, const Color(0xFFEC4899));
+      return PaymentMethodMetadata(
+        'Credit Card',
+        Icons.credit_card_outlined,
+        const Color(0xFFEC4899),
+      );
     case 'debit card':
     case 'debitcard':
-      return PaymentMethodMetadata('Debit Card', Icons.credit_card_sharp, const Color(0xFF3B82F6));
+      return PaymentMethodMetadata(
+        'Debit Card',
+        Icons.credit_card_sharp,
+        const Color(0xFF3B82F6),
+      );
     case 'bank transfer':
     case 'banktransfer':
     case 'bank':
-      return PaymentMethodMetadata('Bank Transfer', Icons.account_balance_outlined, const Color(0xFF8B5CF6));
+      return PaymentMethodMetadata(
+        'Bank Transfer',
+        Icons.account_balance_outlined,
+        const Color(0xFF8B5CF6),
+      );
     case 'wallet':
-      return PaymentMethodMetadata('Wallet', Icons.account_balance_wallet_outlined, const Color(0xFFF59E0B));
+      return PaymentMethodMetadata(
+        'Wallet',
+        Icons.account_balance_wallet_outlined,
+        const Color(0xFFF59E0B),
+      );
     default:
-      return PaymentMethodMetadata(method, Icons.payment_outlined, const Color(0xFF64748B));
+      return PaymentMethodMetadata(
+        method,
+        Icons.payment_outlined,
+        const Color(0xFF64748B),
+      );
   }
 }
 
@@ -49,12 +77,16 @@ class _PaymentMethodChartState extends State<PaymentMethodChart> {
 
   void _showPaymentDetails(BuildContext context, PaymentMethodShare share) {
     final meta = getPaymentMethodMetadata(share.method);
-    
+
     // Filter transactions for this method
-    final methodExpenses = widget.state.filteredExpenses
-        .where((e) => e.paymentMethod.toLowerCase() == share.method.toLowerCase())
-        .toList()
-      ..sort((a, b) => b.expenseDate.compareTo(a.expenseDate));
+    final methodExpenses =
+        widget.state.filteredExpenses
+            .where(
+              (e) =>
+                  e.paymentMethod.toLowerCase() == share.method.toLowerCase(),
+            )
+            .toList()
+          ..sort((a, b) => b.expenseDate.compareTo(a.expenseDate));
 
     DrillDownSheet.show(
       context,
@@ -64,7 +96,8 @@ class _PaymentMethodChartState extends State<PaymentMethodChart> {
       color: meta.color,
       totalAmount: share.amount,
       expenses: methodExpenses,
-      aiSummary: 'You use ${meta.name} for ${share.percentage.toStringAsFixed(0)}% of your transactions. It was used ${share.count} times this period.',
+      aiSummary:
+          'You use ${meta.name} for ${share.percentage.toStringAsFixed(0)}% of your transactions. It was used ${share.count} times this period.',
     );
   }
 
@@ -74,7 +107,11 @@ class _PaymentMethodChartState extends State<PaymentMethodChart> {
       return const SizedBox.shrink();
     }
 
-    final currencyFmt = NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 0);
+    final currencyFmt = NumberFormat.currency(
+      locale: 'en_IN',
+      symbol: '₹',
+      decimalDigits: 0,
+    );
 
     // Build chart sections
     final sections = List<PieChartSectionData>.generate(
@@ -91,7 +128,12 @@ class _PaymentMethodChartState extends State<PaymentMethodChart> {
           value: share.amount,
           title: '', // Show label in legend
           radius: radius,
-          borderSide: strokeWidth > 0 ? BorderSide(color: meta.color.withOpacity(0.4), width: strokeWidth) : BorderSide.none,
+          borderSide: strokeWidth > 0
+              ? BorderSide(
+                  color: meta.color.withOpacity(0.4),
+                  width: strokeWidth,
+                )
+              : BorderSide.none,
         );
       },
     );
@@ -119,14 +161,17 @@ class _PaymentMethodChartState extends State<PaymentMethodChart> {
                     Text(
                       'Payment Methods',
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: colorScheme.onSurface,
-                          ),
+                        fontWeight: FontWeight.bold,
+                        color: colorScheme.onSurface,
+                      ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       'Distribution across transactional channels',
-                      style: TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: colorScheme.onSurfaceVariant,
+                      ),
                     ),
                   ],
                 ),
@@ -148,21 +193,35 @@ class _PaymentMethodChartState extends State<PaymentMethodChart> {
                         sectionsSpace: 4,
                         borderData: FlBorderData(show: false),
                         pieTouchData: PieTouchData(
-                          touchCallback: (FlTouchEvent event, pieTouchResponse) {
-                            setState(() {
-                              if (!event.isInterestedForInteractions ||
-                                  pieTouchResponse == null ||
-                                  pieTouchResponse.touchedSection == null) {
-                                touchedIndex = -1;
-                                return;
-                              }
-                              touchedIndex = pieTouchResponse.touchedSection!.touchedSectionIndex;
-                              
-                              if (event is FlTapUpEvent && touchedIndex >= 0 && touchedIndex < widget.state.paymentMethodShares.length) {
-                                _showPaymentDetails(context, widget.state.paymentMethodShares[touchedIndex]);
-                              }
-                            });
-                          },
+                          touchCallback:
+                              (FlTouchEvent event, pieTouchResponse) {
+                                setState(() {
+                                  if (!event.isInterestedForInteractions ||
+                                      pieTouchResponse == null ||
+                                      pieTouchResponse.touchedSection == null) {
+                                    touchedIndex = -1;
+                                    return;
+                                  }
+                                  touchedIndex = pieTouchResponse
+                                      .touchedSection!
+                                      .touchedSectionIndex;
+
+                                  if (event is FlTapUpEvent &&
+                                      touchedIndex >= 0 &&
+                                      touchedIndex <
+                                          widget
+                                              .state
+                                              .paymentMethodShares
+                                              .length) {
+                                    _showPaymentDetails(
+                                      context,
+                                      widget
+                                          .state
+                                          .paymentMethodShares[touchedIndex],
+                                    );
+                                  }
+                                });
+                              },
                         ),
                       ),
                     ),
@@ -212,7 +271,10 @@ class _PaymentMethodChartState extends State<PaymentMethodChart> {
                     borderRadius: BorderRadius.circular(12),
                     onTap: () => _showPaymentDetails(context, share),
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 8.0,
+                        horizontal: 4.0,
+                      ),
                       child: Row(
                         children: [
                           Container(
@@ -230,12 +292,19 @@ class _PaymentMethodChartState extends State<PaymentMethodChart> {
                               children: [
                                 Text(
                                   meta.name,
-                                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: colorScheme.onSurface),
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 13,
+                                    color: colorScheme.onSurface,
+                                  ),
                                 ),
                                 const SizedBox(height: 2),
                                 Text(
                                   '${share.count} transaction${share.count == 1 ? '' : 's'}',
-                                  style: TextStyle(fontSize: 11, color: colorScheme.onSurfaceVariant),
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: colorScheme.onSurfaceVariant,
+                                  ),
                                 ),
                               ],
                             ),
@@ -245,17 +314,29 @@ class _PaymentMethodChartState extends State<PaymentMethodChart> {
                             children: [
                               Text(
                                 currencyFmt.format(share.amount),
-                                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: colorScheme.onSurface),
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                  color: colorScheme.onSurface,
+                                ),
                               ),
                               const SizedBox(height: 2),
                               Text(
                                 '${share.percentage.toStringAsFixed(0)}%',
-                                style: TextStyle(fontSize: 11, color: colorScheme.onSurfaceVariant, fontWeight: FontWeight.bold),
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: colorScheme.onSurfaceVariant,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ],
                           ),
                           const SizedBox(width: 4),
-                          Icon(Icons.chevron_right, size: 16, color: colorScheme.onSurfaceVariant),
+                          Icon(
+                            Icons.chevron_right,
+                            size: 16,
+                            color: colorScheme.onSurfaceVariant,
+                          ),
                         ],
                       ),
                     ),

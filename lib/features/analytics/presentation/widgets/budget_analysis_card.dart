@@ -10,7 +10,11 @@ class BudgetAnalysisCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final currencyFmt = NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 0);
+    final currencyFmt = NumberFormat.currency(
+      locale: 'en_IN',
+      symbol: '₹',
+      decimalDigits: 0,
+    );
 
     final spent = state.totalSpent;
     final budget = state.budgetLimit;
@@ -29,13 +33,15 @@ class BudgetAnalysisCard extends StatelessWidget {
     IconData forecastIcon = Icons.check_circle_outline;
 
     if (isExceededForecast && budget > 0) {
-      forecastMessage = 'If spending continues at current pace, you will exceed your budget by ${currencyFmt.format(forecastExceedAmount)} (Projected total: ${currencyFmt.format(projectedSpend)}).';
+      forecastMessage =
+          'If spending continues at current pace, you will exceed your budget by ${currencyFmt.format(forecastExceedAmount)} (Projected total: ${currencyFmt.format(projectedSpend)}).';
       forecastBg = Colors.red.withOpacity(0.06);
       forecastBorder = Colors.red.withOpacity(0.2);
       forecastTextColor = Colors.red[800]!;
       forecastIcon = Icons.warning_amber_rounded;
     } else {
-      forecastMessage = 'You are on track to stay within your budget. Projected monthly total: ${currencyFmt.format(projectedSpend)}.';
+      forecastMessage =
+          'You are on track to stay within your budget. Projected monthly total: ${currencyFmt.format(projectedSpend)}.';
     }
 
     Color progressColor = Colors.green;
@@ -68,14 +74,17 @@ class BudgetAnalysisCard extends StatelessWidget {
                     Text(
                       'Budget Analysis',
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: colorScheme.onSurface,
-                          ),
+                        fontWeight: FontWeight.bold,
+                        color: colorScheme.onSurface,
+                      ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       'Adherence and monthly forecasting',
-                      style: TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: colorScheme.onSurfaceVariant,
+                      ),
                     ),
                   ],
                 ),
@@ -91,16 +100,33 @@ class BudgetAnalysisCard extends StatelessWidget {
                 Expanded(
                   child: Column(
                     children: [
-                      _buildInfoRow(context, 'Monthly Budget', currencyFmt.format(budget), colorScheme.onSurface),
+                      _buildInfoRow(
+                        context,
+                        'Monthly Budget',
+                        currencyFmt.format(budget),
+                        colorScheme.onSurface,
+                      ),
                       const SizedBox(height: 10),
-                      _buildInfoRow(context, 'Total Spent', currencyFmt.format(spent), progressColor),
+                      _buildInfoRow(
+                        context,
+                        'Total Spent',
+                        currencyFmt.format(spent),
+                        progressColor,
+                      ),
                       const SizedBox(height: 10),
-                      _buildInfoRow(context, 'Remaining', currencyFmt.format(remaining), remaining > 0 ? Colors.green : colorScheme.onSurfaceVariant),
+                      _buildInfoRow(
+                        context,
+                        'Remaining',
+                        currencyFmt.format(remaining),
+                        remaining > 0
+                            ? Colors.green
+                            : colorScheme.onSurfaceVariant,
+                      ),
                     ],
                   ),
                 ),
                 const SizedBox(width: 24),
-                
+
                 // Circular Progress Gauge
                 SizedBox(
                   width: 100,
@@ -124,7 +150,9 @@ class BudgetAnalysisCard extends StatelessWidget {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
-                              budget > 0 ? '${(spent / budget * 100).toStringAsFixed(0)}%' : '0%',
+                              budget > 0
+                                  ? '${(spent / budget * 100).toStringAsFixed(0)}%'
+                                  : '0%',
                               style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.w900,
@@ -182,7 +210,12 @@ class BudgetAnalysisCard extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoRow(BuildContext context, String label, String value, Color valueColor) {
+  Widget _buildInfoRow(
+    BuildContext context,
+    String label,
+    String value,
+    Color valueColor,
+  ) {
     final colorScheme = Theme.of(context).colorScheme;
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
