@@ -247,7 +247,7 @@ class AnalyticsPage extends ConsumerWidget {
     } else {
       return SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.fromLTRB(20, 12, 20, 80),//20, 12, 20, 100
+        padding: const EdgeInsets.fromLTRB(20, 12, 20, 140),
         child: Column(
           children: [
             animatedItem(const AnalyticsFilterHeader(), 0),
