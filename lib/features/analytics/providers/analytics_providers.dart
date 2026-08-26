@@ -560,7 +560,7 @@ class AnalyticsState {
     // Forecast & Budget
     double projectedMonthEnd = 0.0;
     double expectedOverspend = 0.0;
-    final ranges = _calculateDateRanges(
+    final ranges = AnalyticsNotifier._calculateDateRanges(
       AnalyticsFilterType.values[result.input.filterTypeIndex],
       result.input.customRange,
       result.input.now,
