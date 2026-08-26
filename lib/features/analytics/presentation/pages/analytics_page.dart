@@ -57,11 +57,9 @@ class AnalyticsPage extends ConsumerWidget {
       body: RefreshIndicator(
         onRefresh: () => _handleRefresh(ref),
         color: Theme.of(context).primaryColor,
-        child: expenseState.isLoading || state.isLoading
-            ? _buildLoadingState(context, isWide)
-            : expenseState.expenses.isEmpty ||
-                  (state.filteredExpenses.isEmpty &&
-                      ref.read(analyticsMemberFilterProvider) != null)
+        child: expenseState.isLoading || state.status == AnalyticsStatus.loading
+            ? _buildLoadingState(context, isWide, ref)
+            : expenseState.expenses.isEmpty || state.status == AnalyticsStatus.empty
             ? _buildEmptyState(context, ref)
             : _buildDashboardContent(
                 context,
@@ -178,7 +176,30 @@ class AnalyticsPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildLoadingState(BuildContext context, bool isWide) {
+    Widget _buildLoadingText(BuildContext context, WidgetRef ref) {
+    final memberId = ref.watch(analyticsMemberFilterProvider);
+    String text = 'Updating analytics...';
+    if (memberId != null) {
+      final familyState = ref.read(familyProvider);
+      try {
+        final member = familyState.members.firstWhere((m) => m.userId == memberId);
+        text = "Loading ${member.displayName}'s expenses...";
+      } catch (e) {
+        text = "Loading member expenses...";
+      }
+    }
+    return Center(
+      child: Text(
+        text,
+        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+          color: Theme.of(context).colorScheme.primary,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLoadingState(BuildContext context, bool isWide, WidgetRef ref) {
     return SingleChildScrollView(
       padding: isWide
           ? const EdgeInsets.symmetric(horizontal: 20, vertical: 10)
@@ -187,6 +208,8 @@ class AnalyticsPage extends ConsumerWidget {
         isLoading: true,
         child: Column(
           children: [
+            _buildLoadingText(context, ref),
+            const SizedBox(height: 16),
             const ShimmerPlaceholder(height: 60, borderRadius: 16),
             const SizedBox(height: 20),
             Row(
