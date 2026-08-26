@@ -143,13 +143,13 @@ class _CategoryDonutChartState extends State<CategoryDonutChart> {
   int touchedIndex = -1;
 
   void _showCategoryDetails(BuildContext context, CategoryShare share) {
-    final meta = getCategoryMetadata(context, share.category);
+    final meta = getCategoryMetadata(context, share.categoryName);
 
     // Filter transactions for this category in current range
     final categoryExpenses =
         widget.state.filteredExpenses
             .where(
-              (e) => e.category.toLowerCase() == share.category.toLowerCase(),
+              (e) => e.category.toLowerCase() == share.categoryName.toLowerCase(),
             )
             .toList()
           ..sort((a, b) => b.expenseDate.compareTo(a.expenseDate));
@@ -189,7 +189,7 @@ class _CategoryDonutChartState extends State<CategoryDonutChart> {
       widget.state.diagnostic!.categoryInsights.length,
       (i) {
         final share = widget.state.diagnostic!.categoryInsights[i];
-        final meta = getCategoryMetadata(context, share.category);
+        final meta = getCategoryMetadata(context, share.categoryName);
         final isTouched = i == touchedIndex;
         final radius = isTouched ? 48.0 : 40.0;
         final strokeWidth = isTouched ? 6.0 : 0.0;
@@ -331,7 +331,7 @@ class _CategoryDonutChartState extends State<CategoryDonutChart> {
               itemCount: widget.state.diagnostic!.categoryInsights.length,
               itemBuilder: (context, idx) {
                 final share = widget.state.diagnostic!.categoryInsights[idx];
-                final meta = getCategoryMetadata(context, share.category);
+                final meta = getCategoryMetadata(context, share.categoryName);
 
                 return Padding(
                   padding: const EdgeInsets.symmetric(vertical: 4.0),
