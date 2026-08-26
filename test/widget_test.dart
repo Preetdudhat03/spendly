@@ -3,6 +3,7 @@ import 'package:spendly/core/utils/ai_insights.dart';
 import 'package:spendly/core/services/suggestions_service.dart';
 import 'package:spendly/models/expense.dart';
 import 'package:spendly/features/analytics/providers/analytics_providers.dart';
+import 'package:spendly/features/analytics/models/analytics_models.dart';
 
 void main() {
   group('AI Insights Heuristics Tests', () {
