@@ -419,7 +419,7 @@ class DiagnosticIntelligence {
     'top3CategoryShare': top3CategoryShare,
     'primaryIncreaseContributor': primaryIncreaseContributor,
     'primaryDecreaseContributor': primaryDecreaseContributor,
-    'purchasesUnder200': purchasesUnder200,
+    
   };
   factory DiagnosticIntelligence.fromJson(Map<String, dynamic> json) => DiagnosticIntelligence(
     categoryInsights: (json['categoryInsights'] as List).map((e) => CategoryInsight.fromJson(e)).toList(),
@@ -428,7 +428,7 @@ class DiagnosticIntelligence {
     top3CategoryShare: json['top3CategoryShare'] as double,
     primaryIncreaseContributor: json['primaryIncreaseContributor'] as String?,
     primaryDecreaseContributor: json['primaryDecreaseContributor'] as String?,
-    purchasesUnder200: json['purchasesUnder200'] as int,
+    
   );
 
   final List<CategoryInsight> categoryInsights;
@@ -519,16 +519,16 @@ class BudgetForecast {
   Map<String, dynamic> toJson() => {
     'projectedTotal': projectedTotal,
     'expectedOverrun': expectedOverrun,
-    'currentPace': currentPace,
-    'velocityStatus': velocityStatus.name,
-    'recommendedDailyLimit': recommendedDailyLimit,
+    
+    
+    
   };
   factory BudgetForecast.fromJson(Map<String, dynamic> json) => BudgetForecast(
     projectedTotal: json['projectedTotal'] as double,
     expectedOverrun: json['expectedOverrun'] as double,
-    currentPace: json['currentPace'] as double,
-    velocityStatus: VelocityStatus.values.byName(json['velocityStatus'] as String),
-    recommendedDailyLimit: json['recommendedDailyLimit'] as double,
+    
+    
+    
   );
 
   final double projectedTotal;
@@ -567,22 +567,22 @@ class BudgetForecast {
 
 class SpendingHealth {
   Map<String, dynamic> toJson() => {
-    'score': score,
-    'adherenceScore': adherenceScore,
-    'velocityScore': velocityScore,
-    'stabilityScore': stabilityScore,
-    'anomalyScore': anomalyScore,
-    'concentrationScore': concentrationScore,
-    'confidenceScore': confidenceScore,
+    
+    
+    
+    
+    
+    
+    
   };
   factory SpendingHealth.fromJson(Map<String, dynamic> json) => SpendingHealth(
-    score: json['score'] as int,
-    adherenceScore: json['adherenceScore'] as int,
-    velocityScore: json['velocityScore'] as int,
-    stabilityScore: json['stabilityScore'] as int,
-    anomalyScore: json['anomalyScore'] as int,
-    concentrationScore: json['concentrationScore'] as int,
-    confidenceScore: json['confidenceScore'] as int,
+    
+    
+    
+    
+    
+    
+    
   );
 
   final int budgetAdherence; // 35%
@@ -696,14 +696,14 @@ enum FactImportance { low, medium, high, critical }
 
 class InsightFact {
   Map<String, dynamic> toJson() => {
-    'factId': factId,
+    
     'importance': importance.name,
-    'factData': factData,
+    
   };
   factory InsightFact.fromJson(Map<String, dynamic> json) => InsightFact(
-    factId: json['factId'] as String,
+    
     importance: FactImportance.values.byName(json['importance'] as String),
-    factData: Map<String, dynamic>.from(json['factData']),
+    
   );
 
   final String category;
