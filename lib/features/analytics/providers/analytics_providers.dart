@@ -117,13 +117,15 @@ class FinancialHealthMetrics {
   });
 }
 
+enum AnalyticsStatus { initial, loading, success, empty, error }
+
 class AnalyticsState {
   final AnalyticsFilterType filterType;
   final DateTimeRange dateRange;
   final DateTimeRange previousDateRange;
   final List<Expense> filteredExpenses;
   final List<Expense> previousExpenses;
-  final bool isLoading;
+  final AnalyticsStatus status;
 
   // Summary Cards
   final double totalSpent;
@@ -182,7 +184,7 @@ class AnalyticsState {
     required this.previousDateRange,
     required this.filteredExpenses,
     required this.previousExpenses,
-    required this.isLoading,
+    required this.status,
     required this.totalSpent,
     required this.prevTotalSpent,
     required this.totalSpentDiffPercent,
@@ -232,7 +234,7 @@ class AnalyticsState {
       previousDateRange: prevRange,
       filteredExpenses: [],
       previousExpenses: [],
-      isLoading: false,
+      status: AnalyticsStatus.initial,
       totalSpent: 0,
       prevTotalSpent: 0,
       totalSpentDiffPercent: 0,
@@ -281,7 +283,7 @@ class AnalyticsState {
     DateTimeRange? previousDateRange,
     List<Expense>? filteredExpenses,
     List<Expense>? previousExpenses,
-    bool? isLoading,
+    AnalyticsStatus? status,
     double? totalSpent,
     double? prevTotalSpent,
     double? totalSpentDiffPercent,
@@ -322,7 +324,7 @@ class AnalyticsState {
       previousDateRange: previousDateRange ?? this.previousDateRange,
       filteredExpenses: filteredExpenses ?? this.filteredExpenses,
       previousExpenses: previousExpenses ?? this.previousExpenses,
-      isLoading: isLoading ?? this.isLoading,
+      status: status ?? this.status,
       totalSpent: totalSpent ?? this.totalSpent,
       prevTotalSpent: prevTotalSpent ?? this.prevTotalSpent,
       totalSpentDiffPercent:
@@ -677,7 +679,7 @@ class AnalyticsState {
       previousDateRange: prevRange,
       filteredExpenses: filteredExps,
       previousExpenses: previousExps,
-      isLoading: false,
+      status: AnalyticsStatus.initial,
       totalSpent: agg.currentTotalSpent,
       prevTotalSpent: agg.prevTotalSpent,
       totalSpentDiffPercent: totalSpentDiffPercent,
