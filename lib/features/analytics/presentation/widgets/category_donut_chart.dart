@@ -146,7 +146,7 @@ class _CategoryDonutChartState extends State<CategoryDonutChart> {
 
   void _showCategoryDetails(BuildContext context, CategoryInsight insight) {
     final meta = getCategoryMetadata(context, insight.categoryName);
-    
+
     InsightDrillDownSheet.showForCategory(
       context,
       insight: insight,
@@ -167,7 +167,10 @@ class _CategoryDonutChartState extends State<CategoryDonutChart> {
       return const SizedBox.shrink();
     }
 
-    final totalText = currencyFmt.format((widget.state.summary?.totalSpend.currentValue ?? widget.state.totalSpent));
+    final totalText = currencyFmt.format(
+      (widget.state.summary?.totalSpend.currentValue ??
+          widget.state.totalSpent),
+    );
 
     // Build fl chart sections
     final sections = List<PieChartSectionData>.generate(
@@ -266,10 +269,17 @@ class _CategoryDonutChartState extends State<CategoryDonutChart> {
                                   if (event is FlTapUpEvent &&
                                       touchedIndex >= 0 &&
                                       touchedIndex <
-                                          widget.state.diagnostic!.categoryInsights.length) {
+                                          widget
+                                              .state
+                                              .diagnostic!
+                                              .categoryInsights
+                                              .length) {
                                     _showCategoryDetails(
                                       context,
-                                      widget.state.diagnostic!.categoryInsights[touchedIndex],
+                                      widget
+                                          .state
+                                          .diagnostic!
+                                          .categoryInsights[touchedIndex],
                                     );
                                   }
                                 });

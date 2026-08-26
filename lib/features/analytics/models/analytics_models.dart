@@ -2,10 +2,14 @@ import 'package:flutter/material.dart';
 
 import 'dart:math';
 
-enum ConsistencyLevel { stable, moderatelyVariable, highlyVariable, unavailable }
+enum ConsistencyLevel {
+  stable,
+  moderatelyVariable,
+  highlyVariable,
+  unavailable,
+}
 
 class SpendingConsistency {
-
   final double meanDailySpend;
   final double standardDeviation;
   final double coefficientOfVariation;
@@ -20,14 +24,24 @@ class SpendingConsistency {
 
   factory SpendingConsistency.calculate(List<double> dailyTotals) {
     if (dailyTotals.isEmpty) {
-      return const SpendingConsistency(meanDailySpend: 0, standardDeviation: 0, coefficientOfVariation: 0, level: ConsistencyLevel.unavailable);
+      return const SpendingConsistency(
+        meanDailySpend: 0,
+        standardDeviation: 0,
+        coefficientOfVariation: 0,
+        level: ConsistencyLevel.unavailable,
+      );
     }
-    
+
     final mean = dailyTotals.reduce((a, b) => a + b) / dailyTotals.length;
     if (mean == 0) {
-      return const SpendingConsistency(meanDailySpend: 0, standardDeviation: 0, coefficientOfVariation: 0, level: ConsistencyLevel.stable);
+      return const SpendingConsistency(
+        meanDailySpend: 0,
+        standardDeviation: 0,
+        coefficientOfVariation: 0,
+        level: ConsistencyLevel.stable,
+      );
     }
-    
+
     double sumOfSquaredDiffs = 0.0;
     for (var total in dailyTotals) {
       sumOfSquaredDiffs += pow(total - mean, 2);
@@ -35,11 +49,13 @@ class SpendingConsistency {
     final variance = sumOfSquaredDiffs / dailyTotals.length;
     final stdDev = sqrt(variance);
     final cv = stdDev / mean;
-    
+
     ConsistencyLevel level = ConsistencyLevel.moderatelyVariable;
-    if (cv < 0.5) level = ConsistencyLevel.stable;
-    else if (cv > 1.0) level = ConsistencyLevel.highlyVariable;
-    
+    if (cv < 0.5)
+      level = ConsistencyLevel.stable;
+    else if (cv > 1.0)
+      level = ConsistencyLevel.highlyVariable;
+
     return SpendingConsistency(
       meanDailySpend: mean,
       standardDeviation: stdDev,
@@ -50,7 +66,6 @@ class SpendingConsistency {
 }
 
 class AnomalyInsight {
-
   final ExpenseAnalyticsInput transaction;
   final String reason;
   final double deviationPercentage;
@@ -63,7 +78,6 @@ class AnomalyInsight {
 }
 
 class HighSpendingDayInsight {
-
   final DateTime date;
   final double amount;
   final String topCategoryContributor;
@@ -76,12 +90,11 @@ class HighSpendingDayInsight {
 }
 
 class PatternIntelligence {
-
   final SpendingConsistency consistency;
   final List<AnomalyInsight> anomalies;
   final List<HighSpendingDayInsight> highSpendingDays;
   final String? acceleratingCategory;
-  
+
   const PatternIntelligence({
     required this.consistency,
     required this.anomalies,
@@ -89,7 +102,6 @@ class PatternIntelligence {
     this.acceleratingCategory,
   });
 }
-
 
 enum DataConfidence { high, medium, low, unavailable }
 
@@ -119,7 +131,7 @@ class AnalyticsInput {
   final List<ExpenseAnalyticsInput> expenses;
   final double budgetLimit;
   final int activeMembersCount;
-  final int filterTypeIndex; 
+  final int filterTypeIndex;
   final DateTimeRange? customRange;
   final Map<String, String> memberIdToName;
   final String? selectedMemberId;
@@ -142,32 +154,32 @@ class AnalyticsInput {
 class AggregationResult {
   final List<ExpenseAnalyticsInput> filteredExpenses;
   final List<ExpenseAnalyticsInput> previousExpenses;
-  
+
   final double currentTotalSpent;
   final double prevTotalSpent;
   final double equivalentPrevTotalSpent; // Strictly equivalent period sum
   final int equivalentPrevTransactionCount;
-  
+
   final Map<String, double> currentCatTotals;
   final Map<String, double> prevCatTotals;
   final Map<String, double> equivalentPrevCatTotals;
-  
+
   final Map<String, List<ExpenseAnalyticsInput>> currentMemberExpenses;
   final Map<String, List<ExpenseAnalyticsInput>> prevMemberExpenses;
-  
+
   final Map<String, List<ExpenseAnalyticsInput>> paymentExpenses;
-  
+
   final Map<DateTime, double> heatmapData;
   final Map<DateTime, double> calendarData;
-  
+
   final Map<DateTime, double> currentDailySum;
   final Map<DateTime, double> prevDailySum;
-  
+
   final Map<DateTime, double> dailyBreakdown;
-  
+
   final Map<String, int> timeOfDayCounts;
   final Map<String, double> timeOfDayAmounts;
-  
+
   final Map<String, List<ExpenseAnalyticsInput>> recurGroups;
 
   const AggregationResult({
@@ -197,7 +209,6 @@ class AggregationResult {
 enum TrendDirection { increase, decrease, stable, unavailable }
 
 class PeriodComparison {
-
   final double currentValue;
   final double previousValue;
   final double absoluteChange;
@@ -214,17 +225,31 @@ class PeriodComparison {
 
   factory PeriodComparison.calculate(double current, double previous) {
     if (previous == 0 && current == 0) {
-      return const PeriodComparison(currentValue: 0, previousValue: 0, absoluteChange: 0, percentageChange: 0, direction: TrendDirection.unavailable);
+      return const PeriodComparison(
+        currentValue: 0,
+        previousValue: 0,
+        absoluteChange: 0,
+        percentageChange: 0,
+        direction: TrendDirection.unavailable,
+      );
     }
     if (previous == 0) {
-      return PeriodComparison(currentValue: current, previousValue: 0, absoluteChange: current, percentageChange: 100, direction: TrendDirection.increase);
+      return PeriodComparison(
+        currentValue: current,
+        previousValue: 0,
+        absoluteChange: current,
+        percentageChange: 100,
+        direction: TrendDirection.increase,
+      );
     }
     final change = current - previous;
     final pct = (change / previous) * 100;
-    
+
     TrendDirection dir = TrendDirection.stable;
-    if (pct > 2.0) dir = TrendDirection.increase; // > 2% is meaningful
-    else if (pct < -2.0) dir = TrendDirection.decrease;
+    if (pct > 2.0)
+      dir = TrendDirection.increase; // > 2% is meaningful
+    else if (pct < -2.0)
+      dir = TrendDirection.decrease;
 
     return PeriodComparison(
       currentValue: current,
@@ -237,7 +262,6 @@ class PeriodComparison {
 }
 
 class ExecutiveSummary {
-
   final PeriodComparison totalSpend;
   final PeriodComparison dailyAverage;
   final PeriodComparison transactionCount;
@@ -249,12 +273,9 @@ class ExecutiveSummary {
   });
 }
 
-
 enum VelocityStatus { underPace, onPace, slightlyFast, veryFast, unavailable }
 
-
 class CategoryInsight {
-
   final String categoryName;
   final double currentSpend;
   final double previousSpend;
@@ -277,7 +298,6 @@ class CategoryInsight {
 }
 
 class MemberInsight {
-
   final String memberId;
   final String memberName;
   final double currentSpend;
@@ -300,20 +320,19 @@ class MemberInsight {
 }
 
 class DiagnosticIntelligence {
-
   final List<CategoryInsight> categoryInsights;
   final List<MemberInsight> memberInsights;
-  
+
   final double topCategoryShare;
   final double top3CategoryShare;
-  
+
   final double top3TransactionsTotal;
   final double top3TransactionsShare;
-  
+
   final int smallPurchasesCount;
   final double smallPurchasesTotal;
-  
-  final String primaryIncreaseContributor; 
+
+  final String primaryIncreaseContributor;
   final String primaryDecreaseContributor;
 
   const DiagnosticIntelligence({
@@ -333,7 +352,7 @@ class DiagnosticIntelligence {
 class SpendingVelocity {
   final double budgetConsumedPct;
   final double timeElapsedPct;
-  final double velocityRatio; 
+  final double velocityRatio;
   final VelocityStatus status;
   final String interpretation;
 
@@ -353,17 +372,20 @@ class SpendingVelocity {
   }) {
     if (budgetLimit <= 0 || totalDays <= 0 || elapsedDays <= 0) {
       return const SpendingVelocity(
-        budgetConsumedPct: 0, timeElapsedPct: 0, velocityRatio: 0, 
-        status: VelocityStatus.unavailable, interpretation: 'Unavailable'
+        budgetConsumedPct: 0,
+        timeElapsedPct: 0,
+        velocityRatio: 0,
+        status: VelocityStatus.unavailable,
+        interpretation: 'Unavailable',
       );
     }
     final budgetPct = (totalSpent / budgetLimit) * 100;
     final timePct = (elapsedDays / totalDays) * 100;
     final ratio = timePct > 0 ? budgetPct / timePct : 0.0;
-    
+
     VelocityStatus status = VelocityStatus.onPace;
     String interp = 'Spending is on pace with the budget.';
-    
+
     if (ratio < 0.85) {
       status = VelocityStatus.underPace;
       interp = 'Spending is slower than expected.';
@@ -386,12 +408,11 @@ class SpendingVelocity {
 }
 
 class BudgetForecast {
-
   final double projectedTotal;
   final double expectedRemaining;
   final double expectedOverrun;
   final bool isOverrun;
-  
+
   const BudgetForecast({
     required this.projectedTotal,
     required this.expectedRemaining,
@@ -406,12 +427,17 @@ class BudgetForecast {
     required int remainingDays,
   }) {
     if (budgetLimit <= 0) {
-      return const BudgetForecast(projectedTotal: 0, expectedRemaining: 0, expectedOverrun: 0, isOverrun: false);
+      return const BudgetForecast(
+        projectedTotal: 0,
+        expectedRemaining: 0,
+        expectedOverrun: 0,
+        isOverrun: false,
+      );
     }
     final projected = currentTotalSpent + (currentDailyAvg * remainingDays);
     final diff = budgetLimit - projected;
     final isOver = diff < 0;
-    
+
     return BudgetForecast(
       projectedTotal: projected,
       expectedRemaining: isOver ? 0 : diff,
@@ -422,7 +448,6 @@ class BudgetForecast {
 }
 
 class SpendingHealth {
-
   final int budgetAdherence; // 35%
   final int spendingVelocity; // 25%
   final int trendStability; // 15%
@@ -455,16 +480,23 @@ class SpendingHealth {
   }) {
     if (budgetLimit <= 0 || confidence == DataConfidence.unavailable) {
       return const SpendingHealth(
-        budgetAdherence: 0, spendingVelocity: 0, trendStability: 0,
-        anomalyExposure: 0, concentration: 0, dataConfidenceScore: 0,
-        totalScore: 0, label: 'Unavailable'
+        budgetAdherence: 0,
+        spendingVelocity: 0,
+        trendStability: 0,
+        anomalyExposure: 0,
+        concentration: 0,
+        dataConfidenceScore: 0,
+        totalScore: 0,
+        label: 'Unavailable',
       );
     }
 
     // 1. Budget Adherence (0 to 100)
     int budgetAdherence = 100;
     if (totalSpent > budgetLimit) {
-      budgetAdherence = (100 - ((totalSpent - budgetLimit) / budgetLimit * 100)).toInt().clamp(0, 100);
+      budgetAdherence = (100 - ((totalSpent - budgetLimit) / budgetLimit * 100))
+          .toInt()
+          .clamp(0, 100);
     } else {
       budgetAdherence = 100;
     }
@@ -472,21 +504,28 @@ class SpendingHealth {
     // 2. Spending Velocity (0 to 100)
     int spendingVelocity = 100;
     if (velocity.velocityRatio > 1.0) {
-      final velocityOverage = velocity.budgetConsumedPct - velocity.timeElapsedPct;
+      final velocityOverage =
+          velocity.budgetConsumedPct - velocity.timeElapsedPct;
       spendingVelocity = (100 - (velocityOverage * 2)).toInt().clamp(0, 100);
     }
 
     // 3. Trend Stability
     int trendStability = 85;
-    if (patterns.consistency.level == ConsistencyLevel.stable) trendStability = 100;
-    else if (patterns.consistency.level == ConsistencyLevel.highlyVariable) trendStability = 40;
-    else trendStability = 75;
+    if (patterns.consistency.level == ConsistencyLevel.stable)
+      trendStability = 100;
+    else if (patterns.consistency.level == ConsistencyLevel.highlyVariable)
+      trendStability = 40;
+    else
+      trendStability = 75;
 
     // 4. Anomaly Exposure
     int anomalyExposure = 100;
-    if (patterns.anomalies.length >= 3) anomalyExposure = 40;
-    else if (patterns.anomalies.length == 2) anomalyExposure = 70;
-    else if (patterns.anomalies.length == 1) anomalyExposure = 85;
+    if (patterns.anomalies.length >= 3)
+      anomalyExposure = 40;
+    else if (patterns.anomalies.length == 2)
+      anomalyExposure = 70;
+    else if (patterns.anomalies.length == 1)
+      anomalyExposure = 85;
 
     // 5. Concentration
     // High concentration isn't always bad. If top category > 50%, we might dock slightly for lack of diversification, but not severely.
@@ -499,22 +538,28 @@ class SpendingHealth {
 
     // 6. Data Confidence
     int confScore = 100;
-    if (confidence == DataConfidence.low) confScore = 30;
-    else if (confidence == DataConfidence.medium) confScore = 70;
+    if (confidence == DataConfidence.low)
+      confScore = 30;
+    else if (confidence == DataConfidence.medium)
+      confScore = 70;
 
-    final rawScore = (budgetAdherence * 0.35) +
+    final rawScore =
+        (budgetAdherence * 0.35) +
         (spendingVelocity * 0.25) +
         (trendStability * 0.15) +
         (anomalyExposure * 0.10) +
         (concentrationScore * 0.10) +
         (confScore * 0.05);
-        
+
     final total = rawScore.toInt().clamp(0, 100);
-    
+
     String label = 'Excellent';
-    if (total < 50) label = 'Action Needed';
-    else if (total < 75) label = 'Average';
-    else if (total < 90) label = 'Good';
+    if (total < 50)
+      label = 'Action Needed';
+    else if (total < 75)
+      label = 'Average';
+    else if (total < 90)
+      label = 'Good';
 
     return SpendingHealth(
       budgetAdherence: budgetAdherence,
@@ -529,11 +574,9 @@ class SpendingHealth {
   }
 }
 
-
 enum FactImportance { low, medium, high, critical }
 
 class InsightFact {
-
   final String category;
   final String metricName;
   final String rawValue;
@@ -555,10 +598,10 @@ class AnalyticsResult {
   final AnalyticsInput input;
   final DataConfidence confidence;
   final AggregationResult aggregations;
-  
+
   // Phase 2 models
   final ExecutiveSummary summary;
-  
+
   // Phase 6 model
   final SpendingVelocity velocity;
   final BudgetForecast budgetForecast;

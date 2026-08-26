@@ -966,7 +966,8 @@ class AnalyticsNotifier extends StateNotifier<AnalyticsState> {
       },
       selectedMemberId: selectedMemberId,
       now: DateTime.now(),
-      calculationVersion: 1, // You could increment this to force cache invalidation
+      calculationVersion:
+          1, // You could increment this to force cache invalidation
     );
 
     // Calculate a fast hash of the inputs
@@ -978,7 +979,9 @@ class AnalyticsNotifier extends StateNotifier<AnalyticsState> {
       input.customRange?.end,
       input.selectedMemberId,
       Object.hashAll(expenseState.expenses.map((e) => e.id)),
-      Object.hashAll(expenseState.expenses.map((e) => e.amount)), // Catches edits to same ID
+      Object.hashAll(
+        expenseState.expenses.map((e) => e.amount),
+      ), // Catches edits to same ID
     );
 
     if (_cachedInputHash == currentHash && _cachedAnalyticsState != null) {

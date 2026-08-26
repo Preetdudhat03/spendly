@@ -24,11 +24,14 @@ class CategoryComparisonChart extends StatelessWidget {
     );
 
     // We sort shares descending (they are already sorted in the provider, but let's be sure)
-    final sortedShares = List<CategoryInsight>.from(state.diagnostic!.categoryInsights)
-      ..sort((a, b) => b.currentSpend.compareTo(a.currentSpend));
+    final sortedShares = List<CategoryInsight>.from(
+      state.diagnostic!.categoryInsights,
+    )..sort((a, b) => b.currentSpend.compareTo(a.currentSpend));
 
     // The maximum category amount represents 100% width of the bars
-    final maxAmount = sortedShares.isNotEmpty ? sortedShares.first.currentSpend : 1.0;
+    final maxAmount = sortedShares.isNotEmpty
+        ? sortedShares.first.currentSpend
+        : 1.0;
 
     final colorScheme = Theme.of(context).colorScheme;
 
@@ -85,7 +88,8 @@ class CategoryComparisonChart extends StatelessWidget {
                 final share = sortedShares[idx];
                 final meta = getCategoryMetadata(context, share.categoryName);
                 final widthRatio = share.currentSpend / maxAmount;
-                final isIncrease = share.trend.direction == TrendDirection.increase;
+                final isIncrease =
+                    share.trend.direction == TrendDirection.increase;
 
                 // Spend comparison details
                 String compText = '';
@@ -109,122 +113,129 @@ class CategoryComparisonChart extends StatelessWidget {
                   },
                   borderRadius: BorderRadius.circular(12),
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 8.0),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 10.0,
+                      horizontal: 8.0,
+                    ),
                     child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Label Row
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Row(
-                            children: [
-                              SvgPicture.asset(
-                                meta.iconPath,
-                                width: 18,
-                                height: 18,
-                                colorFilter: ColorFilter.mode(
-                                  meta.color,
-                                  BlendMode.srcIn,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Label Row
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Row(
+                              children: [
+                                SvgPicture.asset(
+                                  meta.iconPath,
+                                  width: 18,
+                                  height: 18,
+                                  colorFilter: ColorFilter.mode(
+                                    meta.color,
+                                    BlendMode.srcIn,
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                meta.name,
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 14,
-                                  color: colorScheme.onSurface,
+                                const SizedBox(width: 8),
+                                Text(
+                                  meta.name,
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14,
+                                    color: colorScheme.onSurface,
+                                  ),
                                 ),
-                              ),
-                            ],
-                          ),
-                          Row(
-                            children: [
-                              Text(
-                                currencyFmt.format(share.currentSpend),
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 14,
-                                  color: colorScheme.onSurface,
-                                ),
-                              ),
-                              const SizedBox(width: 6),
-                              Text(
-                                '${share.percentageOfTotal.toStringAsFixed(0)}%',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  color: colorScheme.onSurfaceVariant,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-
-                      // Animated Bar
-                      LayoutBuilder(
-                        builder: (context, constraints) {
-                          final barMaxWidth = constraints.maxWidth;
-                          return Stack(
-                            children: [
-                              // Background Bar
-                              Container(
-                                height: 8,
-                                decoration: BoxDecoration(
-                                  color: colorScheme.surfaceContainerHigh,
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                              ),
-                              // Foreground Growing Bar
-                              TweenAnimationBuilder<double>(
-                                tween: Tween<double>(begin: 0, end: widthRatio),
-                                duration: const Duration(milliseconds: 800),
-                                curve: Curves.easeOutCubic,
-                                builder: (context, animValue, child) {
-                                  return Container(
-                                    height: 8,
-                                    width: barMaxWidth * animValue,
-                                    decoration: BoxDecoration(
-                                      color: meta.color,
-                                      borderRadius: BorderRadius.circular(4),
-                                    ),
-                                  );
-                                },
-                              ),
-                            ],
-                          );
-                        },
-                      ),
-                      const SizedBox(height: 4),
-
-                      // Compare Text Row
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            compText,
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold,
-                              color: compColor,
+                              ],
                             ),
-                          ),
-                          if (share.previousSpend > 0)
+                            Row(
+                              children: [
+                                Text(
+                                  currencyFmt.format(share.currentSpend),
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14,
+                                    color: colorScheme.onSurface,
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  '${share.percentageOfTotal.toStringAsFixed(0)}%',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: colorScheme.onSurfaceVariant,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+
+                        // Animated Bar
+                        LayoutBuilder(
+                          builder: (context, constraints) {
+                            final barMaxWidth = constraints.maxWidth;
+                            return Stack(
+                              children: [
+                                // Background Bar
+                                Container(
+                                  height: 8,
+                                  decoration: BoxDecoration(
+                                    color: colorScheme.surfaceContainerHigh,
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                ),
+                                // Foreground Growing Bar
+                                TweenAnimationBuilder<double>(
+                                  tween: Tween<double>(
+                                    begin: 0,
+                                    end: widthRatio,
+                                  ),
+                                  duration: const Duration(milliseconds: 800),
+                                  curve: Curves.easeOutCubic,
+                                  builder: (context, animValue, child) {
+                                    return Container(
+                                      height: 8,
+                                      width: barMaxWidth * animValue,
+                                      decoration: BoxDecoration(
+                                        color: meta.color,
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ],
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 4),
+
+                        // Compare Text Row
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
                             Text(
-                              'Prev: ${currencyFmt.format(share.previousSpend)}',
+                              compText,
                               style: TextStyle(
-                                fontSize: 10,
-                                color: colorScheme.onSurfaceVariant,
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                color: compColor,
                               ),
                             ),
-                        ],
-                      ),
-                    ],
+                            if (share.previousSpend > 0)
+                              Text(
+                                'Prev: ${currencyFmt.format(share.previousSpend)}',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  color: colorScheme.onSurfaceVariant,
+                                ),
+                              ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
-                ));
+                );
               },
             ),
           ],

@@ -100,7 +100,9 @@ class InsightDrillDownSheet extends StatelessWidget {
       builder: (context, scrollController) {
         return Container(
           decoration: BoxDecoration(
-            color: Theme.of(context).cardTheme.color ?? Theme.of(context).colorScheme.surface,
+            color:
+                Theme.of(context).cardTheme.color ??
+                Theme.of(context).colorScheme.surface,
             borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
           ),
           child: Column(
@@ -146,7 +148,9 @@ class InsightDrillDownSheet extends StatelessWidget {
                           Text(
                             subtitle,
                             style: TextStyle(
-                              color: Theme.of(context).colorScheme.onSurfaceVariant,
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurfaceVariant,
                               fontSize: 13,
                             ),
                           ),
@@ -169,7 +173,9 @@ class InsightDrillDownSheet extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
-                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurfaceVariant,
                           ),
                         ),
                       ],
@@ -188,7 +194,7 @@ class InsightDrillDownSheet extends StatelessWidget {
                   children: [
                     if (trend != null) _buildTrendCard(context, currencyFmt),
                     if (trend != null) const SizedBox(height: 24),
-                    
+
                     Text(
                       'Deep Analytics',
                       style: TextStyle(
@@ -198,7 +204,7 @@ class InsightDrillDownSheet extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    
+
                     Row(
                       children: [
                         _buildStatBox(
@@ -219,7 +225,7 @@ class InsightDrillDownSheet extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 12),
-                    
+
                     Row(
                       children: [
                         if (largestTransaction > 0)
@@ -230,7 +236,8 @@ class InsightDrillDownSheet extends StatelessWidget {
                             Icons.shopping_bag,
                             Colors.orange,
                           ),
-                        if (largestTransaction > 0 && extraStatLabel != null) const SizedBox(width: 12),
+                        if (largestTransaction > 0 && extraStatLabel != null)
+                          const SizedBox(width: 12),
                         if (extraStatLabel != null)
                           _buildStatBox(
                             context,
@@ -250,12 +257,12 @@ class InsightDrillDownSheet extends StatelessWidget {
       },
     );
   }
-  
+
   Widget _buildTrendCard(BuildContext context, NumberFormat currencyFmt) {
     final t = trend!;
     final isIncrease = t.direction == TrendDirection.increase;
     final colorScheme = Theme.of(context).colorScheme;
-    
+
     if (t.direction == TrendDirection.stable) {
       return Container(
         padding: const EdgeInsets.all(16),
@@ -266,10 +273,10 @@ class InsightDrillDownSheet extends StatelessWidget {
         child: const Text('No change compared to the previous period.'),
       );
     }
-    
+
     final trendColor = isIncrease ? Colors.red : Colors.green;
     final icon = isIncrease ? Icons.trending_up : Icons.trending_down;
-    
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
