@@ -127,7 +127,7 @@ void main() {
       expect(state.diagnostic, isNotNull);
       expect(state.diagnostic!.categoryInsights.length, 2);
       expect(state.diagnostic!.topCategoryShare, (3000 / 4500) * 100);
-      expect(state.diagnostic!.primaryIncreaseContributor, 'Shopping');
+      expect(state.diagnostic!.primaryIncreaseContributor, 'Food'); // 1500 increase vs Shopping 1000 increase
       expect(state.diagnostic!.smallPurchasesCount, 0); // test data min is 500
     });
   });
