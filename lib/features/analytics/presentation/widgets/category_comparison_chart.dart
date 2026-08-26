@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import 'package:spendly/features/analytics/providers/analytics_providers.dart';
+import 'package:spendly/features/analytics/models/analytics_models.dart';
 import 'package:spendly/features/analytics/presentation/widgets/category_donut_chart.dart';
 
 class CategoryComparisonChart extends StatelessWidget {
