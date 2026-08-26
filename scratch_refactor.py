@@ -5,70 +5,41 @@ def process():
     with open(path, 'r', encoding='utf-8') as f:
         content = f.read()
 
-    calc_from = """    final healthScore = SpendingHealth.calculate("""
+    # 1. Update AnalyticsState
+    if "final List<InsightFact> insightFacts;" not in content:
+        content = content.replace("final PatternIntelligence? patterns;", "final PatternIntelligence? patterns;\n  final List<InsightFact> insightFacts;")
+        content = content.replace("this.patterns,", "this.patterns,\n    this.insightFacts = const [],")
+        
+    content = content.replace("patterns: result.patterns,", "patterns: result.patterns,\n      insightFacts: result.insightFacts,")
     
-    calc_to = """    // Phase 7: Extract InsightFacts
-    final insightFacts = <InsightFact>[];
+    # 2. Update fetchAiInsights
+    fetch_from = """  void fetchAiInsights(List<Expense> expenses, double budgetLimit) {
+    // Basic synchronous rule-based insight generation
+    final insights = AiInsights.generate(expenses, budgetLimit);
+    state = state.copyWith(
+      aiInsights: insights,
+      aiRecommendations: [
+        'Consider setting a weekly budget constraint on Food to maximize savings.',
+        'Evaluate recurring subscriptions at the start of next month.',
+      ],
+    );
+  }"""
+    fetch_to = """  void fetchAiInsights() {
+    // Generate AI interpretations STRICTLY from verified mathematical facts.
+    final insights = AiInsights.generateFromFacts(state.insightFacts);
+    state = state.copyWith(
+      aiInsights: insights,
+      aiRecommendations: [
+        'Review your high spending days to identify discretionary vs essential purchases.',
+      ],
+    );
+  }"""
+    content = content.replace(fetch_from, fetch_to)
     
-    // Budget Velocity Fact
-    insightFacts.add(InsightFact(
-      category: 'Budget',
-      metricName: 'Velocity Status',
-      rawValue: velocity.velocityRatio.toString(),
-      formattedValue: velocity.interpretation,
-      importance: velocity.status == VelocityStatus.veryFast ? FactImportance.critical : FactImportance.medium,
-      context: 'Current spent: ${currentTotalSpent}, Budget Limit: ${params.budgetLimit}',
-    ));
-    
-    // Anomaly Facts
-    for (var anomaly in anomalies) {
-      insightFacts.add(InsightFact(
-        category: 'Anomaly',
-        metricName: 'Large Expense',
-        rawValue: anomaly.transaction.amount.toString(),
-        formattedValue: '${anomaly.transaction.category} expense of ${anomaly.transaction.amount}',
-        importance: FactImportance.high,
-        context: anomaly.reason,
-      ));
-    }
-    
-    // Contribution Fact
-    if (primaryIncrease != 'None') {
-      insightFacts.add(InsightFact(
-        category: 'Diagnostic',
-        metricName: 'Primary Increase Contributor',
-        rawValue: maxInc.toString(),
-        formattedValue: primaryIncrease,
-        importance: FactImportance.medium,
-        context: 'Increased by ${maxInc} compared to equivalent previous period.',
-      ));
-    }
-    
-    // High Spend Day
-    for (var day in highSpendingDays) {
-      insightFacts.add(InsightFact(
-        category: 'Pattern',
-        metricName: 'High Spending Day',
-        rawValue: day.amount.toString(),
-        formattedValue: DateUtils.dateOnly(day.date).toString(),
-        importance: FactImportance.high,
-        context: 'Top contributor was ${day.topCategoryContributor}.',
-      ));
-    }
+    # Need to update call sites of fetchAiInsights. It was probably called inside AnalyticsNotifier.
+    # Where was fetchAiInsights called?
+    content = content.replace("fetchAiInsights(params.expenses, params.budgetLimit);", "fetchAiInsights();")
 
-    final healthScore = SpendingHealth.calculate("""
-    
-    content = content.replace(calc_from, calc_to)
-    
-    res_from = """      patterns: patterns,
-      healthScore: healthScore,
-    );"""
-    res_to = """      patterns: patterns,
-      insightFacts: insightFacts,
-      healthScore: healthScore,
-    );"""
-    content = content.replace(res_from, res_to)
-    
     with open(path, 'w', encoding='utf-8') as f:
         f.write(content)
 
