@@ -54,9 +54,12 @@ class AggregationResult {
   
   final double currentTotalSpent;
   final double prevTotalSpent;
+  final double equivalentPrevTotalSpent; // Strictly equivalent period sum
+  final int equivalentPrevTransactionCount;
   
   final Map<String, double> currentCatTotals;
   final Map<String, double> prevCatTotals;
+  final Map<String, double> equivalentPrevCatTotals;
   
   final Map<String, List<ExpenseAnalyticsInput>> currentMemberExpenses;
   final Map<String, List<ExpenseAnalyticsInput>> prevMemberExpenses;
@@ -81,8 +84,11 @@ class AggregationResult {
     required this.previousExpenses,
     required this.currentTotalSpent,
     required this.prevTotalSpent,
+    required this.equivalentPrevTotalSpent,
+    required this.equivalentPrevTransactionCount,
     required this.currentCatTotals,
     required this.prevCatTotals,
+    required this.equivalentPrevCatTotals,
     required this.currentMemberExpenses,
     required this.prevMemberExpenses,
     required this.paymentExpenses,
@@ -97,14 +103,79 @@ class AggregationResult {
   });
 }
 
+enum TrendDirection { increase, decrease, stable, unavailable }
+
+class PeriodComparison {
+  final double currentValue;
+  final double previousValue;
+  final double absoluteChange;
+  final double percentageChange;
+  final TrendDirection direction;
+
+  const PeriodComparison({
+    required this.currentValue,
+    required this.previousValue,
+    required this.absoluteChange,
+    required this.percentageChange,
+    required this.direction,
+  });
+
+  factory PeriodComparison.calculate(double current, double previous) {
+    if (previous == 0 && current == 0) {
+      return const PeriodComparison(currentValue: 0, previousValue: 0, absoluteChange: 0, percentageChange: 0, direction: TrendDirection.unavailable);
+    }
+    if (previous == 0) {
+      return PeriodComparison(currentValue: current, previousValue: 0, absoluteChange: current, percentageChange: 100, direction: TrendDirection.increase);
+    }
+    final change = current - previous;
+    final pct = (change / previous) * 100;
+    
+    TrendDirection dir = TrendDirection.stable;
+    if (pct > 2.0) dir = TrendDirection.increase; // > 2% is meaningful
+    else if (pct < -2.0) dir = TrendDirection.decrease;
+
+    return PeriodComparison(
+      currentValue: current,
+      previousValue: previous,
+      absoluteChange: change,
+      percentageChange: pct,
+      direction: dir,
+    );
+  }
+}
+
+class ExecutiveSummary {
+  final PeriodComparison totalSpend;
+  final PeriodComparison dailyAverage;
+  final PeriodComparison transactionCount;
+
+  const ExecutiveSummary({
+    required this.totalSpend,
+    required this.dailyAverage,
+    required this.transactionCount,
+  });
+}
+
 class AnalyticsResult {
   final AnalyticsInput input;
   final DataConfidence confidence;
   final AggregationResult aggregations;
+  
+  // Phase 2 models
+  final ExecutiveSummary summary;
+  
+  // Later phases will fill these in:
+  // final PeriodComparison periodComparison;
+  // final BudgetForecast budgetForecast;
+  // final List<CategoryInsight> categoryInsights;
+  // final List<MemberInsight> memberInsights;
+  // final SpendingHealth healthScore;
+  // final List<InsightFact> insightFacts;
 
   const AnalyticsResult({
     required this.input,
     required this.confidence,
     required this.aggregations,
+    required this.summary,
   });
 }
