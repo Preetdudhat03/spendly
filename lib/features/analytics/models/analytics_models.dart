@@ -552,14 +552,8 @@ class AnalyticsResult {
   final BudgetForecast budgetForecast;
   final DiagnosticIntelligence diagnostic;
   final PatternIntelligence patterns;
+  final List<InsightFact> insightFacts;
   final SpendingHealth healthScore;
-  
-  // Later phases will fill these in:
-  // final PeriodComparison periodComparison;
-  // final BudgetForecast budgetForecast;
-  // final List<CategoryInsight> categoryInsights;
-  // final List<MemberInsight> memberInsights;
-  // final List<InsightFact> insightFacts;
 
   const AnalyticsResult({
     required this.input,
@@ -570,6 +564,7 @@ class AnalyticsResult {
     required this.budgetForecast,
     required this.diagnostic,
     required this.patterns,
+    required this.insightFacts,
     required this.healthScore,
   });
 }
