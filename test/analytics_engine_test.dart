@@ -73,7 +73,7 @@ void main() {
       );
 
       // Run calculation in same isolate for test
-      final result = AnalyticsNotifier.testRunCalculations(input);
+      final result = AnalyticsNotifier.runCalculations(input);
       
       expect(result.confidence, DataConfidence.low); // < 5 expenses
       
