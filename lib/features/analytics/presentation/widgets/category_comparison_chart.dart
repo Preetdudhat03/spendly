@@ -11,7 +11,7 @@ class CategoryComparisonChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (state.categoryShares.isEmpty) {
+    if ((state.diagnostic?.categoryInsights.isEmpty ?? true)) {
       return const SizedBox.shrink();
     }
 
@@ -22,11 +22,11 @@ class CategoryComparisonChart extends StatelessWidget {
     );
 
     // We sort shares descending (they are already sorted in the provider, but let's be sure)
-    final sortedShares = List<CategoryShare>.from(state.categoryShares)
-      ..sort((a, b) => b.amount.compareTo(a.amount));
+    final sortedShares = List<CategoryInsight>.from(state.diagnostic!.categoryInsights)
+      ..sort((a, b) => b.currentSpend.compareTo(a.currentSpend));
 
     // The maximum category amount represents 100% width of the bars
-    final maxAmount = sortedShares.isNotEmpty ? sortedShares.first.amount : 1.0;
+    final maxAmount = sortedShares.isNotEmpty ? sortedShares.first.currentSpend : 1.0;
 
     final colorScheme = Theme.of(context).colorScheme;
 
@@ -81,15 +81,15 @@ class CategoryComparisonChart extends StatelessWidget {
               itemCount: sortedShares.length,
               itemBuilder: (context, idx) {
                 final share = sortedShares[idx];
-                final meta = getCategoryMetadata(context, share.category);
-                final widthRatio = share.amount / maxAmount;
-                final isIncrease = share.isIncrease;
+                final meta = getCategoryMetadata(context, share.categoryName);
+                final widthRatio = share.currentSpend / maxAmount;
+                final isIncrease = share.trend.direction == TrendDirection.increase;
 
                 // Spend comparison details
                 String compText = '';
-                if (share.prevAmount > 0) {
+                if (share.previousSpend > 0) {
                   compText =
-                      '${isIncrease ? '↑' : '↓'} ${share.diffPercent.toStringAsFixed(0)}% from last period';
+                      '${isIncrease ? '↑' : '↓'} ${share.trend.percentageChange.toStringAsFixed(0)}% from last period';
                 } else {
                   compText = 'New category spend';
                 }
@@ -130,7 +130,7 @@ class CategoryComparisonChart extends StatelessWidget {
                           Row(
                             children: [
                               Text(
-                                currencyFmt.format(share.amount),
+                                currencyFmt.format(share.currentSpend),
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 14,
@@ -139,7 +139,7 @@ class CategoryComparisonChart extends StatelessWidget {
                               ),
                               const SizedBox(width: 6),
                               Text(
-                                '${share.percentage.toStringAsFixed(0)}%',
+                                '${share.percentageOfTotal.toStringAsFixed(0)}%',
                                 style: TextStyle(
                                   fontSize: 11,
                                   color: colorScheme.onSurfaceVariant,
@@ -200,9 +200,9 @@ class CategoryComparisonChart extends StatelessWidget {
                               color: compColor,
                             ),
                           ),
-                          if (share.prevAmount > 0)
+                          if (share.previousSpend > 0)
                             Text(
-                              'Prev: ${currencyFmt.format(share.prevAmount)}',
+                              'Prev: ${currencyFmt.format(share.previousSpend)}',
                               style: TextStyle(
                                 fontSize: 10,
                                 color: colorScheme.onSurfaceVariant,
