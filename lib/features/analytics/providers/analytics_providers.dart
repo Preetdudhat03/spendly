@@ -207,6 +207,7 @@ class AnalyticsState {
     required this.aiRecommendations,
     required this.timeOfDayCounts,
     required this.timeOfDayAmounts,
+    this.summary,
   });
 
   factory AnalyticsState.initial(DateTimeRange range, DateTimeRange prevRange) {
