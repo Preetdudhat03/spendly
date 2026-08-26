@@ -256,7 +256,7 @@ class InsightDrillDownSheet extends StatelessWidget {
     final isIncrease = t.direction == TrendDirection.increase;
     final colorScheme = Theme.of(context).colorScheme;
     
-    if (t.direction == TrendDirection.neutral) {
+    if (t.direction == TrendDirection.stable) {
       return Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
