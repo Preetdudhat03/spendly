@@ -59,7 +59,8 @@ class AnalyticsPage extends ConsumerWidget {
         color: Theme.of(context).primaryColor,
         child: expenseState.isLoading || state.status == AnalyticsStatus.loading
             ? _buildLoadingState(context, isWide, ref)
-            : expenseState.expenses.isEmpty || state.status == AnalyticsStatus.empty
+            : expenseState.expenses.isEmpty ||
+                  state.status == AnalyticsStatus.empty
             ? _buildEmptyState(context, ref)
             : _buildDashboardContent(
                 context,
@@ -176,13 +177,15 @@ class AnalyticsPage extends ConsumerWidget {
     );
   }
 
-    Widget _buildLoadingText(BuildContext context, WidgetRef ref) {
+  Widget _buildLoadingText(BuildContext context, WidgetRef ref) {
     final memberId = ref.watch(analyticsMemberFilterProvider);
     String text = 'Updating analytics...';
     if (memberId != null) {
       final familyState = ref.read(familyProvider);
       try {
-        final member = familyState.members.firstWhere((m) => m.userId == memberId);
+        final member = familyState.members.firstWhere(
+          (m) => m.userId == memberId,
+        );
         text = "Loading ${member.displayName}'s expenses...";
       } catch (e) {
         text = "Loading member expenses...";
