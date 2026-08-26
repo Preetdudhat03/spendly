@@ -938,7 +938,7 @@ class AnalyticsNotifier extends StateNotifier<AnalyticsState> {
     String? selectedMemberId,
   ) async {
     if (expenseState.isLoading) {
-      state = state.copyWith(isLoading: true);
+      state = state.copyWith(status: AnalyticsStatus.loading);
       return;
     }
 
