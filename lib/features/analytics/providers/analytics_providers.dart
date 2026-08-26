@@ -166,6 +166,9 @@ class AnalyticsState {
   final List<String> aiRecommendations;
   final Map<String, int> timeOfDayCounts;
   final Map<String, double> timeOfDayAmounts;
+  
+  // Phase 2
+  final ExecutiveSummary? summary;
 
   AnalyticsState({
     required this.filterType,
