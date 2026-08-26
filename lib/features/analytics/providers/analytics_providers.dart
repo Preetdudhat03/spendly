@@ -767,6 +767,7 @@ final analyticsProvider =
     });
 
 class AnalyticsNotifier extends StateNotifier<AnalyticsState> {
+  int _currentRequestId = 0;
   AnalyticsNotifier({
     required ExpenseState expenseState,
     required BudgetState budgetState,
