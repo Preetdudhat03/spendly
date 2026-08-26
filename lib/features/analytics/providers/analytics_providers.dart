@@ -943,7 +943,7 @@ class AnalyticsNotifier extends StateNotifier<AnalyticsState> {
     );
 
     // Compute in background isolate to prevent UI freezing
-    final result = await compute(_runCalculations, input);
+    final result = await compute(runCalculations, input);
     if (mounted) {
       final originalExpensesMap = {
         for (var e in expenseState.expenses) e.id: e,
