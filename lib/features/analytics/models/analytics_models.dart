@@ -5,16 +5,6 @@ import 'dart:math';
 enum ConsistencyLevel { stable, moderatelyVariable, highlyVariable, unavailable }
 
 class SpendingConsistency {
-  Map<String, dynamic> toJson() => {
-    'standardDeviation': standardDeviation,
-    'coefficientOfVariation': coefficientOfVariation,
-    'isHighlyVolatile': isHighlyVolatile,
-  };
-  factory SpendingConsistency.fromJson(Map<String, dynamic> json) => SpendingConsistency(
-    standardDeviation: json['standardDeviation'] as double,
-    coefficientOfVariation: json['coefficientOfVariation'] as double,
-    isHighlyVolatile: json['isHighlyVolatile'] as bool,
-  );
 
   final double meanDailySpend;
   final double standardDeviation;
@@ -60,18 +50,6 @@ class SpendingConsistency {
 }
 
 class AnomalyInsight {
-  Map<String, dynamic> toJson() => {
-    'categoryName': categoryName,
-    'amount': amount,
-    'historicalAverage': historicalAverage,
-    'deviationPercentage': deviationPercentage,
-  };
-  factory AnomalyInsight.fromJson(Map<String, dynamic> json) => AnomalyInsight(
-    categoryName: json['categoryName'] as String,
-    amount: json['amount'] as double,
-    historicalAverage: json['historicalAverage'] as double,
-    deviationPercentage: json['deviationPercentage'] as double,
-  );
 
   final ExpenseAnalyticsInput transaction;
   final String reason;
@@ -85,16 +63,6 @@ class AnomalyInsight {
 }
 
 class HighSpendingDayInsight {
-  Map<String, dynamic> toJson() => {
-    'date': date.toIso8601String(),
-    'amount': amount,
-    'reason': reason,
-  };
-  factory HighSpendingDayInsight.fromJson(Map<String, dynamic> json) => HighSpendingDayInsight(
-    date: DateTime.parse(json['date']),
-    amount: json['amount'] as double,
-    reason: json['reason'] as String,
-  );
 
   final DateTime date;
   final double amount;
@@ -108,22 +76,6 @@ class HighSpendingDayInsight {
 }
 
 class PatternIntelligence {
-  Map<String, dynamic> toJson() => {
-    'consistency': consistency.toJson(),
-    'anomalies': anomalies.map((e) => e.toJson()).toList(),
-    'highSpendingDays': highSpendingDays.map((e) => e.toJson()).toList(),
-    'recurringLoad': recurringLoad,
-    'recurringCount': recurringCount,
-    'weekendVsWeekdayRatio': weekendVsWeekdayRatio,
-  };
-  factory PatternIntelligence.fromJson(Map<String, dynamic> json) => PatternIntelligence(
-    consistency: SpendingConsistency.fromJson(json['consistency']),
-    anomalies: (json['anomalies'] as List).map((e) => AnomalyInsight.fromJson(e)).toList(),
-    highSpendingDays: (json['highSpendingDays'] as List).map((e) => HighSpendingDayInsight.fromJson(e)).toList(),
-    recurringLoad: json['recurringLoad'] as double,
-    recurringCount: json['recurringCount'] as int,
-    weekendVsWeekdayRatio: json['weekendVsWeekdayRatio'] as double,
-  );
 
   final SpendingConsistency consistency;
   final List<AnomalyInsight> anomalies;
@@ -245,20 +197,6 @@ class AggregationResult {
 enum TrendDirection { increase, decrease, stable, unavailable }
 
 class PeriodComparison {
-  Map<String, dynamic> toJson() => {
-    'currentValue': currentValue,
-    'previousValue': previousValue,
-    'absoluteChange': absoluteChange,
-    'percentageChange': percentageChange,
-    'direction': direction.name,
-  };
-  factory PeriodComparison.fromJson(Map<String, dynamic> json) => PeriodComparison(
-    currentValue: json['currentValue'] as double,
-    previousValue: json['previousValue'] as double,
-    absoluteChange: json['absoluteChange'] as double,
-    percentageChange: json['percentageChange'] as double,
-    direction: TrendDirection.values.byName(json['direction'] as String),
-  );
 
   final double currentValue;
   final double previousValue;
@@ -299,16 +237,6 @@ class PeriodComparison {
 }
 
 class ExecutiveSummary {
-  Map<String, dynamic> toJson() => {
-    'totalSpend': totalSpend.toJson(),
-    'dailyAverage': dailyAverage.toJson(),
-    'transactionCount': transactionCount.toJson(),
-  };
-  factory ExecutiveSummary.fromJson(Map<String, dynamic> json) => ExecutiveSummary(
-    totalSpend: PeriodComparison.fromJson(json['totalSpend']),
-    dailyAverage: PeriodComparison.fromJson(json['dailyAverage']),
-    transactionCount: PeriodComparison.fromJson(json['transactionCount']),
-  );
 
   final PeriodComparison totalSpend;
   final PeriodComparison dailyAverage;
@@ -326,26 +254,6 @@ enum VelocityStatus { underPace, onPace, slightlyFast, veryFast, unavailable }
 
 
 class CategoryInsight {
-  Map<String, dynamic> toJson() => {
-    'categoryName': categoryName,
-    'currentSpend': currentSpend,
-    'previousSpend': previousSpend,
-    'trend': trend.toJson(),
-    'percentageOfTotal': percentageOfTotal,
-    'transactionCount': transactionCount,
-    'averageTransaction': averageTransaction,
-    'largestTransaction': largestTransaction,
-  };
-  factory CategoryInsight.fromJson(Map<String, dynamic> json) => CategoryInsight(
-    categoryName: json['categoryName'] as String,
-    currentSpend: json['currentSpend'] as double,
-    previousSpend: json['previousSpend'] as double,
-    trend: PeriodComparison.fromJson(json['trend']),
-    percentageOfTotal: json['percentageOfTotal'] as double,
-    transactionCount: json['transactionCount'] as int,
-    averageTransaction: json['averageTransaction'] as double,
-    largestTransaction: json['largestTransaction'] as double,
-  );
 
   final String categoryName;
   final double currentSpend;
@@ -369,26 +277,6 @@ class CategoryInsight {
 }
 
 class MemberInsight {
-  Map<String, dynamic> toJson() => {
-    'memberId': memberId,
-    'memberName': memberName,
-    'currentSpend': currentSpend,
-    'trend': trend.toJson(),
-    'percentageOfTotal': percentageOfTotal,
-    'transactionCount': transactionCount,
-    'averageTransaction': averageTransaction,
-    'topCategory': topCategory,
-  };
-  factory MemberInsight.fromJson(Map<String, dynamic> json) => MemberInsight(
-    memberId: json['memberId'] as String,
-    memberName: json['memberName'] as String,
-    currentSpend: json['currentSpend'] as double,
-    trend: PeriodComparison.fromJson(json['trend']),
-    percentageOfTotal: json['percentageOfTotal'] as double,
-    transactionCount: json['transactionCount'] as int,
-    averageTransaction: json['averageTransaction'] as double,
-    topCategory: json['topCategory'] as String,
-  );
 
   final String memberId;
   final String memberName;
@@ -412,24 +300,6 @@ class MemberInsight {
 }
 
 class DiagnosticIntelligence {
-  Map<String, dynamic> toJson() => {
-    'categoryInsights': categoryInsights.map((e) => e.toJson()).toList(),
-    'memberInsights': memberInsights.map((e) => e.toJson()).toList(),
-    'topCategoryShare': topCategoryShare,
-    'top3CategoryShare': top3CategoryShare,
-    'primaryIncreaseContributor': primaryIncreaseContributor,
-    'primaryDecreaseContributor': primaryDecreaseContributor,
-    
-  };
-  factory DiagnosticIntelligence.fromJson(Map<String, dynamic> json) => DiagnosticIntelligence(
-    categoryInsights: (json['categoryInsights'] as List).map((e) => CategoryInsight.fromJson(e)).toList(),
-    memberInsights: (json['memberInsights'] as List).map((e) => MemberInsight.fromJson(e)).toList(),
-    topCategoryShare: json['topCategoryShare'] as double,
-    top3CategoryShare: json['top3CategoryShare'] as double,
-    primaryIncreaseContributor: json['primaryIncreaseContributor'] as String?,
-    primaryDecreaseContributor: json['primaryDecreaseContributor'] as String?,
-    
-  );
 
   final List<CategoryInsight> categoryInsights;
   final List<MemberInsight> memberInsights;
@@ -516,20 +386,6 @@ class SpendingVelocity {
 }
 
 class BudgetForecast {
-  Map<String, dynamic> toJson() => {
-    'projectedTotal': projectedTotal,
-    'expectedOverrun': expectedOverrun,
-    
-    
-    
-  };
-  factory BudgetForecast.fromJson(Map<String, dynamic> json) => BudgetForecast(
-    projectedTotal: json['projectedTotal'] as double,
-    expectedOverrun: json['expectedOverrun'] as double,
-    
-    
-    
-  );
 
   final double projectedTotal;
   final double expectedRemaining;
@@ -566,24 +422,6 @@ class BudgetForecast {
 }
 
 class SpendingHealth {
-  Map<String, dynamic> toJson() => {
-    
-    
-    
-    
-    
-    
-    
-  };
-  factory SpendingHealth.fromJson(Map<String, dynamic> json) => SpendingHealth(
-    
-    
-    
-    
-    
-    
-    
-  );
 
   final int budgetAdherence; // 35%
   final int spendingVelocity; // 25%
@@ -695,16 +533,6 @@ class SpendingHealth {
 enum FactImportance { low, medium, high, critical }
 
 class InsightFact {
-  Map<String, dynamic> toJson() => {
-    
-    'importance': importance.name,
-    
-  };
-  factory InsightFact.fromJson(Map<String, dynamic> json) => InsightFact(
-    
-    importance: FactImportance.values.byName(json['importance'] as String),
-    
-  );
 
   final String category;
   final String metricName;
