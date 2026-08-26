@@ -44,22 +44,21 @@ class FinancialSummaryCards extends StatelessWidget {
             bottomWidget: Row(
               children: [
                 Icon(
-                  (state.summary?.totalSpend.percentageChange ?? 0) >= 0
+                  state.totalSpentDiffPercent >= 0
                       ? Icons.arrow_upward
                       : Icons.arrow_downward,
                   size: 14,
-                  color: (state.summary?.totalSpend.percentageChange ?? 0) >= 0
+                  color: state.totalSpentDiffPercent >= 0
                       ? Colors.red
                       : Colors.green,
                 ),
                 const SizedBox(width: 4),
                 Text(
-                  '${(state.summary?.totalSpend.percentageChange.abs() ?? 0).toStringAsFixed(0)}% from last period',
+                  '${state.totalSpentDiffPercent.abs().toStringAsFixed(0)}% from last period',
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
-                    color:
-                        (state.summary?.totalSpend.percentageChange ?? 0) >= 0
+                    color: state.totalSpentDiffPercent >= 0
                         ? Colors.red
                         : Colors.green,
                   ),
@@ -79,12 +78,11 @@ class FinancialSummaryCards extends StatelessWidget {
             bottomWidget: Row(
               children: [
                 Icon(
-                  (state.summary?.dailyAverage.percentageChange ?? 0) >= 0
+                  state.dailyAverageDiffPercent >= 0
                       ? Icons.arrow_upward
                       : Icons.arrow_downward,
                   size: 14,
-                  color:
-                      (state.summary?.dailyAverage.percentageChange ?? 0) >= 0
+                  color: state.dailyAverageDiffPercent >= 0
                       ? Colors.red
                       : Colors.green,
                 ),

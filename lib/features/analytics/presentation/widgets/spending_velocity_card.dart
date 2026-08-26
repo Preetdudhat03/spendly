@@ -13,10 +13,10 @@ class SpendingVelocityCard extends StatelessWidget {
     if (velocity == null) return const SizedBox.shrink();
 
     final colorScheme = Theme.of(context).colorScheme;
-
+    
     Color statusColor = Colors.green;
     IconData statusIcon = Icons.check_circle_outline;
-
+    
     switch (velocity.status) {
       case VelocityStatus.underPace:
         statusColor = Colors.green;
@@ -57,22 +57,19 @@ class SpendingVelocityCard extends StatelessWidget {
                 const SizedBox(width: 8),
                 Text(
                   'Spending Velocity',
-                  style: Theme.of(
-                    context,
-                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ],
             ),
             const SizedBox(height: 4),
             Text(
               'Budget pace analysis',
-              style: TextStyle(
-                fontSize: 12,
-                color: colorScheme.onSurfaceVariant,
-              ),
+              style: TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant),
             ),
             const SizedBox(height: 20),
-
+            
             Row(
               children: [
                 Container(
@@ -109,21 +106,21 @@ class SpendingVelocityCard extends StatelessWidget {
                 ),
               ],
             ),
-
+            
             const SizedBox(height: 20),
-
+            
             // Progress bars comparison
             _buildProgressBar(
-              context,
-              'Time Elapsed',
-              velocity.timeElapsedPct,
+              context, 
+              'Time Elapsed', 
+              velocity.timeElapsedPct, 
               Colors.grey,
             ),
             const SizedBox(height: 12),
             _buildProgressBar(
-              context,
-              'Budget Consumed',
-              velocity.budgetConsumedPct,
+              context, 
+              'Budget Consumed', 
+              velocity.budgetConsumedPct, 
               statusColor,
             ),
           ],
@@ -132,12 +129,7 @@ class SpendingVelocityCard extends StatelessWidget {
     );
   }
 
-  Widget _buildProgressBar(
-    BuildContext context,
-    String label,
-    double pct,
-    Color color,
-  ) {
+  Widget _buildProgressBar(BuildContext context, String label, double pct, Color color) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

@@ -143,13 +143,13 @@ class _CategoryDonutChartState extends State<CategoryDonutChart> {
   int touchedIndex = -1;
 
   void _showCategoryDetails(BuildContext context, CategoryShare share) {
-    final meta = getCategoryMetadata(context, share.categoryName);
+    final meta = getCategoryMetadata(context, share.category);
 
     // Filter transactions for this category in current range
     final categoryExpenses =
         widget.state.filteredExpenses
             .where(
-              (e) => e.category.toLowerCase() == share.categoryName.toLowerCase(),
+              (e) => e.category.toLowerCase() == share.category.toLowerCase(),
             )
             .toList()
           ..sort((a, b) => b.expenseDate.compareTo(a.expenseDate));
@@ -157,15 +157,14 @@ class _CategoryDonutChartState extends State<CategoryDonutChart> {
     DrillDownSheet.show(
       context,
       title: meta.name,
-      subtitle:
-          '${share.percentageOfTotal.toStringAsFixed(0)}% of total spending',
+      subtitle: '${share.percentage.toStringAsFixed(0)}% of total spending',
       icon: Icons
           .category, // You could use a specific icon or just use the emoji text in a custom way. We'll use a generic icon for now.
       color: meta.color,
-      totalAmount: share.currentSpend,
+      totalAmount: share.amount,
       expenses: categoryExpenses,
       aiSummary:
-          'This category makes up ${share.percentageOfTotal.toStringAsFixed(0)}% of your expenses. Consider looking for bulk discounts if applicable.',
+          'This category makes up ${share.percentage.toStringAsFixed(0)}% of your expenses. Consider looking for bulk discounts if applicable.',
     );
   }
 
@@ -177,8 +176,7 @@ class _CategoryDonutChartState extends State<CategoryDonutChart> {
       decimalDigits: 0,
     );
 
-    if (widget.state.diagnostic == null ||
-        widget.state.diagnostic!.categoryInsights.isEmpty) {
+    if (widget.state.categoryShares.isEmpty) {
       return const SizedBox.shrink();
     }
 
@@ -186,17 +184,17 @@ class _CategoryDonutChartState extends State<CategoryDonutChart> {
 
     // Build fl chart sections
     final sections = List<PieChartSectionData>.generate(
-      widget.state.diagnostic!.categoryInsights.length,
+      widget.state.categoryShares.length,
       (i) {
-        final share = widget.state.diagnostic!.categoryInsights[i];
-        final meta = getCategoryMetadata(context, share.categoryName);
+        final share = widget.state.categoryShares[i];
+        final meta = getCategoryMetadata(context, share.category);
         final isTouched = i == touchedIndex;
         final radius = isTouched ? 48.0 : 40.0;
         final strokeWidth = isTouched ? 6.0 : 0.0;
 
         return PieChartSectionData(
           color: meta.color,
-          value: share.currentSpend,
+          value: share.amount,
           title: '', // Empty because we show labels in the legend below
           radius: radius,
           borderSide: strokeWidth > 0
@@ -281,10 +279,10 @@ class _CategoryDonutChartState extends State<CategoryDonutChart> {
                                   if (event is FlTapUpEvent &&
                                       touchedIndex >= 0 &&
                                       touchedIndex <
-                                          widget.state.diagnostic!.categoryInsights.length) {
+                                          widget.state.categoryShares.length) {
                                     _showCategoryDetails(
                                       context,
-                                      widget.state.diagnostic!.categoryInsights[touchedIndex],
+                                      widget.state.categoryShares[touchedIndex],
                                     );
                                   }
                                 });
@@ -328,10 +326,10 @@ class _CategoryDonutChartState extends State<CategoryDonutChart> {
             ListView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              itemCount: widget.state.diagnostic!.categoryInsights.length,
+              itemCount: widget.state.categoryShares.length,
               itemBuilder: (context, idx) {
-                final share = widget.state.diagnostic!.categoryInsights[idx];
-                final meta = getCategoryMetadata(context, share.categoryName);
+                final share = widget.state.categoryShares[idx];
+                final meta = getCategoryMetadata(context, share.category);
 
                 return Padding(
                   padding: const EdgeInsets.symmetric(vertical: 4.0),
@@ -378,7 +376,7 @@ class _CategoryDonutChartState extends State<CategoryDonutChart> {
                             crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
                               Text(
-                                currencyFmt.format(share.currentSpend),
+                                currencyFmt.format(share.amount),
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 14,
@@ -387,7 +385,7 @@ class _CategoryDonutChartState extends State<CategoryDonutChart> {
                               ),
                               const SizedBox(height: 2),
                               Text(
-                                '${share.percentageOfTotal.toStringAsFixed(0)}%',
+                                '${share.percentage.toStringAsFixed(0)}%',
                                 style: TextStyle(
                                   fontSize: 11,
                                   color: colorScheme.onSurfaceVariant,

@@ -37,72 +37,69 @@ class DiagnosticIntelligenceCard extends StatelessWidget {
                 const SizedBox(width: 8),
                 Text(
                   'Diagnostic Intelligence',
-                  style: Theme.of(
-                    context,
-                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ],
             ),
             const SizedBox(height: 4),
             Text(
               'Deep dive into spending drivers',
-              style: TextStyle(
-                fontSize: 12,
-                color: colorScheme.onSurfaceVariant,
-              ),
+              style: TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant),
             ),
             const SizedBox(height: 20),
-
+            
             // Contributors
             _buildRow(
-              context,
-              'Primary Increase Driver',
+              context, 
+              'Primary Increase Driver', 
               diagnostic.primaryIncreaseContributor,
               Icons.trending_up,
               Colors.red,
             ),
             const SizedBox(height: 12),
             _buildRow(
-              context,
-              'Primary Decrease Driver',
+              context, 
+              'Primary Decrease Driver', 
               diagnostic.primaryDecreaseContributor,
               Icons.trending_down,
               Colors.green,
             ),
-
+            
             const SizedBox(height: 20),
             Divider(color: colorScheme.outline),
             const SizedBox(height: 16),
-
+            
             // Concentration
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 _buildStatMetric(
-                  context,
-                  'Top Category',
+                  context, 
+                  'Top Category', 
                   '${diagnostic.topCategoryShare.toStringAsFixed(1)}%',
                 ),
                 _buildStatMetric(
-                  context,
-                  'Top 3 Share',
+                  context, 
+                  'Top 3 Share', 
                   '${diagnostic.top3CategoryShare.toStringAsFixed(1)}%',
                 ),
               ],
             ),
             const SizedBox(height: 16),
-
+            
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 _buildStatMetric(
-                  context,
-                  'Top 3 Transactions',
+                  context, 
+                  'Top 3 Transactions', 
                   '${diagnostic.top3TransactionsShare.toStringAsFixed(1)}%',
                 ),
                 _buildStatMetric(
-                  context,
-                  '<₹200 Purchases',
+                  context, 
+                  '<₹200 Purchases', 
                   currencyFmt.format(diagnostic.smallPurchasesTotal),
                 ),
               ],
@@ -112,14 +109,8 @@ class DiagnosticIntelligenceCard extends StatelessWidget {
       ),
     );
   }
-
-  Widget _buildRow(
-    BuildContext context,
-    String label,
-    String value,
-    IconData icon,
-    Color color,
-  ) {
+  
+  Widget _buildRow(BuildContext context, String label, String value, IconData icon, Color color) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -148,7 +139,7 @@ class DiagnosticIntelligenceCard extends StatelessWidget {
       ],
     );
   }
-
+  
   Widget _buildStatMetric(BuildContext context, String label, String value) {
     final colorScheme = Theme.of(context).colorScheme;
     return Expanded(
@@ -157,7 +148,10 @@ class DiagnosticIntelligenceCard extends StatelessWidget {
         children: [
           Text(
             label,
-            style: TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant),
+            style: TextStyle(
+              fontSize: 12,
+              color: colorScheme.onSurfaceVariant,
+            ),
           ),
           const SizedBox(height: 4),
           Text(
