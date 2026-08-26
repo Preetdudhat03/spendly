@@ -1,91 +1,117 @@
 import re
 
 def process():
-    p = r'p:\pro\spendly\lib\features\analytics\presentation\widgets\member_leaderboard.dart'
+    p = r'p:\pro\spendly\lib\features\analytics\providers\analytics_providers.dart'
     with open(p, 'r', encoding='utf-8') as f:
         content = f.read()
 
-    # Import InsightDrillDownSheet & AnalyticsModels
-    import_models = "import 'package:spendly/features/analytics/models/analytics_models.dart';"
-    if import_models not in content:
-        content = content.replace("import 'package:spendly/features/analytics/providers/analytics_providers.dart';", "import 'package:spendly/features/analytics/providers/analytics_providers.dart';\n" + import_models)
-        
-    import_drill = "import 'package:spendly/features/analytics/presentation/widgets/insight_drill_down_sheet.dart';"
-    if import_drill not in content:
-        content = content.replace("import 'drill_down_sheet.dart';", "import 'drill_down_sheet.dart';\n" + import_drill)
+    # 1. Add global cache variables
+    global_cache = """// Global cache to prevent recomputation on tab switch or irrelevant state changes
+AnalyticsState? _cachedAnalyticsState;
+int? _cachedInputHash;
+"""
+    content = content.replace("final analyticsProvider =", global_cache + "\nfinal analyticsProvider =")
     
-    # state.memberShares -> state.diagnostic!.memberInsights
-    content = content.replace("if (state.memberShares.isEmpty) {", "if (state.diagnostic?.memberInsights.isEmpty ?? true) {")
-    content = content.replace("state.memberShares.fold<double>", "state.diagnostic!.memberInsights.fold<double>")
-    content = content.replace("m.totalSpent", "m.currentSpend")
-    content = content.replace("state.memberShares.length", "state.diagnostic!.memberInsights.length")
-    content = content.replace("state.memberShares[idx]", "state.diagnostic!.memberInsights[idx]")
-    
-    content = content.replace("member.name", "member.memberName")
-    content = content.replace("member.totalSpent", "member.currentSpend")
-    content = content.replace("member.count", "member.transactionCount")
-    content = content.replace("member.average", "member.averageTransaction")
-    content = content.replace("member.favoriteCategory", "member.topCategory")
-    
-    # Replace DrillDownSheet.show(...)
-    old_show = """                      DrillDownSheet.show(
-                        context,
-                        title: member.memberName,
-                        subtitle: 'Member spending details',
-                        icon: Icons.person,
-                        color: color,
-                        totalAmount: member.currentSpend,
-                        expenses: memberExpenses,
-                        aiSummary:
-                            '${member.memberName} has logged ${member.transactionCount} expenses with an average of ${currencyFmt.format(member.averageTransaction)}. Their top category is ${member.topCategory}.',
-                      );"""
-                      
-    new_show = """                      InsightDrillDownSheet.showForMember(
-                        context,
-                        insight: member,
-                      );"""
-    
-    # Since we use Python regex, we must match the memberExpenses filter too
-    old_tap = """                    onTap: () {
-                      final memberExpenses =
-                          state.filteredExpenses
-                              .where((e) => e.createdByName == member.memberName)
-                              .toList()
-                            ..sort(
-                              (a, b) => b.expenseDate.compareTo(a.expenseDate),
-                            );
+    # 2. Add hash computation inside _triggerCalculation
+    # Let's find _triggerCalculation
+    old_trigger_start = """    final input = AnalyticsInput(
+      expenses: expenseState.expenses
+          .map(
+            (e) => ExpenseAnalyticsInput(
+              id: e.id,
+              amount: e.amount,
+              category: e.category,
+              description: e.description,
+              paymentMethod: e.paymentMethod,
+              expenseDate: e.expenseDate,
+              createdBy: e.createdBy,
+              createdByName: e.createdByName,
+            ),
+          )
+          .toList(),
+      budgetLimit: budgetState.currentBudget?.monthlyBudget ?? 20000.0,
+      activeMembersCount: familyState.members.isEmpty
+          ? 1
+          : familyState.members.length,
+      filterTypeIndex: filterType.index,
+      customRange: customRange,
+      memberIdToName: {
+        for (var m in familyState.members) m.userId: m.displayName,
+      },
+      selectedMemberId: selectedMemberId,
+      now: DateTime.now(),
+      calculationVersion: 1,
+    );
 
-                      DrillDownSheet.show(
-                        context,
-                        title: member.memberName,
-                        subtitle: 'Member spending details',
-                        icon: Icons.person,
-                        color: color,
-                        totalAmount: member.currentSpend,
-                        expenses: memberExpenses,
-                        aiSummary:
-                            '${member.memberName} has logged ${member.transactionCount} expenses with an average of ${currencyFmt.format(member.averageTransaction)}. Their top category is ${member.topCategory}.',
-                      );
-                    },"""
-                    
-    new_tap = """                    onTap: () {
-                      InsightDrillDownSheet.showForMember(
-                        context,
-                        insight: member,
-                      );
-                    },"""
+    // Compute in background isolate to prevent UI freezing
+    final result = await compute(runCalculations, input);"""
     
-    content = content.replace(old_tap, new_tap)
+    new_trigger_start = """    final input = AnalyticsInput(
+      expenses: expenseState.expenses
+          .map(
+            (e) => ExpenseAnalyticsInput(
+              id: e.id,
+              amount: e.amount,
+              category: e.category,
+              description: e.description,
+              paymentMethod: e.paymentMethod,
+              expenseDate: e.expenseDate,
+              createdBy: e.createdBy,
+              createdByName: e.createdByName,
+            ),
+          )
+          .toList(),
+      budgetLimit: budgetState.currentBudget?.monthlyBudget ?? 20000.0,
+      activeMembersCount: familyState.members.isEmpty
+          ? 1
+          : familyState.members.length,
+      filterTypeIndex: filterType.index,
+      customRange: customRange,
+      memberIdToName: {
+        for (var m in familyState.members) m.userId: m.displayName,
+      },
+      selectedMemberId: selectedMemberId,
+      now: DateTime.now(),
+      calculationVersion: 1, // You could increment this to force cache invalidation
+    );
+
+    // Calculate a fast hash of the inputs
+    final currentHash = Object.hash(
+      input.budgetLimit,
+      input.activeMembersCount,
+      input.filterTypeIndex,
+      input.customRange?.start,
+      input.customRange?.end,
+      input.selectedMemberId,
+      Object.hashAll(expenseState.expenses.map((e) => e.id)),
+      Object.hashAll(expenseState.expenses.map((e) => e.amount)), // Catches edits to same ID
+    );
+
+    if (_cachedInputHash == currentHash && _cachedAnalyticsState != null) {
+      // Return immediately from memory cache without running isolate
+      state = _cachedAnalyticsState!;
+      return;
+    }
+
+    // Compute in background isolate to prevent UI freezing
+    final result = await compute(runCalculations, input);"""
     
-    # Replace the text strings that have .largest and .preferredPaymentMethod
-    old_text1 = "'${member.transactionCount} Expenses • Avg ${currencyFmt.format(member.averageTransaction)} • Max ${currencyFmt.format(member.largest)}',"
-    new_text1 = "'${member.transactionCount} Expenses • Avg ${currencyFmt.format(member.averageTransaction)}',"
-    content = content.replace(old_text1, new_text1)
+    content = content.replace(old_trigger_start, new_trigger_start)
     
-    old_text2 = "'Top Category: ${member.topCategory} • Prefers ${member.preferredPaymentMethod}',"
-    new_text2 = "'Top Category: ${member.topCategory}',"
-    content = content.replace(old_text2, new_text2)
+    # 3. Save to cache after computing
+    old_state_update = """    if (mounted) {
+      state = AnalyticsState.fromResult(result, state);
+    }"""
     
+    new_state_update = """    if (mounted) {
+      final newState = AnalyticsState.fromResult(result, state);
+      _cachedAnalyticsState = newState;
+      _cachedInputHash = currentHash;
+      state = newState;
+    }"""
+    
+    content = content.replace(old_state_update, new_state_update)
+
     with open(p, 'w', encoding='utf-8') as f:
         f.write(content)
 
