@@ -16,9 +16,12 @@ class FinancialHealthCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final score = state.healthMetrics.totalScore;
+    final health = state.healthScore;
+    if (health == null) return const SizedBox.shrink();
+
+    final score = health.totalScore;
     final color = _getScoreColor(score);
-    final label = state.healthScoreLabel;
+    final label = health.label;
 
     final colorScheme = Theme.of(context).colorScheme;
 
@@ -49,7 +52,7 @@ class FinancialHealthCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      'Calculated using budget discipline metrics',
+                      'Calculated from comprehensive analytics',
                       style: TextStyle(
                         fontSize: 12,
                         color: colorScheme.onSurfaceVariant,
@@ -121,27 +124,39 @@ class FinancialHealthCard extends StatelessWidget {
             const SizedBox(height: 10),
             _buildScoreBar(
               context,
-              'Budget Control',
-              state.healthMetrics.budgetControl,
-              _getScoreColor(state.healthMetrics.budgetControl),
+              'Budget Adherence (35%)',
+              health.budgetAdherence,
+              _getScoreColor(health.budgetAdherence),
             ),
             _buildScoreBar(
               context,
-              'Saving Potential',
-              state.healthMetrics.savingPotential,
-              _getScoreColor(state.healthMetrics.savingPotential),
+              'Spending Velocity (25%)',
+              health.spendingVelocity,
+              _getScoreColor(health.spendingVelocity),
             ),
             _buildScoreBar(
               context,
-              'Category Diversity',
-              state.healthMetrics.categoryDiversity,
-              _getScoreColor(state.healthMetrics.categoryDiversity),
+              'Trend Stability (15%)',
+              health.trendStability,
+              _getScoreColor(health.trendStability),
             ),
             _buildScoreBar(
               context,
-              'Weekend Discipline',
-              state.healthMetrics.weekendDiscipline,
-              _getScoreColor(state.healthMetrics.weekendDiscipline),
+              'Anomaly Exposure (10%)',
+              health.anomalyExposure,
+              _getScoreColor(health.anomalyExposure),
+            ),
+            _buildScoreBar(
+              context,
+              'Concentration (10%)',
+              health.concentration,
+              _getScoreColor(health.concentration),
+            ),
+            _buildScoreBar(
+              context,
+              'Data Confidence (5%)',
+              health.dataConfidenceScore,
+              _getScoreColor(health.dataConfidenceScore),
             ),
           ],
         ),
