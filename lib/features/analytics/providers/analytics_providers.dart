@@ -173,6 +173,7 @@ class AnalyticsState {
   final BudgetForecast? budgetForecast;
   final DiagnosticIntelligence? diagnostic;
   final PatternIntelligence? patterns;
+  final List<InsightFact> insightFacts;
   final SpendingHealth? healthScore;
 
   AnalyticsState({
@@ -220,6 +221,7 @@ class AnalyticsState {
     this.budgetForecast,
     this.diagnostic,
     this.patterns,
+    this.insightFacts = const [],
     this.healthScore,
   });
 
@@ -715,6 +717,7 @@ class AnalyticsState {
       budgetForecast: result.budgetForecast,
       diagnostic: result.diagnostic,
       patterns: result.patterns,
+      insightFacts: result.insightFacts,
       healthScore: result.healthScore,
     );
   }
