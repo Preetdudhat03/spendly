@@ -169,6 +169,8 @@ class AnalyticsState {
 
   // Phase 2
   final ExecutiveSummary? summary;
+  final SpendingVelocity? velocity;
+  final BudgetForecast? budgetForecast;
   final SpendingHealth? healthScore;
 
   AnalyticsState({
@@ -212,6 +214,8 @@ class AnalyticsState {
     required this.timeOfDayCounts,
     required this.timeOfDayAmounts,
     this.summary,
+    this.velocity,
+    this.budgetForecast,
     this.healthScore,
   });
 
@@ -703,6 +707,8 @@ class AnalyticsState {
       timeOfDayCounts: agg.timeOfDayCounts,
       timeOfDayAmounts: agg.timeOfDayAmounts,
       summary: result.summary,
+      velocity: result.velocity,
+      budgetForecast: result.budgetForecast,
       healthScore: result.healthScore,
     );
   }
@@ -1250,13 +1256,30 @@ class AnalyticsNotifier extends StateNotifier<AnalyticsState> {
       topCategoryPercentage = (maxCat / currentTotalSpent) * 100;
     }
 
+    final daysInMonth = DateUtils.getDaysInMonth(params.now.year, params.now.month);
+    
+    final velocity = SpendingVelocity.calculate(
+      totalSpent: currentTotalSpent,
+      budgetLimit: params.budgetLimit,
+      elapsedDays: currentElapsedDays,
+      totalDays: daysInMonth,
+    );
+
+    final budgetForecast = BudgetForecast.calculate(
+      currentTotalSpent: currentTotalSpent,
+      currentDailyAvg: currentDailyAvg,
+      budgetLimit: params.budgetLimit,
+      remainingDays: daysInMonth - currentElapsedDays,
+    );
+
     final healthScore = SpendingHealth.calculate(
       totalSpent: currentTotalSpent,
       budgetLimit: params.budgetLimit,
       elapsedDays: currentElapsedDays,
-      daysInMonth: DateUtils.getDaysInMonth(params.now.year, params.now.month),
+      daysInMonth: daysInMonth,
       confidence: confidence,
       topCategoryPercentage: topCategoryPercentage,
+      velocity: velocity,
     );
 
     return AnalyticsResult(
@@ -1264,6 +1287,8 @@ class AnalyticsNotifier extends StateNotifier<AnalyticsState> {
       confidence: confidence,
       aggregations: agg,
       summary: summary,
+      velocity: velocity,
+      budgetForecast: budgetForecast,
       healthScore: healthScore,
     );
   }
