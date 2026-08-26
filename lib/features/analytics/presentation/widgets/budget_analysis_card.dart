@@ -124,7 +124,7 @@ class BudgetAnalysisCard extends StatelessWidget {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
-                              '${(progress * 100).toStringAsFixed(0)}%',
+                              budget > 0 ? '${(spent / budget * 100).toStringAsFixed(0)}%' : '0%',
                               style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.w900,
