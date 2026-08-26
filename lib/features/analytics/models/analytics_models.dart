@@ -1,5 +1,92 @@
 import 'package:flutter/material.dart';
 
+import 'dart:math';
+
+enum ConsistencyLevel { stable, moderatelyVariable, highlyVariable, unavailable }
+
+class SpendingConsistency {
+  final double meanDailySpend;
+  final double standardDeviation;
+  final double coefficientOfVariation;
+  final ConsistencyLevel level;
+
+  const SpendingConsistency({
+    required this.meanDailySpend,
+    required this.standardDeviation,
+    required this.coefficientOfVariation,
+    required this.level,
+  });
+
+  factory SpendingConsistency.calculate(List<double> dailyTotals) {
+    if (dailyTotals.isEmpty) {
+      return const SpendingConsistency(meanDailySpend: 0, standardDeviation: 0, coefficientOfVariation: 0, level: ConsistencyLevel.unavailable);
+    }
+    
+    final mean = dailyTotals.reduce((a, b) => a + b) / dailyTotals.length;
+    if (mean == 0) {
+      return const SpendingConsistency(meanDailySpend: 0, standardDeviation: 0, coefficientOfVariation: 0, level: ConsistencyLevel.stable);
+    }
+    
+    double sumOfSquaredDiffs = 0.0;
+    for (var total in dailyTotals) {
+      sumOfSquaredDiffs += pow(total - mean, 2);
+    }
+    final variance = sumOfSquaredDiffs / dailyTotals.length;
+    final stdDev = sqrt(variance);
+    final cv = stdDev / mean;
+    
+    ConsistencyLevel level = ConsistencyLevel.moderatelyVariable;
+    if (cv < 0.5) level = ConsistencyLevel.stable;
+    else if (cv > 1.0) level = ConsistencyLevel.highlyVariable;
+    
+    return SpendingConsistency(
+      meanDailySpend: mean,
+      standardDeviation: stdDev,
+      coefficientOfVariation: cv,
+      level: level,
+    );
+  }
+}
+
+class AnomalyInsight {
+  final ExpenseAnalyticsInput transaction;
+  final String reason;
+  final double deviationPercentage;
+
+  const AnomalyInsight({
+    required this.transaction,
+    required this.reason,
+    required this.deviationPercentage,
+  });
+}
+
+class HighSpendingDayInsight {
+  final DateTime date;
+  final double amount;
+  final String topCategoryContributor;
+
+  const HighSpendingDayInsight({
+    required this.date,
+    required this.amount,
+    required this.topCategoryContributor,
+  });
+}
+
+class PatternIntelligence {
+  final SpendingConsistency consistency;
+  final List<AnomalyInsight> anomalies;
+  final List<HighSpendingDayInsight> highSpendingDays;
+  final String? acceleratingCategory;
+  
+  const PatternIntelligence({
+    required this.consistency,
+    required this.anomalies,
+    required this.highSpendingDays,
+    this.acceleratingCategory,
+  });
+}
+
+
 enum DataConfidence { high, medium, low, unavailable }
 
 class ExpenseAnalyticsInput {
@@ -353,6 +440,7 @@ class SpendingHealth {
     required DataConfidence confidence,
     required double topCategoryPercentage,
     required SpendingVelocity velocity,
+    required PatternIntelligence patterns,
   }) {
     if (budgetLimit <= 0 || confidence == DataConfidence.unavailable) {
       return const SpendingHealth(
@@ -377,11 +465,17 @@ class SpendingHealth {
       spendingVelocity = (100 - (velocityOverage * 2)).toInt().clamp(0, 100);
     }
 
-    // 3. Trend Stability (Mocked for now until Phase 5)
-    int trendStability = 85; 
+    // 3. Trend Stability
+    int trendStability = 85;
+    if (patterns.consistency.level == ConsistencyLevel.stable) trendStability = 100;
+    else if (patterns.consistency.level == ConsistencyLevel.highlyVariable) trendStability = 40;
+    else trendStability = 75;
 
-    // 4. Anomaly Exposure (Mocked for now until Phase 5)
-    int anomalyExposure = 90;
+    // 4. Anomaly Exposure
+    int anomalyExposure = 100;
+    if (patterns.anomalies.length >= 3) anomalyExposure = 40;
+    else if (patterns.anomalies.length == 2) anomalyExposure = 70;
+    else if (patterns.anomalies.length == 1) anomalyExposure = 85;
 
     // 5. Concentration
     // High concentration isn't always bad. If top category > 50%, we might dock slightly for lack of diversification, but not severely.
@@ -436,6 +530,7 @@ class AnalyticsResult {
   final SpendingVelocity velocity;
   final BudgetForecast budgetForecast;
   final DiagnosticIntelligence diagnostic;
+  final PatternIntelligence patterns;
   final SpendingHealth healthScore;
   
   // Later phases will fill these in:
@@ -453,6 +548,7 @@ class AnalyticsResult {
     required this.velocity,
     required this.budgetForecast,
     required this.diagnostic,
+    required this.patterns,
     required this.healthScore,
   });
 }
