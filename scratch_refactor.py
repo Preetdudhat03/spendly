@@ -1,45 +1,92 @@
 import re
 
 def process():
-    path = r'p:\pro\spendly\lib\features\analytics\providers\analytics_providers.dart'
+    path = r'p:\pro\spendly\lib\features\analytics\presentation\widgets\financial_health_card.dart'
     with open(path, 'r', encoding='utf-8') as f:
         content = f.read()
 
-    # 1. Update AnalyticsState
-    if "final SpendingHealth? healthScore;" not in content:
-        content = content.replace("final ExecutiveSummary? summary;", "final ExecutiveSummary? summary;\n  final SpendingHealth? healthScore;")
-        content = content.replace("this.summary,", "this.summary,\n    this.healthScore,")
+    # We will replace the build method's health metrics reading
+    replace_from = """    final score = state.healthMetrics.totalScore;
+    final color = _getScoreColor(score);
+    final label = state.healthScoreLabel;"""
     
-    # 2. Update runCalculations to construct SpendingHealth
-    # It should happen after summary creation.
-    health_calc = """
-    // Calculate top category percentage
-    double topCategoryPercentage = 0.0;
-    if (currentCatTotals.isNotEmpty && currentTotalSpent > 0) {
-      double maxCat = 0.0;
-      for (var val in currentCatTotals.values) {
-        if (val > maxCat) maxCat = val;
-      }
-      topCategoryPercentage = (maxCat / currentTotalSpent) * 100;
-    }
+    replace_to = """    final health = state.healthScore;
+    if (health == null) return const SizedBox.shrink();
 
-    final healthScore = SpendingHealth.calculate(
-      totalSpent: currentTotalSpent,
-      budgetLimit: params.budgetLimit,
-      elapsedDays: currentElapsedDays,
-      daysInMonth: DateUtils.getDaysInMonth(params.now.year, params.now.month),
-      confidence: confidence,
-      topCategoryPercentage: topCategoryPercentage,
-    );
-
-    return AnalyticsResult(
-"""
-    content = content.replace("    return AnalyticsResult(\n", health_calc)
-    content = content.replace("summary: summary,\n    );", "summary: summary,\n      healthScore: healthScore,\n    );")
-
-    # 3. Update fromResult to pass healthScore
-    content = content.replace("summary: result.summary,", "summary: result.summary,\n      healthScore: result.healthScore,")
+    final score = health.totalScore;
+    final color = _getScoreColor(score);
+    final label = health.label;"""
     
+    content = content.replace(replace_from, replace_to)
+    
+    # We will replace the detailed metrics
+    metrics_from = """            _buildScoreBar(
+              context,
+              'Budget Control',
+              state.healthMetrics.budgetControl,
+              _getScoreColor(state.healthMetrics.budgetControl),
+            ),
+            _buildScoreBar(
+              context,
+              'Saving Potential',
+              state.healthMetrics.savingPotential,
+              _getScoreColor(state.healthMetrics.savingPotential),
+            ),
+            _buildScoreBar(
+              context,
+              'Category Diversity',
+              state.healthMetrics.categoryDiversity,
+              _getScoreColor(state.healthMetrics.categoryDiversity),
+            ),
+            _buildScoreBar(
+              context,
+              'Weekend Discipline',
+              state.healthMetrics.weekendDiscipline,
+              _getScoreColor(state.healthMetrics.weekendDiscipline),
+            ),"""
+            
+    metrics_to = """            _buildScoreBar(
+              context,
+              'Budget Adherence (35%)',
+              health.budgetAdherence,
+              _getScoreColor(health.budgetAdherence),
+            ),
+            _buildScoreBar(
+              context,
+              'Spending Velocity (25%)',
+              health.spendingVelocity,
+              _getScoreColor(health.spendingVelocity),
+            ),
+            _buildScoreBar(
+              context,
+              'Trend Stability (15%)',
+              health.trendStability,
+              _getScoreColor(health.trendStability),
+            ),
+            _buildScoreBar(
+              context,
+              'Anomaly Exposure (10%)',
+              health.anomalyExposure,
+              _getScoreColor(health.anomalyExposure),
+            ),
+            _buildScoreBar(
+              context,
+              'Concentration (10%)',
+              health.concentration,
+              _getScoreColor(health.concentration),
+            ),
+            _buildScoreBar(
+              context,
+              'Data Confidence (5%)',
+              health.dataConfidenceScore,
+              _getScoreColor(health.dataConfidenceScore),
+            ),"""
+    
+    content = content.replace(metrics_from, metrics_to)
+    
+    # also change "Calculated using budget discipline metrics" to "Calculated from comprehensive analytics"
+    content = content.replace("'Calculated using budget discipline metrics'", "'Calculated from comprehensive analytics'")
+
     with open(path, 'w', encoding='utf-8') as f:
         f.write(content)
 
