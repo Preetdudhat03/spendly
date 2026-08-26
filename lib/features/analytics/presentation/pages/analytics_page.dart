@@ -23,6 +23,8 @@ import '../widgets/spending_patterns_card.dart';
 import '../widgets/recurring_expenses_card.dart';
 import '../widgets/savings_opportunities_card.dart';
 import '../widgets/financial_health_card.dart';
+import '../widgets/spending_velocity_card.dart';
+import '../widgets/diagnostic_intelligence_card.dart';
 import '../widgets/ai_insight_card.dart';
 import '../widgets/reports_export_card.dart';
 import 'package:spendly/core/widgets/shimmer_loading.dart';
@@ -267,6 +269,10 @@ class AnalyticsPage extends ConsumerWidget {
                       const SizedBox(height: 20),
                       animatedItem(BudgetAnalysisCard(state: state), 5),
                       const SizedBox(height: 20),
+                      animatedItem(SpendingVelocityCard(state: state), 5),
+                      const SizedBox(height: 20),
+                      animatedItem(DiagnosticIntelligenceCard(state: state), 5),
+                      const SizedBox(height: 20),
                       animatedItem(FamilyMemberLeaderboard(state: state), 7),
                       const SizedBox(height: 20),
                       animatedItem(TopExpensesList(state: state), 9),
@@ -308,6 +314,10 @@ class AnalyticsPage extends ConsumerWidget {
             animatedItem(FinancialHealthCard(state: state), 2),
             const SizedBox(height: 16),
             animatedItem(BudgetAnalysisCard(state: state), 3),
+            const SizedBox(height: 16),
+            animatedItem(SpendingVelocityCard(state: state), 3),
+            const SizedBox(height: 16),
+            animatedItem(DiagnosticIntelligenceCard(state: state), 3),
             const SizedBox(height: 16),
             animatedItem(SpendingTrendChart(state: state), 4),
             const SizedBox(height: 16),
