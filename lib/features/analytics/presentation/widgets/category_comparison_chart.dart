@@ -11,7 +11,8 @@ class CategoryComparisonChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (state.diagnostic == null || state.diagnostic!.categoryInsights.isEmpty) {
+    if (state.diagnostic == null ||
+        state.diagnostic!.categoryInsights.isEmpty) {
       return const SizedBox.shrink();
     }
 

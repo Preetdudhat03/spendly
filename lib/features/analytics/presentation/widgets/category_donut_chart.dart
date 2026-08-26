@@ -157,7 +157,8 @@ class _CategoryDonutChartState extends State<CategoryDonutChart> {
     DrillDownSheet.show(
       context,
       title: meta.name,
-      subtitle: '${share.percentageOfTotal.toStringAsFixed(0)}% of total spending',
+      subtitle:
+          '${share.percentageOfTotal.toStringAsFixed(0)}% of total spending',
       icon: Icons
           .category, // You could use a specific icon or just use the emoji text in a custom way. We'll use a generic icon for now.
       color: meta.color,
@@ -176,7 +177,8 @@ class _CategoryDonutChartState extends State<CategoryDonutChart> {
       decimalDigits: 0,
     );
 
-    if (widget.state.diagnostic == null || state.diagnostic!.categoryInsights.isEmpty) {
+    if (widget.state.diagnostic == null ||
+        state.diagnostic!.categoryInsights.isEmpty) {
       return const SizedBox.shrink();
     }
 

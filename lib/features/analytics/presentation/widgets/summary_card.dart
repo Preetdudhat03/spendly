@@ -58,7 +58,8 @@ class FinancialSummaryCards extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
-                    color: (state.summary?.totalSpend.percentageChange ?? 0) >= 0
+                    color:
+                        (state.summary?.totalSpend.percentageChange ?? 0) >= 0
                         ? Colors.red
                         : Colors.green,
                   ),
@@ -82,7 +83,8 @@ class FinancialSummaryCards extends StatelessWidget {
                       ? Icons.arrow_upward
                       : Icons.arrow_downward,
                   size: 14,
-                  color: (state.summary?.dailyAverage.percentageChange ?? 0) >= 0
+                  color:
+                      (state.summary?.dailyAverage.percentageChange ?? 0) >= 0
                       ? Colors.red
                       : Colors.green,
                 ),
