@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
 import 'package:spendly/features/analytics/providers/analytics_providers.dart';
+import 'package:spendly/features/analytics/models/analytics_models.dart';
 import 'package:spendly/models/expense.dart';
 import 'package:spendly/core/theme/spendly_tokens.dart';
 import 'drill_down_sheet.dart';
+import 'package:spendly/features/analytics/presentation/widgets/insight_drill_down_sheet.dart';
 
 import 'package:flutter_svg/flutter_svg.dart';
 
@@ -142,29 +144,14 @@ class CategoryDonutChart extends StatefulWidget {
 class _CategoryDonutChartState extends State<CategoryDonutChart> {
   int touchedIndex = -1;
 
-  void _showCategoryDetails(BuildContext context, CategoryShare share) {
-    final meta = getCategoryMetadata(context, share.category);
-
-    // Filter transactions for this category in current range
-    final categoryExpenses =
-        widget.state.filteredExpenses
-            .where(
-              (e) => e.category.toLowerCase() == share.category.toLowerCase(),
-            )
-            .toList()
-          ..sort((a, b) => b.expenseDate.compareTo(a.expenseDate));
-
-    DrillDownSheet.show(
+  void _showCategoryDetails(BuildContext context, CategoryInsight insight) {
+    final meta = getCategoryMetadata(context, insight.categoryName);
+    
+    InsightDrillDownSheet.showForCategory(
       context,
-      title: meta.name,
-      subtitle: '${share.percentage.toStringAsFixed(0)}% of total spending',
-      icon: Icons
-          .category, // You could use a specific icon or just use the emoji text in a custom way. We'll use a generic icon for now.
+      insight: insight,
+      icon: Icons.category,
       color: meta.color,
-      totalAmount: share.amount,
-      expenses: categoryExpenses,
-      aiSummary:
-          'This category makes up ${share.percentage.toStringAsFixed(0)}% of your expenses. Consider looking for bulk discounts if applicable.',
     );
   }
 
@@ -176,25 +163,25 @@ class _CategoryDonutChartState extends State<CategoryDonutChart> {
       decimalDigits: 0,
     );
 
-    if (widget.state.categoryShares.isEmpty) {
+    if (widget.state.diagnostic?.categoryInsights.isEmpty ?? true) {
       return const SizedBox.shrink();
     }
 
-    final totalText = currencyFmt.format(widget.state.totalSpent);
+    final totalText = currencyFmt.format((widget.state.summary?.totalSpend.currentValue ?? widget.state.totalSpent));
 
     // Build fl chart sections
     final sections = List<PieChartSectionData>.generate(
-      widget.state.categoryShares.length,
+      widget.state.diagnostic!.categoryInsights.length,
       (i) {
-        final share = widget.state.categoryShares[i];
-        final meta = getCategoryMetadata(context, share.category);
+        final share = widget.state.diagnostic!.categoryInsights[i];
+        final meta = getCategoryMetadata(context, share.categoryName);
         final isTouched = i == touchedIndex;
         final radius = isTouched ? 48.0 : 40.0;
         final strokeWidth = isTouched ? 6.0 : 0.0;
 
         return PieChartSectionData(
           color: meta.color,
-          value: share.amount,
+          value: share.currentSpend,
           title: '', // Empty because we show labels in the legend below
           radius: radius,
           borderSide: strokeWidth > 0
@@ -279,10 +266,10 @@ class _CategoryDonutChartState extends State<CategoryDonutChart> {
                                   if (event is FlTapUpEvent &&
                                       touchedIndex >= 0 &&
                                       touchedIndex <
-                                          widget.state.categoryShares.length) {
+                                          widget.state.diagnostic!.categoryInsights.length) {
                                     _showCategoryDetails(
                                       context,
-                                      widget.state.categoryShares[touchedIndex],
+                                      widget.state.diagnostic!.categoryInsights[touchedIndex],
                                     );
                                   }
                                 });
@@ -326,10 +313,10 @@ class _CategoryDonutChartState extends State<CategoryDonutChart> {
             ListView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              itemCount: widget.state.categoryShares.length,
+              itemCount: widget.state.diagnostic!.categoryInsights.length,
               itemBuilder: (context, idx) {
-                final share = widget.state.categoryShares[idx];
-                final meta = getCategoryMetadata(context, share.category);
+                final share = widget.state.diagnostic!.categoryInsights[idx];
+                final meta = getCategoryMetadata(context, share.categoryName);
 
                 return Padding(
                   padding: const EdgeInsets.symmetric(vertical: 4.0),
@@ -376,7 +363,7 @@ class _CategoryDonutChartState extends State<CategoryDonutChart> {
                             crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
                               Text(
-                                currencyFmt.format(share.amount),
+                                currencyFmt.format(share.currentSpend),
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 14,
@@ -385,7 +372,7 @@ class _CategoryDonutChartState extends State<CategoryDonutChart> {
                               ),
                               const SizedBox(height: 2),
                               Text(
-                                '${share.percentage.toStringAsFixed(0)}%',
+                                '${share.percentageOfTotal.toStringAsFixed(0)}%',
                                 style: TextStyle(
                                   fontSize: 11,
                                   color: colorScheme.onSurfaceVariant,
