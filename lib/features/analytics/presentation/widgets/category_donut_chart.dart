@@ -157,14 +157,14 @@ class _CategoryDonutChartState extends State<CategoryDonutChart> {
     DrillDownSheet.show(
       context,
       title: meta.name,
-      subtitle: '${share.percentage.toStringAsFixed(0)}% of total spending',
+      subtitle: '${share.percentageOfTotal.toStringAsFixed(0)}% of total spending',
       icon: Icons
           .category, // You could use a specific icon or just use the emoji text in a custom way. We'll use a generic icon for now.
       color: meta.color,
-      totalAmount: share.amount,
+      totalAmount: share.currentSpend,
       expenses: categoryExpenses,
       aiSummary:
-          'This category makes up ${share.percentage.toStringAsFixed(0)}% of your expenses. Consider looking for bulk discounts if applicable.',
+          'This category makes up ${share.percentageOfTotal.toStringAsFixed(0)}% of your expenses. Consider looking for bulk discounts if applicable.',
     );
   }
 
@@ -176,7 +176,7 @@ class _CategoryDonutChartState extends State<CategoryDonutChart> {
       decimalDigits: 0,
     );
 
-    if (widget.state.categoryShares.isEmpty) {
+    if (widget.state.diagnostic == null || state.diagnostic!.categoryInsights.isEmpty) {
       return const SizedBox.shrink();
     }
 
@@ -194,7 +194,7 @@ class _CategoryDonutChartState extends State<CategoryDonutChart> {
 
         return PieChartSectionData(
           color: meta.color,
-          value: share.amount,
+          value: share.currentSpend,
           title: '', // Empty because we show labels in the legend below
           radius: radius,
           borderSide: strokeWidth > 0
@@ -376,7 +376,7 @@ class _CategoryDonutChartState extends State<CategoryDonutChart> {
                             crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
                               Text(
-                                currencyFmt.format(share.amount),
+                                currencyFmt.format(share.currentSpend),
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 14,
@@ -385,7 +385,7 @@ class _CategoryDonutChartState extends State<CategoryDonutChart> {
                               ),
                               const SizedBox(height: 2),
                               Text(
-                                '${share.percentage.toStringAsFixed(0)}%',
+                                '${share.percentageOfTotal.toStringAsFixed(0)}%',
                                 style: TextStyle(
                                   fontSize: 11,
                                   color: colorScheme.onSurfaceVariant,

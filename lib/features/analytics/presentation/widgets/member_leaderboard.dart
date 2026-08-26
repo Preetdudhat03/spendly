@@ -25,7 +25,7 @@ class FamilyMemberLeaderboard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (state.memberShares.isEmpty) {
+    if (state.diagnostic == null || state.diagnostic!.memberInsights.isEmpty) {
       return const SizedBox.shrink();
     }
 

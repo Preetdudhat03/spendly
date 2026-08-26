@@ -22,9 +22,9 @@ class BudgetAnalysisCard extends StatelessWidget {
     final progress = state.budgetProgressPercent;
 
     // Forecast calculation
-    final projectedSpend = state.projectedMonthEnd;
+    final projectedSpend = state.budgetForecast?.projectedTotal ?? 0;
     final isExceededForecast = projectedSpend > budget;
-    final forecastExceedAmount = state.expectedOverspend;
+    final forecastExceedAmount = state.budgetForecast?.expectedOverrun ?? 0;
 
     String forecastMessage = '';
     Color forecastBg = Colors.green.withOpacity(0.06);
