@@ -115,7 +115,7 @@ Spendly features an intuitive, modern UI built with custom Flutter widgets, glas
 ├─────────────────────────────────────────────────────────────────────────┤
 │                                                                         │
 │  [StartupScreen] ──► Checks Session ──► Logged In? ──┬── YES ──► [HomeScreen]
-│                            │                         │
+│                            │                         │                  │
 │                            NO                        └── NO  ──► [LoginScreen]
 │                            ▼                                            │
 │                     [RegisterScreen]                                    │
