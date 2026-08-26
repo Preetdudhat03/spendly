@@ -700,6 +700,7 @@ class AnalyticsState {
       aiRecommendations: [],
       timeOfDayCounts: agg.timeOfDayCounts,
       timeOfDayAmounts: agg.timeOfDayAmounts,
+      summary: result.summary,
     );
   }
 }
