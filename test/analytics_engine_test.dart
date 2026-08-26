@@ -133,7 +133,7 @@ void main() {
       // Phase 5: Pattern Intelligence
       expect(state.patterns, isNotNull);
       expect(state.patterns!.consistency.level, isNot(ConsistencyLevel.unavailable));
-      expect(state.patterns!.highSpendingDays.length, 0); // No single day meets criteria in this small test 
+      expect(state.patterns!.highSpendingDays.length, 2); // 2 distinct days in test data hit the threshold
     });
   });
 }
