@@ -518,6 +518,27 @@ class SpendingHealth {
   }
 }
 
+
+enum FactImportance { low, medium, high, critical }
+
+class InsightFact {
+  final String category;
+  final String metricName;
+  final String rawValue;
+  final String formattedValue;
+  final FactImportance importance;
+  final String context;
+
+  const InsightFact({
+    required this.category,
+    required this.metricName,
+    required this.rawValue,
+    required this.formattedValue,
+    required this.importance,
+    required this.context,
+  });
+}
+
 class AnalyticsResult {
   final AnalyticsInput input;
   final DataConfidence confidence;
