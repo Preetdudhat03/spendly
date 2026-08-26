@@ -1514,51 +1514,64 @@ class AnalyticsNotifier extends StateNotifier<AnalyticsState> {
 
     // Phase 7: Extract InsightFacts
     final insightFacts = <InsightFact>[];
-    
+
     // Budget Velocity Fact
-    insightFacts.add(InsightFact(
-      category: 'Budget',
-      metricName: 'Velocity Status',
-      rawValue: velocity.velocityRatio.toString(),
-      formattedValue: velocity.interpretation,
-      importance: velocity.status == VelocityStatus.veryFast ? FactImportance.critical : FactImportance.medium,
-      context: 'Current spent: ${currentTotalSpent}, Budget Limit: ${params.budgetLimit}',
-    ));
-    
+    insightFacts.add(
+      InsightFact(
+        category: 'Budget',
+        metricName: 'Velocity Status',
+        rawValue: velocity.velocityRatio.toString(),
+        formattedValue: velocity.interpretation,
+        importance: velocity.status == VelocityStatus.veryFast
+            ? FactImportance.critical
+            : FactImportance.medium,
+        context:
+            'Current spent: ${currentTotalSpent}, Budget Limit: ${params.budgetLimit}',
+      ),
+    );
+
     // Anomaly Facts
     for (var anomaly in anomalies) {
-      insightFacts.add(InsightFact(
-        category: 'Anomaly',
-        metricName: 'Large Expense',
-        rawValue: anomaly.transaction.amount.toString(),
-        formattedValue: '${anomaly.transaction.category} expense of ${anomaly.transaction.amount}',
-        importance: FactImportance.high,
-        context: anomaly.reason,
-      ));
+      insightFacts.add(
+        InsightFact(
+          category: 'Anomaly',
+          metricName: 'Large Expense',
+          rawValue: anomaly.transaction.amount.toString(),
+          formattedValue:
+              '${anomaly.transaction.category} expense of ${anomaly.transaction.amount}',
+          importance: FactImportance.high,
+          context: anomaly.reason,
+        ),
+      );
     }
-    
+
     // Contribution Fact
     if (primaryIncrease != 'None') {
-      insightFacts.add(InsightFact(
-        category: 'Diagnostic',
-        metricName: 'Primary Increase Contributor',
-        rawValue: maxInc.toString(),
-        formattedValue: primaryIncrease,
-        importance: FactImportance.medium,
-        context: 'Increased by ${maxInc} compared to equivalent previous period.',
-      ));
+      insightFacts.add(
+        InsightFact(
+          category: 'Diagnostic',
+          metricName: 'Primary Increase Contributor',
+          rawValue: maxInc.toString(),
+          formattedValue: primaryIncrease,
+          importance: FactImportance.medium,
+          context:
+              'Increased by ${maxInc} compared to equivalent previous period.',
+        ),
+      );
     }
-    
+
     // High Spend Day
     for (var day in highSpendingDays) {
-      insightFacts.add(InsightFact(
-        category: 'Pattern',
-        metricName: 'High Spending Day',
-        rawValue: day.amount.toString(),
-        formattedValue: DateUtils.dateOnly(day.date).toString(),
-        importance: FactImportance.high,
-        context: 'Top contributor was ${day.topCategoryContributor}.',
-      ));
+      insightFacts.add(
+        InsightFact(
+          category: 'Pattern',
+          metricName: 'High Spending Day',
+          rawValue: day.amount.toString(),
+          formattedValue: DateUtils.dateOnly(day.date).toString(),
+          importance: FactImportance.high,
+          context: 'Top contributor was ${day.topCategoryContributor}.',
+        ),
+      );
     }
 
     final healthScore = SpendingHealth.calculate(
