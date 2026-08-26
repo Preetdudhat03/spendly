@@ -156,6 +156,99 @@ class ExecutiveSummary {
   });
 }
 
+
+enum VelocityStatus { underPace, onPace, slightlyFast, veryFast, unavailable }
+
+class SpendingVelocity {
+  final double budgetConsumedPct;
+  final double timeElapsedPct;
+  final double velocityRatio; 
+  final VelocityStatus status;
+  final String interpretation;
+
+  const SpendingVelocity({
+    required this.budgetConsumedPct,
+    required this.timeElapsedPct,
+    required this.velocityRatio,
+    required this.status,
+    required this.interpretation,
+  });
+
+  factory SpendingVelocity.calculate({
+    required double totalSpent,
+    required double budgetLimit,
+    required int elapsedDays,
+    required int totalDays,
+  }) {
+    if (budgetLimit <= 0 || totalDays <= 0 || elapsedDays <= 0) {
+      return const SpendingVelocity(
+        budgetConsumedPct: 0, timeElapsedPct: 0, velocityRatio: 0, 
+        status: VelocityStatus.unavailable, interpretation: 'Unavailable'
+      );
+    }
+    final budgetPct = (totalSpent / budgetLimit) * 100;
+    final timePct = (elapsedDays / totalDays) * 100;
+    final ratio = timePct > 0 ? budgetPct / timePct : 0.0;
+    
+    VelocityStatus status = VelocityStatus.onPace;
+    String interp = 'Spending is on pace with the budget.';
+    
+    if (ratio < 0.85) {
+      status = VelocityStatus.underPace;
+      interp = 'Spending is slower than expected.';
+    } else if (ratio > 1.3) {
+      status = VelocityStatus.veryFast;
+      interp = 'Spending is dangerously fast.';
+    } else if (ratio > 1.05) {
+      status = VelocityStatus.slightlyFast;
+      interp = 'Spending is slightly ahead of pace.';
+    }
+
+    return SpendingVelocity(
+      budgetConsumedPct: budgetPct,
+      timeElapsedPct: timePct,
+      velocityRatio: ratio,
+      status: status,
+      interpretation: interp,
+    );
+  }
+}
+
+class BudgetForecast {
+  final double projectedTotal;
+  final double expectedRemaining;
+  final double expectedOverrun;
+  final bool isOverrun;
+  
+  const BudgetForecast({
+    required this.projectedTotal,
+    required this.expectedRemaining,
+    required this.expectedOverrun,
+    required this.isOverrun,
+  });
+
+  factory BudgetForecast.calculate({
+    required double currentTotalSpent,
+    required double currentDailyAvg,
+    required double budgetLimit,
+    required int remainingDays,
+  }) {
+    if (budgetLimit <= 0) {
+      return const BudgetForecast(projectedTotal: 0, expectedRemaining: 0, expectedOverrun: 0, isOverrun: false);
+    }
+    final projected = currentTotalSpent + (currentDailyAvg * remainingDays);
+    final diff = budgetLimit - projected;
+    final isOver = diff < 0;
+    
+    return BudgetForecast(
+      projectedTotal: projected,
+      expectedRemaining: isOver ? 0 : diff,
+      expectedOverrun: isOver ? diff.abs() : 0,
+      isOverrun: isOver,
+    );
+  }
+}
+
 class SpendingHealth {
   final int budgetAdherence; // 35%
   final int spendingVelocity; // 25%
@@ -184,6 +277,7 @@ class SpendingHealth {
     required int daysInMonth,
     required DataConfidence confidence,
     required double topCategoryPercentage,
+    required SpendingVelocity velocity,
   }) {
     if (budgetLimit <= 0 || confidence == DataConfidence.unavailable) {
       return const SpendingHealth(
@@ -202,12 +296,9 @@ class SpendingHealth {
     }
 
     // 2. Spending Velocity (0 to 100)
-    // Budget used % vs Time elapsed %
     int spendingVelocity = 100;
-    final budgetUsedPct = (totalSpent / budgetLimit) * 100;
-    final timeElapsedPct = (elapsedDays / daysInMonth) * 100;
-    if (budgetUsedPct > timeElapsedPct) {
-      final velocityOverage = budgetUsedPct - timeElapsedPct;
+    if (velocity.velocityRatio > 1.0) {
+      final velocityOverage = velocity.budgetConsumedPct - velocity.timeElapsedPct;
       spendingVelocity = (100 - (velocityOverage * 2)).toInt().clamp(0, 100);
     }
 
@@ -267,6 +358,8 @@ class AnalyticsResult {
   final ExecutiveSummary summary;
   
   // Phase 6 model
+  final SpendingVelocity velocity;
+  final BudgetForecast budgetForecast;
   final SpendingHealth healthScore;
   
   // Later phases will fill these in:
@@ -281,6 +374,8 @@ class AnalyticsResult {
     required this.confidence,
     required this.aggregations,
     required this.summary,
+    required this.velocity,
+    required this.budgetForecast,
     required this.healthScore,
   });
 }
