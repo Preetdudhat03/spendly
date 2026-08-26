@@ -1,135 +1,103 @@
 import re
 
 def process():
-    path = r'p:\pro\spendly\lib\features\analytics\models\analytics_models.dart'
+    path = r'p:\pro\spendly\lib\features\analytics\providers\analytics_providers.dart'
     with open(path, 'r', encoding='utf-8') as f:
         content = f.read()
 
-    new_models = """
-enum VelocityStatus { underPace, onPace, slightlyFast, veryFast, unavailable }
-
-class SpendingVelocity {
-  final double budgetConsumedPct;
-  final double timeElapsedPct;
-  final double velocityRatio; 
-  final VelocityStatus status;
-  final String interpretation;
-
-  const SpendingVelocity({
-    required this.budgetConsumedPct,
-    required this.timeElapsedPct,
-    required this.velocityRatio,
-    required this.status,
-    required this.interpretation,
-  });
-
-  factory SpendingVelocity.calculate({
-    required double totalSpent,
-    required double budgetLimit,
-    required int elapsedDays,
-    required int totalDays,
-  }) {
-    if (budgetLimit <= 0 || totalDays <= 0 || elapsedDays <= 0) {
-      return const SpendingVelocity(
-        budgetConsumedPct: 0, timeElapsedPct: 0, velocityRatio: 0, 
-        status: VelocityStatus.unavailable, interpretation: 'Unavailable'
-      );
-    }
-    final budgetPct = (totalSpent / budgetLimit) * 100;
-    final timePct = (elapsedDays / totalDays) * 100;
-    final ratio = timePct > 0 ? budgetPct / timePct : 0.0;
+    # 1. Update AnalyticsState
+    if "final SpendingVelocity? velocity;" not in content:
+        content = content.replace("final SpendingHealth? healthScore;", "final SpendingVelocity? velocity;\n  final BudgetForecast? budgetForecast;\n  final SpendingHealth? healthScore;")
+        content = content.replace("this.healthScore,", "this.velocity,\n    this.budgetForecast,\n    this.healthScore,")
     
-    VelocityStatus status = VelocityStatus.onPace;
-    String interp = 'Spending is on pace with the budget.';
-    
-    if (ratio < 0.85) {
-      status = VelocityStatus.underPace;
-      interp = 'Spending is slower than expected.';
-    } else if (ratio > 1.3) {
-      status = VelocityStatus.veryFast;
-      interp = 'Spending is dangerously fast.';
-    } else if (ratio > 1.05) {
-      status = VelocityStatus.slightlyFast;
-      interp = 'Spending is slightly ahead of pace.';
-    }
-
-    return SpendingVelocity(
-      budgetConsumedPct: budgetPct,
-      timeElapsedPct: timePct,
-      velocityRatio: ratio,
-      status: status,
-      interpretation: interp,
+    # 2. Update runCalculations
+    calc_from = """    final healthScore = SpendingHealth.calculate(
+      totalSpent: currentTotalSpent,
+      budgetLimit: params.budgetLimit,
+      elapsedDays: currentElapsedDays,
+      daysInMonth: DateUtils.getDaysInMonth(params.now.year, params.now.month),
+      confidence: confidence,
+      topCategoryPercentage: topCategoryPercentage,
     );
-  }
-}
 
-class BudgetForecast {
-  final double projectedTotal;
-  final double expectedRemaining;
-  final double expectedOverrun;
-  final bool isOverrun;
-  
-  const BudgetForecast({
-    required this.projectedTotal,
-    required this.expectedRemaining,
-    required this.expectedOverrun,
-    required this.isOverrun,
-  });
-
-  factory BudgetForecast.calculate({
-    required double currentTotalSpent,
-    required double currentDailyAvg,
-    required double budgetLimit,
-    required int remainingDays,
-  }) {
-    if (budgetLimit <= 0) {
-      return const BudgetForecast(projectedTotal: 0, expectedRemaining: 0, expectedOverrun: 0, isOverrun: false);
-    }
-    final projected = currentTotalSpent + (currentDailyAvg * remainingDays);
-    final diff = budgetLimit - projected;
-    final isOver = diff < 0;
+    return AnalyticsResult("""
     
-    return BudgetForecast(
-      projectedTotal: projected,
-      expectedRemaining: isOver ? 0 : diff,
-      expectedOverrun: isOver ? diff.abs() : 0,
-      isOverrun: isOver,
+    calc_to = """    final daysInMonth = DateUtils.getDaysInMonth(params.now.year, params.now.month);
+    
+    final velocity = SpendingVelocity.calculate(
+      totalSpent: currentTotalSpent,
+      budgetLimit: params.budgetLimit,
+      elapsedDays: currentElapsedDays,
+      totalDays: daysInMonth,
     );
-  }
-}
-"""
 
-    if "class SpendingVelocity" not in content:
-        # insert before SpendingHealth
-        content = content.replace("class SpendingHealth {", new_models + "\nclass SpendingHealth {")
+    final budgetForecast = BudgetForecast.calculate(
+      currentTotalSpent: currentTotalSpent,
+      currentDailyAvg: currentDailyAvg,
+      budgetLimit: params.budgetLimit,
+      remainingDays: daysInMonth - currentElapsedDays,
+    );
+
+    final healthScore = SpendingHealth.calculate(
+      totalSpent: currentTotalSpent,
+      budgetLimit: params.budgetLimit,
+      elapsedDays: currentElapsedDays,
+      daysInMonth: daysInMonth,
+      confidence: confidence,
+      topCategoryPercentage: topCategoryPercentage,
+      velocity: velocity,
+    );
+
+    return AnalyticsResult("""
     
-    # Update SpendingHealth.calculate signature
-    if "required SpendingVelocity velocity," not in content:
-        content = content.replace("required DataConfidence confidence,\n    required double topCategoryPercentage,", "required DataConfidence confidence,\n    required double topCategoryPercentage,\n    required SpendingVelocity velocity,")
-        
-        # replace spendingVelocity calculation
-        replace_from = """    // 2. Spending Velocity (0 to 100)
-    // Budget used % vs Time elapsed %
-    int spendingVelocity = 100;
-    final budgetUsedPct = (totalSpent / budgetLimit) * 100;
-    final timeElapsedPct = (elapsedDays / daysInMonth) * 100;
-    if (budgetUsedPct > timeElapsedPct) {
-      final velocityOverage = budgetUsedPct - timeElapsedPct;
-      spendingVelocity = (100 - (velocityOverage * 2)).toInt().clamp(0, 100);
+    content = content.replace(calc_from, calc_to)
+    
+    res_from = """      healthScore: healthScore,
+    );"""
+    res_to = """      velocity: velocity,
+      budgetForecast: budgetForecast,
+      healthScore: healthScore,
+    );"""
+    content = content.replace(res_from, res_to)
+    
+    # 3. Update fromResult mappings
+    map_from = """    // Forecast & Budget
+    double projectedMonthEnd = 0.0;
+    double expectedOverspend = 0.0;
+    final ranges = AnalyticsNotifier._calculateDateRanges(
+      AnalyticsFilterType.values[result.input.filterTypeIndex],
+      result.input.customRange,
+      result.input.now,
+    );
+    final currentRange = ranges[0];
+    final prevRange = ranges[1];
+    
+    if (AnalyticsFilterType.values[result.input.filterTypeIndex] == AnalyticsFilterType.thisMonth && currentRange.start.month == result.input.now.month && currentRange.start.year == result.input.now.year) {
+      final daysInMonth = DateUtils.getDaysInMonth(result.input.now.year, result.input.now.month);
+      final elapsedDays = result.input.now.day > 0 ? result.input.now.day : 1;
+      dailyAverage = agg.currentTotalSpent / elapsedDays;
+      final remainingDays = daysInMonth - elapsedDays;
+      projectedMonthEnd = agg.currentTotalSpent + (dailyAverage * remainingDays);
+      expectedOverspend = (projectedMonthEnd - result.input.budgetLimit) > 0 ? (projectedMonthEnd - result.input.budgetLimit) : 0.0;
     }"""
-        replace_to = """    // 2. Spending Velocity (0 to 100)
-    int spendingVelocity = 100;
-    if (velocity.velocityRatio > 1.0) {
-      final velocityOverage = velocity.budgetConsumedPct - velocity.timeElapsedPct;
-      spendingVelocity = (100 - (velocityOverage * 2)).toInt().clamp(0, 100);
-    }"""
-        content = content.replace(replace_from, replace_to)
-        
-    # Update AnalyticsResult fields
-    if "final SpendingVelocity velocity;" not in content:
-        content = content.replace("final SpendingHealth healthScore;", "final SpendingVelocity velocity;\n  final BudgetForecast budgetForecast;\n  final SpendingHealth healthScore;")
-        content = content.replace("required this.healthScore,", "required this.velocity,\n    required this.budgetForecast,\n    required this.healthScore,")
-        
+    
+    map_to = """    // Forecast & Budget
+    final ranges = AnalyticsNotifier._calculateDateRanges(
+      AnalyticsFilterType.values[result.input.filterTypeIndex],
+      result.input.customRange,
+      result.input.now,
+    );
+    final currentRange = ranges[0];
+    final prevRange = ranges[1];
+    
+    double projectedMonthEnd = result.budgetForecast.projectedTotal;
+    double expectedOverspend = result.budgetForecast.expectedOverrun;"""
+    
+    content = content.replace(map_from, map_to)
+    
+    # Add to AnalyticsState constructor in fromResult
+    content = content.replace("summary: result.summary,\n      healthScore: result.healthScore,", "summary: result.summary,\n      velocity: result.velocity,\n      budgetForecast: result.budgetForecast,\n      healthScore: result.healthScore,")
+
     with open(path, 'w', encoding='utf-8') as f:
         f.write(content)
 
