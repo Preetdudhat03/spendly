@@ -1,146 +1,91 @@
 import re
 
 def process():
-    path = r'p:\pro\spendly\lib\features\analytics\models\analytics_models.dart'
+    path = r'p:\pro\spendly\lib\features\analytics\providers\analytics_providers.dart'
     with open(path, 'r', encoding='utf-8') as f:
         content = f.read()
 
-    new_models = """
-import 'dart:math';
-
-enum ConsistencyLevel { stable, moderatelyVariable, highlyVariable, unavailable }
-
-class SpendingConsistency {
-  final double meanDailySpend;
-  final double standardDeviation;
-  final double coefficientOfVariation;
-  final ConsistencyLevel level;
-
-  const SpendingConsistency({
-    required this.meanDailySpend,
-    required this.standardDeviation,
-    required this.coefficientOfVariation,
-    required this.level,
-  });
-
-  factory SpendingConsistency.calculate(List<double> dailyTotals) {
-    if (dailyTotals.isEmpty) {
-      return const SpendingConsistency(meanDailySpend: 0, standardDeviation: 0, coefficientOfVariation: 0, level: ConsistencyLevel.unavailable);
+    calc_from = """    final healthScore = SpendingHealth.calculate("""
+    
+    calc_to = """    // Phase 5: Pattern & Anomaly Detection
+    final dailyTotalsList = currentDailySum.values.toList();
+    final consistency = SpendingConsistency.calculate(dailyTotalsList);
+    
+    final anomalies = <AnomalyInsight>[];
+    for (var e in filteredExpenses) {
+      final catInsight = categoryInsights.firstWhere((c) => c.categoryName == e.category, orElse: () => CategoryInsight(categoryName: '', currentSpend: 0, previousSpend: 0, trend: PeriodComparison.calculate(0, 0), percentageOfTotal: 0, transactionCount: 1, averageTransaction: e.amount, largestTransaction: e.amount));
+      
+      // Anomaly heuristics: 
+      // 1. More than 3x the average for that category
+      // 2. Value > 5% of overall budget limit
+      if (catInsight.averageTransaction > 0 && e.amount > catInsight.averageTransaction * 3 && e.amount > params.budgetLimit * 0.05) {
+         final diffPct = ((e.amount - catInsight.averageTransaction) / catInsight.averageTransaction) * 100;
+         anomalies.add(AnomalyInsight(
+           transaction: e,
+           reason: 'Unusually large expense for ${e.category}.',
+           deviationPercentage: diffPct,
+         ));
+      }
     }
     
-    final mean = dailyTotals.reduce((a, b) => a + b) / dailyTotals.length;
-    if (mean == 0) {
-      return const SpendingConsistency(meanDailySpend: 0, standardDeviation: 0, coefficientOfVariation: 0, level: ConsistencyLevel.stable);
+    final highSpendingDays = <HighSpendingDayInsight>[];
+    if (consistency.meanDailySpend > 0) {
+      for (var entry in currentDailySum.entries) {
+        if (entry.value > consistency.meanDailySpend * 2 && entry.value > params.budgetLimit * 0.05) {
+          // find top category for this day
+          final dayExpenses = filteredExpenses.where((e) => DateUtils.dateOnly(e.expenseDate) == entry.key);
+          final dCatTotals = <String, double>{};
+          for(var e in dayExpenses) dCatTotals[e.category] = (dCatTotals[e.category] ?? 0) + e.amount;
+          String topCat = dCatTotals.isEmpty ? 'Unknown' : dCatTotals.entries.reduce((a, b) => a.value > b.value ? a : b).key;
+          
+          highSpendingDays.add(HighSpendingDayInsight(
+            date: entry.key,
+            amount: entry.value,
+            topCategoryContributor: topCat,
+          ));
+        }
+      }
     }
     
-    double sumOfSquaredDiffs = 0.0;
-    for (var total in dailyTotals) {
-      sumOfSquaredDiffs += pow(total - mean, 2);
+    String? acceleratingCategory;
+    for (var cat in categoryInsights) {
+      if (cat.trend.direction == TrendDirection.increase && cat.trend.percentageChange > 50.0 && cat.percentageOfTotal > 10.0) {
+        acceleratingCategory = cat.categoryName;
+        break;
+      }
     }
-    final variance = sumOfSquaredDiffs / dailyTotals.length;
-    final stdDev = sqrt(variance);
-    final cv = stdDev / mean;
     
-    ConsistencyLevel level = ConsistencyLevel.moderatelyVariable;
-    if (cv < 0.5) level = ConsistencyLevel.stable;
-    else if (cv > 1.0) level = ConsistencyLevel.highlyVariable;
-    
-    return SpendingConsistency(
-      meanDailySpend: mean,
-      standardDeviation: stdDev,
-      coefficientOfVariation: cv,
-      level: level,
+    final patterns = PatternIntelligence(
+      consistency: consistency,
+      anomalies: anomalies,
+      highSpendingDays: highSpendingDays,
+      acceleratingCategory: acceleratingCategory,
     );
-  }
-}
 
-class AnomalyInsight {
-  final ExpenseAnalyticsInput transaction;
-  final String reason;
-  final double deviationPercentage;
-
-  const AnomalyInsight({
-    required this.transaction,
-    required this.reason,
-    required this.deviationPercentage,
-  });
-}
-
-class HighSpendingDayInsight {
-  final DateTime date;
-  final double amount;
-  final String topCategoryContributor;
-
-  const HighSpendingDayInsight({
-    required this.date,
-    required this.amount,
-    required this.topCategoryContributor,
-  });
-}
-
-class PatternIntelligence {
-  final SpendingConsistency consistency;
-  final List<AnomalyInsight> anomalies;
-  final List<HighSpendingDayInsight> highSpendingDays;
-  final String? acceleratingCategory;
-  
-  const PatternIntelligence({
-    required this.consistency,
-    required this.anomalies,
-    required this.highSpendingDays,
-    this.acceleratingCategory,
-  });
-}
-"""
-
-    if "class SpendingConsistency" not in content:
-        # replace import 'package:flutter/material.dart'; with the new models which include dart:math
-        content = content.replace("import 'package:flutter/material.dart';", "import 'package:flutter/material.dart';\n" + new_models.replace("import 'dart:math';\n", "import 'dart:math';\n"))
+    final healthScore = SpendingHealth.calculate("""
     
-    # Update SpendingHealth.calculate signature to replace mocked values
-    replace_from = """    // 3. Trend Stability (Mocked for now until Phase 5)
-    int trendStability = 85; 
-
-    // 4. Anomaly Exposure (Mocked for now until Phase 5)
-    int anomalyExposure = 90;"""
+    content = content.replace(calc_from, calc_to)
     
-    replace_to = """    // 3. Trend Stability 
-    int trendStability = 85; 
-
-    // 4. Anomaly Exposure 
-    int anomalyExposure = 90;"""
-    content = content.replace(replace_from, replace_to)
+    res_from = """      healthScore: healthScore,
+    );"""
+    res_to = """      patterns: patterns,
+      healthScore: healthScore,
+    );"""
+    content = content.replace(res_from, res_to)
     
-    # Let's add pattern to SpendingHealth args so we can calculate it
-    health_sig_from = """    required double topCategoryPercentage,
-    required SpendingVelocity velocity,"""
-    health_sig_to = """    required double topCategoryPercentage,
-    required SpendingVelocity velocity,
-    required PatternIntelligence patterns,"""
-    content = content.replace(health_sig_from, health_sig_to)
+    health_arg_from = """      velocity: velocity,
+    );"""
+    health_arg_to = """      velocity: velocity,
+      patterns: patterns,
+    );"""
+    content = content.replace(health_arg_from, health_arg_to)
     
-    health_calc_from = """    // 3. Trend Stability 
-    int trendStability = 85; 
-
-    // 4. Anomaly Exposure 
-    int anomalyExposure = 90;"""
-    health_calc_to = """    // 3. Trend Stability
-    int trendStability = 85;
-    if (patterns.consistency.level == ConsistencyLevel.stable) trendStability = 100;
-    else if (patterns.consistency.level == ConsistencyLevel.highlyVariable) trendStability = 40;
-    else trendStability = 75;
-
-    // 4. Anomaly Exposure
-    int anomalyExposure = 100;
-    if (patterns.anomalies.length >= 3) anomalyExposure = 40;
-    else if (patterns.anomalies.length == 2) anomalyExposure = 70;
-    else if (patterns.anomalies.length == 1) anomalyExposure = 85;"""
-    content = content.replace(health_calc_from, health_calc_to)
-    
-    # Add patterns to AnalyticsResult
-    if "final PatternIntelligence patterns;" not in content:
-        content = content.replace("final DiagnosticIntelligence diagnostic;", "final DiagnosticIntelligence diagnostic;\n  final PatternIntelligence patterns;")
-        content = content.replace("required this.diagnostic,", "required this.diagnostic,\n    required this.patterns,")
+    # Update AnalyticsState
+    if "final PatternIntelligence? patterns;" not in content:
+        content = content.replace("final DiagnosticIntelligence? diagnostic;", "final DiagnosticIntelligence? diagnostic;\n  final PatternIntelligence? patterns;")
+        content = content.replace("this.diagnostic,", "this.diagnostic,\n    this.patterns,")
+        
+    content = content.replace("diagnostic: result.diagnostic,", "diagnostic: result.diagnostic,\n      patterns: result.patterns,")
 
     with open(path, 'w', encoding='utf-8') as f:
         f.write(content)
