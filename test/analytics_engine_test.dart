@@ -104,6 +104,19 @@ void main() {
       // Payment Checks
       final upiShare = state.paymentMethodShares.firstWhere((p) => p.method == 'UPI');
       expect(upiShare.amount, 1000.0); // Only current month UPI
+      
+      // Phase 2: Executive Summary & Equivalent Period Checks
+      expect(state.summary, isNotNull);
+      // current spent: 4500 (Aug)
+      // prev spent: 2000 (July)
+      // Since 'now' is Aug 20, equivalent prev is July 1 - July 20.
+      // The test has a July expense on July 15 for 2000.
+      // So equivalentPrevTotalSpent is 2000.
+      expect(state.summary!.totalSpend.currentValue, 4500.0);
+      expect(state.summary!.totalSpend.previousValue, 2000.0);
+      expect(state.summary!.totalSpend.absoluteChange, 2500.0);
+      expect(state.summary!.totalSpend.percentageChange, 125.0); // (2500 / 2000) * 100
+      expect(state.summary!.totalSpend.direction, TrendDirection.increase);
     });
   });
 }
