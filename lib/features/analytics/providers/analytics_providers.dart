@@ -938,6 +938,7 @@ class AnalyticsNotifier extends StateNotifier<AnalyticsState> {
     DateTimeRange? customRange,
     String? selectedMemberId,
   ) async {
+    final int requestId = ++_currentRequestId;
     if (expenseState.isLoading) {
       state = state.copyWith(status: AnalyticsStatus.loading);
       return;
