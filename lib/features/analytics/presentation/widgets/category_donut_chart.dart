@@ -178,7 +178,7 @@ class _CategoryDonutChartState extends State<CategoryDonutChart> {
     );
 
     if (widget.state.diagnostic == null ||
-        state.diagnostic!.categoryInsights.isEmpty) {
+        widget.state.diagnostic!.categoryInsights.isEmpty) {
       return const SizedBox.shrink();
     }
 
@@ -186,9 +186,9 @@ class _CategoryDonutChartState extends State<CategoryDonutChart> {
 
     // Build fl chart sections
     final sections = List<PieChartSectionData>.generate(
-      widget.state.categoryShares.length,
+      widget.state.diagnostic!.categoryInsights.length,
       (i) {
-        final share = widget.state.categoryShares[i];
+        final share = widget.state.diagnostic!.categoryInsights[i];
         final meta = getCategoryMetadata(context, share.category);
         final isTouched = i == touchedIndex;
         final radius = isTouched ? 48.0 : 40.0;
@@ -281,10 +281,10 @@ class _CategoryDonutChartState extends State<CategoryDonutChart> {
                                   if (event is FlTapUpEvent &&
                                       touchedIndex >= 0 &&
                                       touchedIndex <
-                                          widget.state.categoryShares.length) {
+                                          widget.state.diagnostic!.categoryInsights.length) {
                                     _showCategoryDetails(
                                       context,
-                                      widget.state.categoryShares[touchedIndex],
+                                      widget.state.diagnostic!.categoryInsights[touchedIndex],
                                     );
                                   }
                                 });
@@ -328,9 +328,9 @@ class _CategoryDonutChartState extends State<CategoryDonutChart> {
             ListView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              itemCount: widget.state.categoryShares.length,
+              itemCount: widget.state.diagnostic!.categoryInsights.length,
               itemBuilder: (context, idx) {
-                final share = widget.state.categoryShares[idx];
+                final share = widget.state.diagnostic!.categoryInsights[idx];
                 final meta = getCategoryMetadata(context, share.category);
 
                 return Padding(
