@@ -6,52 +6,40 @@ import 'package:spendly/features/analytics/providers/analytics_providers.dart';
 
 void main() {
   group('AI Insights Heuristics Tests', () {
-    test('generate returns a notice when budget exceeds 70%', () {
-      final now = DateTime.now();
-      final expenses = [
-        Expense(
-          id: '1',
-          familyId: 'fam_1',
-          createdBy: 'user_1',
-          amount: 8000.0,
-          category: 'Food',
-          description: 'Dinner',
-          paymentMethod: 'UPI',
-          expenseDate: now,
-          createdAt: now,
-          createdByName: 'Dad',
-        ),
+    test('generateFromFacts returns critical notice when importance is critical', () {
+      final facts = [
+        InsightFact(
+          category: 'Budget',
+          metricName: 'Velocity Status',
+          rawValue: '0.8',
+          formattedValue: 'Budget warning: used 80%',
+          importance: FactImportance.critical,
+          context: 'Spend is high',
+        )
       ];
 
-      // Budget limit is 10,000, spend is 8,000 (80%)
-      final insights = AiInsights.generate(expenses, 10000.0);
+      final insights = AiInsights.generateFromFacts(facts);
 
       expect(insights.any((item) => item.contains('used 80%')), isTrue);
-      expect(insights.any((item) => item.contains('Budget notice')), isTrue);
+      expect(insights.any((item) => item.contains('⚠️')), isTrue);
     });
 
-    test('generate returns a warning when budget exceeds 90%', () {
-      final now = DateTime.now();
-      final expenses = [
-        Expense(
-          id: '1',
-          familyId: 'fam_1',
-          createdBy: 'user_1',
-          amount: 9500.0,
-          category: 'Rent',
-          description: 'Flat rent',
-          paymentMethod: 'Card',
-          expenseDate: now,
-          createdAt: now,
-          createdByName: 'Dad',
-        ),
+    test('generateFromFacts returns light bulb when importance is medium', () {
+      final facts = [
+        InsightFact(
+          category: 'Budget',
+          metricName: 'Velocity Status',
+          rawValue: '0.5',
+          formattedValue: 'Budget on track: used 50%',
+          importance: FactImportance.medium,
+          context: 'Spend is normal',
+        )
       ];
 
-      // Budget limit is 10,000, spend is 9,500 (95%)
-      final insights = AiInsights.generate(expenses, 10000.0);
+      final insights = AiInsights.generateFromFacts(facts);
 
-      expect(insights.any((item) => item.contains('used 95%')), isTrue);
-      expect(insights.any((item) => item.contains('Budget warning')), isTrue);
+      expect(insights.any((item) => item.contains('used 50%')), isTrue);
+      expect(insights.any((item) => item.contains('💡')), isTrue);
     });
   });
 
