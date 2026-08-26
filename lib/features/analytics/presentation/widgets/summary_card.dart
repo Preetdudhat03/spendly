@@ -148,12 +148,12 @@ class FinancialSummaryCards extends StatelessWidget {
           _buildSummaryCard(
             context,
             title: 'Total Transactions',
-            value: '${state.summary?.totalTransactions.currentValue.toInt() ?? state.totalTransactions} Entries',
+            value: '${state.summary?.transactionCount.currentValue.toInt() ?? state.totalTransactions} Entries',
             icon: Icons.receipt_long_outlined,
             iconColor: Colors.orange,
             cardBg: Colors.orange.withOpacity(0.12),
             bottomWidget: Text(
-              '${state.summary?.totalTransactions.previousValue.toInt() ?? state.prevTotalTransactions} in last period',
+              '${state.summary?.transactionCount.previousValue.toInt() ?? state.prevTotalTransactions} in last period',
               style: TextStyle(
                 fontSize: 12,
                 color: colorScheme.onSurfaceVariant,
