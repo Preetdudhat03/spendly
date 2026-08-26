@@ -1284,7 +1284,7 @@ class AnalyticsNotifier extends StateNotifier<AnalyticsState> {
       final category = entry.key;
       final current = entry.value;
       final previous = equivalentPrevCatTotals[category] ?? 0.0;
-      
+
       double largest = 0.0;
       int count = 0;
       for (var e in filteredExpenses) {
@@ -1293,77 +1293,95 @@ class AnalyticsNotifier extends StateNotifier<AnalyticsState> {
           if (e.amount > largest) largest = e.amount;
         }
       }
-      
+
       final trend = PeriodComparison.calculate(current, previous);
-      final percentage = currentTotalSpent > 0 ? (current / currentTotalSpent) * 100 : 0.0;
+      final percentage = currentTotalSpent > 0
+          ? (current / currentTotalSpent) * 100
+          : 0.0;
       final avg = count > 0 ? current / count : 0.0;
-      
-      categoryInsights.add(CategoryInsight(
-        categoryName: category,
-        currentSpend: current,
-        previousSpend: previous,
-        trend: trend,
-        percentageOfTotal: percentage,
-        transactionCount: count,
-        averageTransaction: avg,
-        largestTransaction: largest,
-      ));
+
+      categoryInsights.add(
+        CategoryInsight(
+          categoryName: category,
+          currentSpend: current,
+          previousSpend: previous,
+          trend: trend,
+          percentageOfTotal: percentage,
+          transactionCount: count,
+          averageTransaction: avg,
+          largestTransaction: largest,
+        ),
+      );
     }
-    
+
     categoryInsights.sort((a, b) => b.currentSpend.compareTo(a.currentSpend));
-    
+
     final memberInsights = <MemberInsight>[];
     for (var entry in currentMemberExpenses.entries) {
       final memberId = entry.key;
       final list = entry.value;
-      final memberName = params.memberIdToName[memberId] ?? list.first.createdByName;
-      
+      final memberName =
+          params.memberIdToName[memberId] ?? list.first.createdByName;
+
       final current = list.fold<double>(0, (sum, e) => sum + e.amount);
-      
+
       double previous = 0.0;
       final prevList = prevMemberExpenses[memberId] ?? [];
-      for(var e in prevList) {
-         if (e.expenseDate.isBefore(equivalentPrevEnd.add(const Duration(seconds: 1)))) {
-            previous += e.amount;
-         }
+      for (var e in prevList) {
+        if (e.expenseDate.isBefore(
+          equivalentPrevEnd.add(const Duration(seconds: 1)),
+        )) {
+          previous += e.amount;
+        }
       }
-      
+
       final trend = PeriodComparison.calculate(current, previous);
-      final percentage = currentTotalSpent > 0 ? (current / currentTotalSpent) * 100 : 0.0;
+      final percentage = currentTotalSpent > 0
+          ? (current / currentTotalSpent) * 100
+          : 0.0;
       final avg = list.isNotEmpty ? current / list.length : 0.0;
-      
+
       final mCatTotals = <String, double>{};
-      for (var e in list) mCatTotals[e.category] = (mCatTotals[e.category] ?? 0) + e.amount;
-      final topCat = mCatTotals.isEmpty ? 'None' : mCatTotals.entries.reduce((a, b) => a.value > b.value ? a : b).key;
-      
-      memberInsights.add(MemberInsight(
-        memberId: memberId,
-        memberName: memberName,
-        currentSpend: current,
-        trend: trend,
-        percentageOfTotal: percentage,
-        transactionCount: list.length,
-        averageTransaction: avg,
-        topCategory: topCat,
-      ));
+      for (var e in list)
+        mCatTotals[e.category] = (mCatTotals[e.category] ?? 0) + e.amount;
+      final topCat = mCatTotals.isEmpty
+          ? 'None'
+          : mCatTotals.entries.reduce((a, b) => a.value > b.value ? a : b).key;
+
+      memberInsights.add(
+        MemberInsight(
+          memberId: memberId,
+          memberName: memberName,
+          currentSpend: current,
+          trend: trend,
+          percentageOfTotal: percentage,
+          transactionCount: list.length,
+          averageTransaction: avg,
+          topCategory: topCat,
+        ),
+      );
     }
-    
+
     memberInsights.sort((a, b) => b.currentSpend.compareTo(a.currentSpend));
-    
+
     double topCatShare = 0.0;
     double top3CatShare = 0.0;
-    if (categoryInsights.isNotEmpty) topCatShare = categoryInsights[0].percentageOfTotal;
+    if (categoryInsights.isNotEmpty)
+      topCatShare = categoryInsights[0].percentageOfTotal;
     for (int i = 0; i < categoryInsights.length && i < 3; i++) {
       top3CatShare += categoryInsights[i].percentageOfTotal;
     }
-    
-    final sortedExpenses = List<ExpenseAnalyticsInput>.from(filteredExpenses)..sort((a, b) => b.amount.compareTo(a.amount));
+
+    final sortedExpenses = List<ExpenseAnalyticsInput>.from(filteredExpenses)
+      ..sort((a, b) => b.amount.compareTo(a.amount));
     double top3TransactionsTotal = 0.0;
     for (int i = 0; i < sortedExpenses.length && i < 3; i++) {
       top3TransactionsTotal += sortedExpenses[i].amount;
     }
-    final top3TransactionsShare = currentTotalSpent > 0 ? (top3TransactionsTotal / currentTotalSpent) * 100 : 0.0;
-    
+    final top3TransactionsShare = currentTotalSpent > 0
+        ? (top3TransactionsTotal / currentTotalSpent) * 100
+        : 0.0;
+
     int smallCount = 0;
     double smallTotal = 0.0;
     for (var e in filteredExpenses) {
@@ -1372,21 +1390,23 @@ class AnalyticsNotifier extends StateNotifier<AnalyticsState> {
         smallTotal += e.amount;
       }
     }
-    
+
     String primaryIncrease = 'None';
     String primaryDecrease = 'None';
     double maxInc = 0;
     double maxDec = 0;
     for (var cat in categoryInsights) {
-      if (cat.trend.direction == TrendDirection.increase && cat.trend.absoluteChange > maxInc) {
+      if (cat.trend.direction == TrendDirection.increase &&
+          cat.trend.absoluteChange > maxInc) {
         maxInc = cat.trend.absoluteChange;
         primaryIncrease = cat.categoryName;
-      } else if (cat.trend.direction == TrendDirection.decrease && cat.trend.absoluteChange.abs() > maxDec) {
+      } else if (cat.trend.direction == TrendDirection.decrease &&
+          cat.trend.absoluteChange.abs() > maxDec) {
         maxDec = cat.trend.absoluteChange.abs();
         primaryDecrease = cat.categoryName;
       }
     }
-    
+
     final diagnostic = DiagnosticIntelligence(
       categoryInsights: categoryInsights,
       memberInsights: memberInsights,
