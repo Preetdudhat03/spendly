@@ -147,12 +147,20 @@ class _CategoryDonutChartState extends State<CategoryDonutChart> {
 
   void _showCategoryDetails(BuildContext context, CategoryInsight insight) {
     final meta = getCategoryMetadata(context, insight.categoryName);
+    final categoryExpenses = widget.state.filteredExpenses
+        .where(
+          (e) =>
+              e.category.toLowerCase() == insight.categoryName.toLowerCase(),
+        )
+        .toList()
+      ..sort((a, b) => b.expenseDate.compareTo(a.expenseDate));
 
     InsightDrillDownSheet.showForCategory(
       context,
       insight: insight,
       icon: Icons.category,
       color: meta.color,
+      expenses: categoryExpenses,
     );
   }
 

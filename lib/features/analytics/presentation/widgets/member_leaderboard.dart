@@ -109,9 +109,20 @@ class FamilyMemberLeaderboard extends StatelessWidget {
                   child: InkWell(
                     borderRadius: BorderRadius.circular(16),
                     onTap: () {
+                      final memberExpenses = state.filteredExpenses
+                          .where(
+                            (e) =>
+                                e.createdByName.toLowerCase() ==
+                                    member.memberName.toLowerCase() ||
+                                e.createdBy == member.memberId,
+                          )
+                          .toList()
+                        ..sort((a, b) => b.expenseDate.compareTo(a.expenseDate));
+
                       InsightDrillDownSheet.showForMember(
                         context,
                         insight: member,
+                        expenses: memberExpenses,
                       );
                     },
                     child: Padding(

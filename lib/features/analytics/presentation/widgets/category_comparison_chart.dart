@@ -104,11 +104,21 @@ class CategoryComparisonChart extends StatelessWidget {
 
                 return InkWell(
                   onTap: () {
+                    final categoryExpenses = state.filteredExpenses
+                        .where(
+                          (e) =>
+                              e.category.toLowerCase() ==
+                              share.categoryName.toLowerCase(),
+                        )
+                        .toList()
+                      ..sort((a, b) => b.expenseDate.compareTo(a.expenseDate));
+
                     InsightDrillDownSheet.showForCategory(
                       context,
                       insight: share,
                       icon: Icons.category, // You could map icon based on meta
                       color: meta.color,
+                      expenses: categoryExpenses,
                     );
                   },
                   borderRadius: BorderRadius.circular(12),

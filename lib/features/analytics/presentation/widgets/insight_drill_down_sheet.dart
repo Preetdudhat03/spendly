@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:spendly/features/analytics/models/analytics_models.dart';
 import 'package:spendly/features/analytics/providers/analytics_providers.dart';
+import 'package:spendly/features/expenses/widgets/expense_detail_modal.dart';
+import 'package:spendly/models/expense.dart';
 
 class InsightDrillDownSheet extends StatelessWidget {
   final String title;
@@ -16,6 +19,7 @@ class InsightDrillDownSheet extends StatelessWidget {
   final double percentageOfTotal;
   final String? extraStatLabel;
   final String? extraStatValue;
+  final List<Expense> expenses;
 
   const InsightDrillDownSheet({
     super.key,
@@ -31,6 +35,7 @@ class InsightDrillDownSheet extends StatelessWidget {
     required this.percentageOfTotal,
     this.extraStatLabel,
     this.extraStatValue,
+    this.expenses = const [],
   });
 
   static void showForCategory(
@@ -38,6 +43,7 @@ class InsightDrillDownSheet extends StatelessWidget {
     required CategoryInsight insight,
     required IconData icon,
     required Color color,
+    List<Expense> expenses = const [],
   }) {
     showModalBottomSheet(
       context: context,
@@ -55,6 +61,7 @@ class InsightDrillDownSheet extends StatelessWidget {
         averageTransaction: insight.averageTransaction,
         largestTransaction: insight.largestTransaction,
         percentageOfTotal: insight.percentageOfTotal,
+        expenses: expenses,
       ),
     );
   }
@@ -62,6 +69,7 @@ class InsightDrillDownSheet extends StatelessWidget {
   static void showForMember(
     BuildContext context, {
     required MemberInsight insight,
+    List<Expense> expenses = const [],
   }) {
     showModalBottomSheet(
       context: context,
@@ -81,6 +89,7 @@ class InsightDrillDownSheet extends StatelessWidget {
         percentageOfTotal: insight.percentageOfTotal,
         extraStatLabel: 'Top Category',
         extraStatValue: insight.topCategory,
+        expenses: expenses,
       ),
     );
   }
@@ -94,9 +103,9 @@ class InsightDrillDownSheet extends StatelessWidget {
     );
 
     return DraggableScrollableSheet(
-      initialChildSize: 0.55,
+      initialChildSize: 0.65,
       minChildSize: 0.4,
-      maxChildSize: 0.8,
+      maxChildSize: 0.9,
       builder: (context, scrollController) {
         return Container(
           decoration: BoxDecoration(
@@ -248,6 +257,143 @@ class InsightDrillDownSheet extends StatelessWidget {
                           ),
                       ],
                     ),
+                    const SizedBox(height: 24),
+
+                    // Transactions Section
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Transactions (${expenses.length})',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Theme.of(context).colorScheme.onSurface,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+
+                    if (expenses.isEmpty)
+                      Container(
+                        padding: const EdgeInsets.all(20),
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: Theme.of(context)
+                              .colorScheme
+                              .surfaceContainerHighest
+                              .withOpacity(0.3),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Text(
+                          'No individual transactions found for this period.',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color:
+                                Theme.of(context).colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      )
+                    else
+                      Consumer(
+                        builder: (context, ref, _) {
+                          final dateFmt = DateFormat('MMM d, yyyy • h:mm a');
+                          return Column(
+                            children: expenses.map((exp) {
+                              return InkWell(
+                                onTap: () => showExpenseDetail(context, ref, exp),
+                                borderRadius: BorderRadius.circular(16),
+                                child: Container(
+                                  margin: const EdgeInsets.only(bottom: 8.0),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 14.0,
+                                    vertical: 12.0,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .surfaceContainerHighest
+                                        .withOpacity(0.25),
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .outline
+                                          .withOpacity(0.12),
+                                    ),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      CircleAvatar(
+                                        backgroundColor: color.withOpacity(0.15),
+                                        radius: 20,
+                                        child: Text(
+                                          exp.createdByName.isNotEmpty
+                                              ? exp.createdByName
+                                                  .substring(0, 1)
+                                                  .toUpperCase()
+                                              : 'M',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            color: color,
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              exp.description.isEmpty
+                                                  ? exp.category
+                                                  : exp.description,
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.w600,
+                                                fontSize: 14,
+                                                color: Theme.of(context)
+                                                    .colorScheme
+                                                    .onSurface,
+                                              ),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                            const SizedBox(height: 2),
+                                            Text(
+                                              '${exp.createdByName} • ${exp.paymentMethod} • ${dateFmt.format(exp.expenseDate)}',
+                                              style: TextStyle(
+                                                fontSize: 11,
+                                                color: Theme.of(context)
+                                                    .colorScheme
+                                                    .onSurfaceVariant,
+                                              ),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        currencyFmt.format(exp.amount),
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 14,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onSurface,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                          );
+                        },
+                      ),
                   ],
                 ),
               ),
