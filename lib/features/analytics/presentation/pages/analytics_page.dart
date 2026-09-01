@@ -59,38 +59,23 @@ class AnalyticsPage extends ConsumerWidget {
         color: Theme.of(context).primaryColor,
         child: expenseState.isLoading || state.status == AnalyticsStatus.loading
             ? _buildLoadingState(context, isWide, ref)
-            : expenseState.expenses.isEmpty ||
-                  state.status == AnalyticsStatus.empty
-            ? _buildEmptyState(context, ref)
-            : _buildDashboardContent(
-                context,
-                state,
-                expenseState.expenses,
-                isWide,
-              ),
+            : !state.hasHistoricalExpenses
+                ? _buildEmptyState(context, ref)
+                : _buildDashboardContent(
+                    context,
+                    state,
+                    expenseState.expenses,
+                    isWide,
+                    ref,
+                  ),
       ),
     );
   }
 
   Widget _buildEmptyState(BuildContext context, WidgetRef ref) {
-    final selectedMemberId = ref.watch(analyticsMemberFilterProvider);
-    final familyState = ref.watch(familyProvider);
-
-    String messageTitle = 'No expenses recorded yet';
-    String messageBody =
+    const String messageTitle = 'No expenses recorded yet';
+    const String messageBody =
         'Log your first family transaction to activate real-time financial intelligence dashboard metrics.';
-
-    if (selectedMemberId != null) {
-      final memberName = familyState.members
-          .firstWhere(
-            (m) => m.userId == selectedMemberId,
-            orElse: () => familyState.members.first,
-          )
-          .displayName;
-      messageTitle = '$memberName has no expenses';
-      messageBody =
-          'No expenses were found for $memberName during this period.';
-    }
 
     return SingleChildScrollView(
       physics: const AlwaysScrollableScrollPhysics(),
@@ -114,9 +99,9 @@ class AnalyticsPage extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 24),
-            Text(
+            const Text(
               messageTitle,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w900,
                 letterSpacing: -0.5,
@@ -133,46 +118,158 @@ class AnalyticsPage extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 24),
-            if (selectedMemberId != null)
-              OutlinedButton.icon(
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 14,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
+            ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 14,
                 ),
-                onPressed: () =>
-                    ref.read(analyticsMemberFilterProvider.notifier).state =
-                        null,
-                icon: const Icon(Icons.clear),
-                label: const Text(
-                  'Clear Filter',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-              )
-            else
-              ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 14,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                ),
-                onPressed: () => context.go('/add'),
-                icon: const Icon(Icons.add_circle_outline),
-                label: const Text(
-                  'Add First Expense',
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
                 ),
               ),
+              onPressed: () => context.go('/add'),
+              icon: const Icon(Icons.add_circle_outline),
+              label: const Text(
+                'Add First Expense',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyPeriodBanner(
+    BuildContext context,
+    AnalyticsState state,
+    WidgetRef ref,
+  ) {
+    final selectedMemberId = ref.watch(analyticsMemberFilterProvider);
+    final familyState = ref.watch(familyProvider);
+    final colorScheme = Theme.of(context).colorScheme;
+
+    String title;
+    String body;
+    Widget? action;
+
+    if (selectedMemberId != null) {
+      String memberName = 'Member';
+      try {
+        final member = familyState.members.firstWhere(
+          (m) => m.userId == selectedMemberId,
+        );
+        memberName = member.displayName;
+      } catch (_) {}
+
+      title = '$memberName has no expenses';
+      body =
+          '$memberName has no expenses during this period.\nTry another period or clear the filter.';
+      action = OutlinedButton.icon(
+        style: OutlinedButton.styleFrom(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+        onPressed: () {
+          ref.read(analyticsMemberFilterProvider.notifier).state = null;
+        },
+        icon: const Icon(Icons.clear, size: 16),
+        label: const Text(
+          'Clear Filter',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+      );
+    } else {
+      switch (state.filterType) {
+        case AnalyticsFilterType.today:
+          title = 'No expenses today';
+          break;
+        case AnalyticsFilterType.thisMonth:
+          title = 'No expenses this month';
+          break;
+        case AnalyticsFilterType.lastMonth:
+          title = 'No expenses last month';
+          break;
+        case AnalyticsFilterType.thisYear:
+          title = 'No expenses this year';
+          break;
+        default:
+          title = 'No expenses in this period';
+          break;
+      }
+      body = 'No expenses were recorded during this period.';
+      action = ElevatedButton.icon(
+        style: ElevatedButton.styleFrom(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+        onPressed: () => context.go('/add'),
+        icon: const Icon(Icons.add_circle_outline, size: 16),
+        label: const Text(
+          'Add Expense',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+      );
+    }
+
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerHighest.withOpacity(0.4),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: colorScheme.outline.withOpacity(0.5)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: colorScheme.primary.withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.info_outline,
+              size: 24,
+              color: colorScheme.primary,
+            ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                    color: colorScheme.onSurface,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  body,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: colorScheme.onSurfaceVariant,
+                    height: 1.3,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (action != null) ...[
+            const SizedBox(width: 12),
+            action,
+          ],
+        ],
       ),
     );
   }
@@ -245,6 +342,7 @@ class AnalyticsPage extends ConsumerWidget {
     AnalyticsState state,
     List<Expense> allExpenses,
     bool isWide,
+    WidgetRef ref,
   ) {
     Widget animatedItem(Widget child, int index) {
       return child;
@@ -258,7 +356,10 @@ class AnalyticsPage extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             animatedItem(const AnalyticsFilterHeader(), 0),
-            const SizedBox(height: 20),
+            const SizedBox(height: 16),
+            if (!state.hasExpensesInCurrentPeriod)
+              animatedItem(_buildEmptyPeriodBanner(context, state, ref), 0),
+            const SizedBox(height: 4),
             animatedItem(FinancialSummaryCards(state: state), 1),
             const SizedBox(height: 24),
 
@@ -334,7 +435,10 @@ class AnalyticsPage extends ConsumerWidget {
         child: Column(
           children: [
             animatedItem(const AnalyticsFilterHeader(), 0),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
+            if (!state.hasExpensesInCurrentPeriod)
+              animatedItem(_buildEmptyPeriodBanner(context, state, ref), 0),
+            const SizedBox(height: 4),
             animatedItem(FinancialSummaryCards(state: state), 1),
             const SizedBox(height: 16),
             animatedItem(FinancialHealthCard(state: state), 2),

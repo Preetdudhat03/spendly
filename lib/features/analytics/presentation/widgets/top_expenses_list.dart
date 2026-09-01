@@ -18,8 +18,63 @@ class _TopExpensesListState extends State<TopExpensesList> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     if (widget.state.topExpenses.isEmpty) {
-      return const SizedBox.shrink();
+      return Card(
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(28),
+          side: BorderSide(color: colorScheme.outline),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Top 10 Expenses',
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: colorScheme.onSurface,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Highest value transactions this period',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Icon(Icons.trending_up, size: 20, color: colorScheme.primary),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 24.0),
+                  child: Text(
+                    'No expenses recorded in this period.',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
     }
 
     final currencyFmt = NumberFormat.currency(
@@ -28,7 +83,6 @@ class _TopExpensesListState extends State<TopExpensesList> {
       decimalDigits: 0,
     );
     final dateFmt = DateFormat('MMM d, yyyy • h:mm a');
-    final colorScheme = Theme.of(context).colorScheme;
 
     return Card(
       elevation: 0,

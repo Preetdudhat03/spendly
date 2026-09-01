@@ -60,17 +60,20 @@ class FinancialSummaryCards extends StatelessWidget {
                       : Colors.green,
                 ),
                 const SizedBox(width: 4),
-                Text(
-                  '${(state.summary?.totalSpend.percentageChange ?? state.totalSpentDiffPercent).abs().toStringAsFixed(0)}% from last period',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    color:
-                        (state.summary?.totalSpend.percentageChange ??
-                                state.totalSpentDiffPercent) >=
-                            0
-                        ? Colors.red
-                        : Colors.green,
+                Expanded(
+                  child: Text(
+                    '${(state.summary?.totalSpend.percentageChange ?? state.totalSpentDiffPercent).abs().toStringAsFixed(0)}% vs last period',
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      color:
+                          (state.summary?.totalSpend.percentageChange ??
+                                  state.totalSpentDiffPercent) >=
+                              0
+                          ? Colors.red
+                          : Colors.green,
+                    ),
                   ),
                 ),
               ],
@@ -103,11 +106,14 @@ class FinancialSummaryCards extends StatelessWidget {
                       : Colors.green,
                 ),
                 const SizedBox(width: 4),
-                Text(
-                  'Compared with previous period',
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: colorScheme.onSurfaceVariant,
+                Expanded(
+                  child: Text(
+                    'vs previous period',
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: colorScheme.onSurfaceVariant,
+                    ),
                   ),
                 ),
               ],

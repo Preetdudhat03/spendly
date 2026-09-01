@@ -126,6 +126,9 @@ class AnalyticsState {
   final List<Expense> filteredExpenses;
   final List<Expense> previousExpenses;
   final AnalyticsStatus status;
+  final bool hasHistoricalExpenses;
+  final bool hasExpensesInCurrentPeriod;
+  final int totalHistoricalExpensesCount;
 
   // Summary Cards
   final double totalSpent;
@@ -185,6 +188,9 @@ class AnalyticsState {
     required this.filteredExpenses,
     required this.previousExpenses,
     required this.status,
+    required this.hasHistoricalExpenses,
+    required this.hasExpensesInCurrentPeriod,
+    required this.totalHistoricalExpensesCount,
     required this.totalSpent,
     required this.prevTotalSpent,
     required this.totalSpentDiffPercent,
@@ -227,7 +233,12 @@ class AnalyticsState {
     this.healthScore,
   });
 
-  factory AnalyticsState.initial(DateTimeRange range, DateTimeRange prevRange) {
+  factory AnalyticsState.initial(
+    DateTimeRange range,
+    DateTimeRange prevRange, {
+    bool hasHistoricalExpenses = false,
+    int totalHistoricalExpensesCount = 0,
+  }) {
     return AnalyticsState(
       filterType: AnalyticsFilterType.thisMonth,
       dateRange: range,
@@ -235,6 +246,9 @@ class AnalyticsState {
       filteredExpenses: [],
       previousExpenses: [],
       status: AnalyticsStatus.initial,
+      hasHistoricalExpenses: hasHistoricalExpenses,
+      hasExpensesInCurrentPeriod: false,
+      totalHistoricalExpensesCount: totalHistoricalExpensesCount,
       totalSpent: 0,
       prevTotalSpent: 0,
       totalSpentDiffPercent: 0,
@@ -284,6 +298,9 @@ class AnalyticsState {
     List<Expense>? filteredExpenses,
     List<Expense>? previousExpenses,
     AnalyticsStatus? status,
+    bool? hasHistoricalExpenses,
+    bool? hasExpensesInCurrentPeriod,
+    int? totalHistoricalExpensesCount,
     double? totalSpent,
     double? prevTotalSpent,
     double? totalSpentDiffPercent,
@@ -325,6 +342,12 @@ class AnalyticsState {
       filteredExpenses: filteredExpenses ?? this.filteredExpenses,
       previousExpenses: previousExpenses ?? this.previousExpenses,
       status: status ?? this.status,
+      hasHistoricalExpenses:
+          hasHistoricalExpenses ?? this.hasHistoricalExpenses,
+      hasExpensesInCurrentPeriod:
+          hasExpensesInCurrentPeriod ?? this.hasExpensesInCurrentPeriod,
+      totalHistoricalExpensesCount:
+          totalHistoricalExpensesCount ?? this.totalHistoricalExpensesCount,
       totalSpent: totalSpent ?? this.totalSpent,
       prevTotalSpent: prevTotalSpent ?? this.prevTotalSpent,
       totalSpentDiffPercent:
@@ -673,15 +696,21 @@ class AnalyticsState {
       totalScore: totalScore,
     );
 
+    final bool hasHistorical = result.input.expenses.isNotEmpty;
+    final bool hasPeriod = filteredExps.isNotEmpty;
+
     return AnalyticsState(
       filterType: AnalyticsFilterType.values[result.input.filterTypeIndex],
       dateRange: currentRange,
       previousDateRange: prevRange,
       filteredExpenses: filteredExps,
       previousExpenses: previousExps,
-      status: filteredExps.isEmpty
+      status: !hasHistorical
           ? AnalyticsStatus.empty
           : AnalyticsStatus.success,
+      hasHistoricalExpenses: hasHistorical,
+      hasExpensesInCurrentPeriod: hasPeriod,
+      totalHistoricalExpensesCount: result.input.expenses.length,
       totalSpent: agg.currentTotalSpent,
       prevTotalSpent: agg.prevTotalSpent,
       totalSpentDiffPercent: totalSpentDiffPercent,
@@ -777,7 +806,12 @@ class AnalyticsNotifier extends StateNotifier<AnalyticsState> {
     required AnalyticsFilterType filterType,
     required DateTimeRange? customRange,
     required String? selectedMemberId,
-  }) : super(AnalyticsNotifier._createInitialState(filterType, customRange)) {
+  }) : super(AnalyticsNotifier._createInitialState(
+          filterType,
+          customRange,
+          hasHistoricalExpenses: expenseState.expenses.isNotEmpty,
+          totalHistoricalExpensesCount: expenseState.expenses.length,
+        )) {
     _triggerCalculation(
       expenseState,
       budgetState,
@@ -790,14 +824,21 @@ class AnalyticsNotifier extends StateNotifier<AnalyticsState> {
 
   static AnalyticsState _createInitialState(
     AnalyticsFilterType filterType,
-    DateTimeRange? customRange,
-  ) {
+    DateTimeRange? customRange, {
+    bool hasHistoricalExpenses = false,
+    int totalHistoricalExpensesCount = 0,
+  }) {
     final ranges = _calculateDateRanges(
       filterType,
       customRange,
       DateTime.now(),
     );
-    return AnalyticsState.initial(ranges[0], ranges[1]);
+    return AnalyticsState.initial(
+      ranges[0],
+      ranges[1],
+      hasHistoricalExpenses: hasHistoricalExpenses,
+      totalHistoricalExpensesCount: totalHistoricalExpensesCount,
+    );
   }
 
   static List<DateTimeRange> _calculateDateRanges(
@@ -941,8 +982,30 @@ class AnalyticsNotifier extends StateNotifier<AnalyticsState> {
     String? selectedMemberId,
   ) async {
     final int requestId = ++_currentRequestId;
+    final bool hasHistorical = expenseState.expenses.isNotEmpty;
+    final int historicalCount = expenseState.expenses.length;
+
     if (expenseState.isLoading) {
-      state = state.copyWith(status: AnalyticsStatus.loading);
+      state = state.copyWith(
+        status: AnalyticsStatus.loading,
+        hasHistoricalExpenses: hasHistorical,
+        totalHistoricalExpensesCount: historicalCount,
+      );
+      return;
+    }
+
+    // If user has zero historical expenses and expense loading is done:
+    if (!hasHistorical) {
+      state = state.copyWith(
+        status: AnalyticsStatus.empty,
+        hasHistoricalExpenses: false,
+        hasExpensesInCurrentPeriod: false,
+        totalHistoricalExpensesCount: 0,
+        filteredExpenses: [],
+        previousExpenses: [],
+        totalSpent: 0,
+        totalTransactions: 0,
+      );
       return;
     }
 
@@ -996,13 +1059,22 @@ class AnalyticsNotifier extends StateNotifier<AnalyticsState> {
       return;
     }
 
-    // Compute in background isolate to prevent UI freezing
+    // Set loading while computing in background isolate to prevent UI freezing or wrong empty state flash
+    state = state.copyWith(
+      status: AnalyticsStatus.loading,
+      hasHistoricalExpenses: hasHistorical,
+      totalHistoricalExpensesCount: historicalCount,
+    );
+
     final result = await compute(runCalculations, input);
     if (mounted && requestId == _currentRequestId) {
       final originalExpensesMap = {
         for (var e in expenseState.expenses) e.id: e,
       };
-      state = AnalyticsState.fromResult(result, originalExpensesMap);
+      final newState = AnalyticsState.fromResult(result, originalExpensesMap);
+      _cachedAnalyticsState = newState;
+      _cachedInputHash = currentHash;
+      state = newState;
     }
   }
 

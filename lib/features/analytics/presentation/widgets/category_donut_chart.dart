@@ -25,8 +25,9 @@ class CategoryMetadata {
 }
 
 CategoryMetadata getCategoryMetadata(BuildContext context, String category) {
-  final charts = context.spendly.charts;
-  final color = charts.getCategoryColor(category);
+  final spendlyTheme = Theme.of(context).extension<SpendlyTheme>();
+  final color = spendlyTheme?.charts.getCategoryColor(category) ??
+      const Color(0xFF6750A4);
 
   switch (category.toLowerCase()) {
     case 'food':
@@ -163,8 +164,63 @@ class _CategoryDonutChartState extends State<CategoryDonutChart> {
       decimalDigits: 0,
     );
 
+    final colorScheme = Theme.of(context).colorScheme;
+
     if (widget.state.diagnostic?.categoryInsights.isEmpty ?? true) {
-      return const SizedBox.shrink();
+      return Card(
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(28),
+          side: BorderSide(color: colorScheme.outline),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Category Breakdown',
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: colorScheme.onSurface,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Share of monthly budget expenditures',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Icon(Icons.donut_large, size: 20, color: colorScheme.primary),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 24.0),
+                  child: Text(
+                    'No category expenses in this period.',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
     }
 
     final totalText = currencyFmt.format(
@@ -196,8 +252,6 @@ class _CategoryDonutChartState extends State<CategoryDonutChart> {
         );
       },
     );
-
-    final colorScheme = Theme.of(context).colorScheme;
 
     return Card(
       elevation: 0,

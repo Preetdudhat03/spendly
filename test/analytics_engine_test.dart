@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:spendly/features/analytics/models/analytics_models.dart';
 import 'package:spendly/features/analytics/providers/analytics_providers.dart';
@@ -134,6 +133,281 @@ void main() {
       expect(state.patterns, isNotNull);
       expect(state.patterns!.consistency.level, isNot(ConsistencyLevel.unavailable));
       expect(state.patterns!.highSpendingDays.length, 2); // 2 distinct days in test data hit the threshold
+      // Has historical expenses & current period checks
+      expect(state.hasHistoricalExpenses, true);
+      expect(state.hasExpensesInCurrentPeriod, true);
+      expect(state.totalHistoricalExpensesCount, 4);
+      expect(state.status, AnalyticsStatus.success);
+    });
+
+    test('Scenario A: Historical expenses exist, current month has 0 expenses (e.g. September 1st)', () {
+      final now = DateTime(2026, 9, 1);
+      final augustExpenses = List.generate(
+        15,
+        (i) => ExpenseAnalyticsInput(
+          id: 'aug_$i',
+          amount: 200,
+          category: 'Food',
+          description: 'Food $i',
+          paymentMethod: 'UPI',
+          expenseDate: DateTime(2026, 8, i + 1, 12, 0),
+          createdBy: 'user1',
+          createdByName: 'Preet',
+        ),
+      );
+
+      final originalExpenses = {
+        for (var e in augustExpenses)
+          e.id: Expense(
+            id: e.id,
+            familyId: 'f1',
+            createdBy: e.createdBy,
+            amount: e.amount,
+            category: e.category,
+            description: e.description,
+            paymentMethod: e.paymentMethod,
+            expenseDate: e.expenseDate,
+            createdAt: now,
+            createdByName: e.createdByName,
+          ),
+      };
+
+      final input = AnalyticsInput(
+        expenses: augustExpenses,
+        budgetLimit: 20000,
+        activeMembersCount: 1,
+        filterTypeIndex: AnalyticsFilterType.thisMonth.index, // September
+        customRange: null,
+        memberIdToName: {'user1': 'Preet'},
+        selectedMemberId: null,
+        now: now,
+        calculationVersion: 1,
+      );
+
+      final result = AnalyticsNotifier.runCalculations(input);
+      final state = AnalyticsState.fromResult(result, originalExpenses);
+
+      // Must identify historical data exists while current period is empty
+      expect(state.hasHistoricalExpenses, true);
+      expect(state.hasExpensesInCurrentPeriod, false);
+      expect(state.totalHistoricalExpensesCount, 15);
+      expect(state.status, AnalyticsStatus.success); // NOT AnalyticsStatus.empty!
+      expect(state.totalSpent, 0.0);
+      expect(state.totalTransactions, 0);
+      expect(state.filteredExpenses.isEmpty, true);
+      expect(state.prevTotalSpent, 3000.0); // 15 * 200 from August
+      expect(state.prevTotalTransactions, 15);
+    });
+
+    test('Scenario B: Historical expenses exist, filter set to August contains expenses', () {
+      final now = DateTime(2026, 9, 1);
+      final augustExpenses = List.generate(
+        15,
+        (i) => ExpenseAnalyticsInput(
+          id: 'aug_$i',
+          amount: 200,
+          category: 'Food',
+          description: 'Food $i',
+          paymentMethod: 'UPI',
+          expenseDate: DateTime(2026, 8, i + 1, 12, 0),
+          createdBy: 'user1',
+          createdByName: 'Preet',
+        ),
+      );
+
+      final originalExpenses = {
+        for (var e in augustExpenses)
+          e.id: Expense(
+            id: e.id,
+            familyId: 'f1',
+            createdBy: e.createdBy,
+            amount: e.amount,
+            category: e.category,
+            description: e.description,
+            paymentMethod: e.paymentMethod,
+            expenseDate: e.expenseDate,
+            createdAt: now,
+            createdByName: e.createdByName,
+          ),
+      };
+
+      final input = AnalyticsInput(
+        expenses: augustExpenses,
+        budgetLimit: 20000,
+        activeMembersCount: 1,
+        filterTypeIndex: AnalyticsFilterType.lastMonth.index, // August
+        customRange: null,
+        memberIdToName: {'user1': 'Preet'},
+        selectedMemberId: null,
+        now: now,
+        calculationVersion: 1,
+      );
+
+      final result = AnalyticsNotifier.runCalculations(input);
+      final state = AnalyticsState.fromResult(result, originalExpenses);
+
+      expect(state.hasHistoricalExpenses, true);
+      expect(state.hasExpensesInCurrentPeriod, true);
+      expect(state.totalHistoricalExpensesCount, 15);
+      expect(state.status, AnalyticsStatus.success);
+      expect(state.totalSpent, 3000.0);
+      expect(state.totalTransactions, 15);
+    });
+
+    test('Scenario C: Truly new user with 0 expenses in complete history', () {
+      final now = DateTime(2026, 9, 1);
+      final input = AnalyticsInput(
+        expenses: [],
+        budgetLimit: 20000,
+        activeMembersCount: 1,
+        filterTypeIndex: AnalyticsFilterType.thisMonth.index,
+        customRange: null,
+        memberIdToName: {'user1': 'Preet'},
+        selectedMemberId: null,
+        now: now,
+        calculationVersion: 1,
+      );
+
+      final result = AnalyticsNotifier.runCalculations(input);
+      final state = AnalyticsState.fromResult(result, {});
+
+      expect(state.hasHistoricalExpenses, false);
+      expect(state.hasExpensesInCurrentPeriod, false);
+      expect(state.totalHistoricalExpensesCount, 0);
+      expect(state.status, AnalyticsStatus.empty); // Global empty state
+      expect(state.totalSpent, 0.0);
+      expect(state.totalTransactions, 0);
+    });
+
+    test('Scenario D: User has historical expenses, but filters by a member with 0 expenses', () {
+      final now = DateTime(2026, 9, 1);
+      final expenses = [
+        ExpenseAnalyticsInput(
+          id: '1',
+          amount: 500,
+          category: 'Food',
+          description: 'Snacks',
+          paymentMethod: 'Cash',
+          expenseDate: DateTime(2026, 9, 1, 10, 0),
+          createdBy: 'user1',
+          createdByName: 'Preet',
+        ),
+      ];
+
+      final originalExpenses = {
+        '1': Expense(
+          id: '1',
+          familyId: 'f1',
+          createdBy: 'user1',
+          amount: 500,
+          category: 'Food',
+          description: 'Snacks',
+          paymentMethod: 'Cash',
+          expenseDate: DateTime(2026, 9, 1, 10, 0),
+          createdAt: now,
+          createdByName: 'Preet',
+        ),
+      };
+
+      // Filter by 'user2' (Meeta) who has no expenses
+      final input = AnalyticsInput(
+        expenses: expenses,
+        budgetLimit: 20000,
+        activeMembersCount: 2,
+        filterTypeIndex: AnalyticsFilterType.thisMonth.index,
+        customRange: null,
+        memberIdToName: {'user1': 'Preet', 'user2': 'Meeta'},
+        selectedMemberId: 'user2',
+        now: now,
+        calculationVersion: 1,
+      );
+
+      final result = AnalyticsNotifier.runCalculations(input);
+      final state = AnalyticsState.fromResult(result, originalExpenses);
+
+      // Historical expenses exist in family, but Meeta has 0 in this period
+      expect(state.hasHistoricalExpenses, true);
+      expect(state.hasExpensesInCurrentPeriod, false);
+      expect(state.totalHistoricalExpensesCount, 1);
+      expect(state.status, AnalyticsStatus.success); // Not global empty state!
+      expect(state.totalSpent, 0.0);
+      expect(state.totalTransactions, 0);
+    });
+
+    test('Filter transitions: Changing filter never mutates hasHistoricalExpenses from true to false', () {
+      final now = DateTime(2026, 9, 1);
+      final augustExpenses = [
+        ExpenseAnalyticsInput(
+          id: 'aug_1',
+          amount: 1500,
+          category: 'Travel',
+          description: 'Flight',
+          paymentMethod: 'Card',
+          expenseDate: DateTime(2026, 8, 10, 10, 0),
+          createdBy: 'user1',
+          createdByName: 'Preet',
+        ),
+      ];
+      final originalExpenses = {
+        'aug_1': Expense(
+          id: 'aug_1',
+          familyId: 'f1',
+          createdBy: 'user1',
+          amount: 1500,
+          category: 'Travel',
+          description: 'Flight',
+          paymentMethod: 'Card',
+          expenseDate: DateTime(2026, 8, 10, 10, 0),
+          createdAt: now,
+          createdByName: 'Preet',
+        ),
+      };
+
+      // 1. September (0 expenses)
+      final inputSep = AnalyticsInput(
+        expenses: augustExpenses,
+        budgetLimit: 20000,
+        activeMembersCount: 1,
+        filterTypeIndex: AnalyticsFilterType.thisMonth.index,
+        customRange: null,
+        memberIdToName: {'user1': 'Preet'},
+        selectedMemberId: null,
+        now: now,
+        calculationVersion: 1,
+      );
+      final stateSep = AnalyticsState.fromResult(
+        AnalyticsNotifier.runCalculations(inputSep),
+        originalExpenses,
+      );
+      expect(stateSep.hasHistoricalExpenses, true);
+      expect(stateSep.hasExpensesInCurrentPeriod, false);
+
+      // 2. August (1 expense)
+      final inputAug = AnalyticsInput(
+        expenses: augustExpenses,
+        budgetLimit: 20000,
+        activeMembersCount: 1,
+        filterTypeIndex: AnalyticsFilterType.lastMonth.index,
+        customRange: null,
+        memberIdToName: {'user1': 'Preet'},
+        selectedMemberId: null,
+        now: now,
+        calculationVersion: 1,
+      );
+      final stateAug = AnalyticsState.fromResult(
+        AnalyticsNotifier.runCalculations(inputAug),
+        originalExpenses,
+      );
+      expect(stateAug.hasHistoricalExpenses, true);
+      expect(stateAug.hasExpensesInCurrentPeriod, true);
+
+      // 3. Back to September (0 expenses)
+      final stateSep2 = AnalyticsState.fromResult(
+        AnalyticsNotifier.runCalculations(inputSep),
+        originalExpenses,
+      );
+      expect(stateSep2.hasHistoricalExpenses, true);
+      expect(stateSep2.hasExpensesInCurrentPeriod, false);
     });
   });
 }
