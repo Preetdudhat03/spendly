@@ -128,6 +128,62 @@ class _AllExpensesScreenState extends ConsumerState<AllExpensesScreen> {
             ),
           );
 
+          final isDark = Theme.of(context).brightness == Brightness.dark;
+          final colorScheme = Theme.of(context).colorScheme;
+
+          Widget buildCategoryChip(Map<String, dynamic> cat) {
+            final isSelected = _selectedFilterCategory == cat['name'];
+            final iconColor = isSelected
+                ? (isDark ? Colors.white : colorScheme.primary)
+                : (isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B));
+            final textColor = isSelected
+                ? (isDark ? Colors.white : colorScheme.primary)
+                : (isDark ? const Color(0xFFE2E8F0) : const Color(0xFF334155));
+            final bgColor = isSelected
+                ? (isDark
+                    ? colorScheme.primary
+                    : colorScheme.primary.withValues(alpha: 0.15))
+                : (isDark
+                    ? const Color(0xFF1E293B)
+                    : const Color(0xFFF1F5F9));
+            final borderColor = isSelected
+                ? colorScheme.primary
+                : (isDark
+                    ? const Color(0xFF334155)
+                    : const Color(0xFFE2E8F0));
+
+            return FilterChip(
+              showCheckmark: false,
+              avatar: SvgPicture.asset(
+                cat['iconPath'] ?? 'assets/category/others.svg',
+                width: 18,
+                height: 18,
+                colorFilter: ColorFilter.mode(iconColor, BlendMode.srcIn),
+              ),
+              label: Text(
+                cat['name'] ?? '',
+                style: TextStyle(
+                  color: textColor,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                  fontSize: 13,
+                ),
+              ),
+              selected: isSelected,
+              onSelected: (selected) {
+                setState(() {
+                  _selectedFilterCategory = cat['name']!;
+                });
+              },
+              backgroundColor:
+                  isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
+              selectedColor: bgColor,
+              side: BorderSide(color: borderColor, width: 1),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            );
+          }
+
           Widget categoryFiltersHorizontal = SizedBox(
             height: 50,
             child: ListView.builder(
@@ -136,36 +192,9 @@ class _AllExpensesScreenState extends ConsumerState<AllExpensesScreen> {
               itemCount: _categories.length,
               itemBuilder: (context, index) {
                 final cat = _categories[index];
-                final isSelected = _selectedFilterCategory == cat['name'];
                 return Padding(
                   padding: const EdgeInsets.only(right: 8.0),
-                  child: FilterChip(
-                    avatar: SvgPicture.asset(
-                      cat['iconPath'] ?? 'assets/category/others.svg',
-                      
-                      width: 20, //18
-                      height: 20, //18
-                      colorFilter: ColorFilter.mode(Theme.of(context).primaryColor, BlendMode.srcIn),
-                    ),
-                    label: Text(cat['name'] ?? ''),
-                    selected: isSelected,
-                    onSelected: (selected) {
-                      setState(() {
-                        _selectedFilterCategory = cat['name']!;
-                      });
-                    },
-
-                    /*avatar: Text(cat['emoji'] ?? '💰'),
-                    label: Text(cat['name'] ?? ''),
-                    selected: isSelected,
-                    onSelected: (selected) {
-                      setState(() {
-                        _selectedFilterCategory = cat['name']!;
-                      });
-                    },*/
-                    selectedColor: Theme.of(context).primaryColor.withOpacity(0.2),
-                    checkmarkColor: Theme.of(context).primaryColor,
-                  ),
+                  child: buildCategoryChip(cat),
                 );
               },
             ),
@@ -174,26 +203,7 @@ class _AllExpensesScreenState extends ConsumerState<AllExpensesScreen> {
           Widget categoryFiltersWrap = Wrap(
             spacing: 8,
             runSpacing: 8,
-            children: _categories.map((cat) {
-              final isSelected = _selectedFilterCategory == cat['name'];
-              return FilterChip(
-                avatar: SvgPicture.asset(
-                  cat['iconPath'] ?? 'assets/category/others.svg',
-                  width: 20,
-                  height: 20,
-                  colorFilter: ColorFilter.mode(Theme.of(context).primaryColor, BlendMode.srcIn),
-                ),
-                label: Text(cat['name'] ?? ''),
-                selected: isSelected,
-                onSelected: (selected) {
-                  setState(() {
-                    _selectedFilterCategory = cat['name']!;
-                  });
-                },
-                selectedColor: Theme.of(context).primaryColor.withOpacity(0.2),
-                checkmarkColor: Theme.of(context).primaryColor,
-              );
-            }).toList(),
+            children: _categories.map((cat) => buildCategoryChip(cat)).toList(),
           );
 
           // Calculate filtered summary statistics

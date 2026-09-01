@@ -190,20 +190,47 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 
   void _showQrCodeDialog(String code) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Scan to Join', textAlign: TextAlign.center),
-        content: SizedBox(
-          width: 250,
-          height: 250,
-          child: Center(
-            child: QrImageView(
-              data: code,
-              version: QrVersions.auto,
-              size: 200.0,
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: QrImageView(
+                data: code,
+                version: QrVersions.auto,
+                size: 200.0,
+                eyeStyle: const QrEyeStyle(
+                  eyeShape: QrEyeShape.square,
+                  color: Colors.black,
+                ),
+                dataModuleStyle: const QrDataModuleStyle(
+                  dataModuleShape: QrDataModuleShape.square,
+                  color: Colors.black,
+                ),
+              ),
             ),
-          ),
+            const SizedBox(height: 14),
+            Text(
+              code,
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1.5,
+                color: isDark
+                    ? const Color(0xFF818CF8)
+                    : Theme.of(context).colorScheme.primary,
+              ),
+            ),
+          ],
         ),
         actions: [
           TextButton(
@@ -247,105 +274,579 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   final width = MediaQuery.of(context).size.width;
                   final isWide = width > 720;
 
+                  final isDark = Theme.of(context).brightness == Brightness.dark;
+                  final accentColor = isDark
+                      ? const Color(0xFF818CF8)
+                      : Theme.of(context).colorScheme.primary;
+                  final isCurrentUserAdmin = familyState.members.any((m) =>
+                      m.userId == authState.userId && m.role == 'admin');
+                  final userInitial = (authState.displayName != null &&
+                          authState.displayName!.trim().isNotEmpty)
+                      ? authState.displayName!.trim()[0].toUpperCase()
+                      : 'U';
+
+                  final userExpenses = expenseState.expenses
+                      .where((e) =>
+                          e.createdBy == authState.userId ||
+                          (e.createdByName.isNotEmpty &&
+                              e.createdByName.toLowerCase() ==
+                                  (authState.displayName ?? '')
+                                      .trim()
+                                      .toLowerCase()))
+                      .toList();
+                  final userTotalSpend = userExpenses.fold<double>(
+                      0.0, (sum, e) => sum + e.amount);
+                  final userTxnCount = userExpenses.length;
+
                   Widget userDetailsCard = Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(20.0),
-                      child: Column(
-                        children: [
-                          GestureDetector(
-                            onTap: _showAvatarColorPicker,
-                            child: Stack(
-                              alignment: Alignment.bottomRight,
-                              children: [
-                                Builder(
-                                  builder: (context) {
-                                    final hex = authState.avatarColor ?? (Supabase.instance.client.auth.currentUser?.userMetadata?['avatar_color'] as String?) ?? HiveService.settings.get('avatar_color') as String?;
-                                    Color bgColor = Theme.of(context).primaryColor;
-                                    if (hex != null && hex.startsWith('#') && hex.length >= 7) {
-                                      try {
-                                        bgColor = Color(int.parse(hex.substring(1, 7), radix: 16) | 0xFF000000);
-                                      } catch (_) {
-                                        // Fallback on error
-                                      }
-                                    }
-                                    return CircleAvatar(
-                                      radius: 40,
-                                      backgroundColor: bgColor.withOpacity(0.1),
-                                      child: Icon(Icons.person, size: 45, color: bgColor),
-                                    );
-                                  }
-                                ),
-                                Container(
-                                  padding: const EdgeInsets.all(6),
-                                  decoration: BoxDecoration(
-                                    color: Theme.of(context).colorScheme.primary,
-                                    shape: BoxShape.circle,
-                                    border: Border.all(
-                                      color: Theme.of(context).cardTheme.color ?? Theme.of(context).colorScheme.surface,
-                                      width: 2,
-                                    ),
-                                  ),
-                                  child: const Icon(
-                                    Icons.palette,
-                                    size: 14,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ],
+                    elevation: 0,
+                    clipBehavior: Clip.antiAlias,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(24),
+                      side: BorderSide(
+                        color: isDark
+                            ? const Color(0xFF334155)
+                            : const Color(0xFFE2E8F0),
+                        width: 1,
+                      ),
+                    ),
+                    child: Stack(
+                      children: [
+                        // Subtle ambient hero banner gradient
+                        Positioned(
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          height: 100,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [
+                                  accentColor.withValues(
+                                      alpha: isDark ? 0.16 : 0.08),
+                                  Colors.transparent,
+                                ],
+                              ),
                             ),
                           ),
-                          const SizedBox(height: 16),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 20.0, vertical: 24.0),
+                          child: Column(
                             children: [
-                              Text(
-                                authState.displayName ?? 'Family Member',
-                                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                              GestureDetector(
+                                onTap: _showAvatarColorPicker,
+                                child: Stack(
+                                  alignment: Alignment.bottomRight,
+                                  children: [
+                                    Builder(
+                                      builder: (context) {
+                                        final hex = authState.avatarColor ??
+                                            (Supabase.instance.client.auth
+                                                    .currentUser?.userMetadata?[
+                                                'avatar_color'] as String?) ??
+                                            HiveService.settings
+                                                .get('avatar_color') as String?;
+                                        Color userColor = accentColor;
+                                        if (hex != null &&
+                                            hex.startsWith('#') &&
+                                            hex.length >= 7) {
+                                          try {
+                                            userColor = Color(int.parse(
+                                                    hex.substring(1, 7),
+                                                    radix: 16) |
+                                                0xFF000000);
+                                          } catch (_) {}
+                                        }
+                                        return Container(
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            border: Border.all(
+                                              color: userColor.withValues(
+                                                  alpha: isDark ? 0.5 : 0.3),
+                                              width: 3,
+                                            ),
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: userColor.withValues(
+                                                    alpha:
+                                                        isDark ? 0.3 : 0.18),
+                                                blurRadius: 20,
+                                                offset: const Offset(0, 4),
+                                              ),
+                                            ],
+                                          ),
+                                          child: CircleAvatar(
+                                            radius: 44,
+                                            backgroundColor: userColor
+                                                .withValues(
+                                                    alpha: isDark ? 0.22 : 0.14),
+                                            child: Text(
+                                              userInitial,
+                                              style: TextStyle(
+                                                fontSize: 36,
+                                                fontWeight: FontWeight.w900,
+                                                color: userColor,
+                                              ),
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                    Container(
+                                      padding: const EdgeInsets.all(7),
+                                      decoration: BoxDecoration(
+                                        color: accentColor,
+                                        shape: BoxShape.circle,
+                                        border: Border.all(
+                                          color: Theme.of(context)
+                                                  .cardTheme
+                                                  .color ??
+                                              Theme.of(context)
+                                                  .colorScheme
+                                                  .surface,
+                                          width: 2.5,
+                                        ),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.black
+                                                .withValues(alpha: 0.2),
+                                            blurRadius: 6,
+                                          ),
+                                        ],
+                                      ),
+                                      child: const Icon(
+                                        Icons.palette,
+                                        size: 13,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
-                              IconButton(
-                                icon: Icon(Icons.edit, size: 16, color: Theme.of(context).colorScheme.onSurfaceVariant),
-                                onPressed: () => _showEditNameDialog(authState.displayName ?? ''),
-                                constraints: const BoxConstraints(),
-                                padding: const EdgeInsets.only(left: 8),
+                              const SizedBox(height: 16),
+
+                              // Name with verified badge & edit icon
+                              InkWell(
+                                onTap: () => _showEditNameDialog(
+                                    authState.displayName ?? ''),
+                                borderRadius: BorderRadius.circular(12),
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 12.0, vertical: 4.0),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.center,
+                                    children: [
+                                      Flexible(
+                                        child: Text(
+                                          authState.displayName ??
+                                              'Family Member',
+                                          style: TextStyle(
+                                            fontSize: 22,
+                                            fontWeight: FontWeight.w800,
+                                            letterSpacing: -0.3,
+                                            color: isDark
+                                                ? const Color(0xFFF8FAFC)
+                                                : const Color(0xFF0F172A),
+                                          ),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 6),
+                                      Icon(
+                                        Icons.verified_rounded,
+                                        size: 18,
+                                        color: accentColor,
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Container(
+                                        padding: const EdgeInsets.all(4),
+                                        decoration: BoxDecoration(
+                                          color: isDark
+                                              ? const Color(0xFF334155)
+                                                  .withValues(alpha: 0.6)
+                                              : const Color(0xFFF1F5F9),
+                                          borderRadius:
+                                              BorderRadius.circular(6),
+                                        ),
+                                        child: Icon(
+                                          Icons.edit_outlined,
+                                          size: 14,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onSurfaceVariant,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+
+                              // Role Badge
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: isCurrentUserAdmin
+                                      ? (isDark
+                                          ? const Color(0xFF78350F)
+                                              .withValues(alpha: 0.35)
+                                          : const Color(0xFFFEF3C7))
+                                      : (isDark
+                                          ? const Color(0xFF1E293B)
+                                          : const Color(0xFFF1F5F9)),
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: Border.all(
+                                    color: isCurrentUserAdmin
+                                        ? (isDark
+                                            ? const Color(0xFFD97706)
+                                                .withValues(alpha: 0.5)
+                                            : const Color(0xFFFDE68A))
+                                        : (isDark
+                                            ? const Color(0xFF334155)
+                                            : const Color(0xFFE2E8F0)),
+                                    width: 1,
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      isCurrentUserAdmin
+                                          ? Icons.workspace_premium_rounded
+                                          : Icons.person_rounded,
+                                      size: 13,
+                                      color: isCurrentUserAdmin
+                                          ? (isDark
+                                              ? const Color(0xFFFBBF24)
+                                              : const Color(0xFFD97706))
+                                          : (isDark
+                                              ? const Color(0xFF94A3B8)
+                                              : const Color(0xFF64748B)),
+                                    ),
+                                    const SizedBox(width: 5),
+                                    Text(
+                                      isCurrentUserAdmin
+                                          ? 'Family Admin'
+                                          : 'Family Member',
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.bold,
+                                        letterSpacing: 0.2,
+                                        color: isCurrentUserAdmin
+                                            ? (isDark
+                                                ? const Color(0xFFFBBF24)
+                                                : const Color(0xFFD97706))
+                                            : (isDark
+                                                ? const Color(0xFF94A3B8)
+                                                : const Color(0xFF64748B)),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 14),
+
+                              // Email pill container with tap-to-copy & edit
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 14, vertical: 8),
+                                decoration: BoxDecoration(
+                                  color: isDark
+                                      ? const Color(0xFF0F172A)
+                                          .withValues(alpha: 0.85)
+                                      : const Color(0xFFF8FAFC),
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(
+                                    color: isDark
+                                        ? const Color(0xFF334155)
+                                        : const Color(0xFFE2E8F0),
+                                    width: 1,
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.mail_outline_rounded,
+                                      size: 15,
+                                      color: isDark
+                                          ? const Color(0xFF94A3B8)
+                                          : const Color(0xFF64748B),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    InkWell(
+                                      onTap: () {
+                                        final email = authState.email;
+                                        if (email != null && email.isNotEmpty) {
+                                          Clipboard.setData(
+                                              ClipboardData(text: email));
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
+                                            const SnackBar(
+                                              content: Text(
+                                                  'Email address copied to clipboard'),
+                                              duration: Duration(seconds: 2),
+                                            ),
+                                          );
+                                        }
+                                      },
+                                      borderRadius: BorderRadius.circular(8),
+                                      child: Text(
+                                        authState.email ?? 'No email set',
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w500,
+                                          color: isDark
+                                              ? const Color(0xFFCBD5E1)
+                                              : const Color(0xFF475569),
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    InkWell(
+                                      onTap: () => _showEditEmailDialog(
+                                          authState.email ?? ''),
+                                      borderRadius: BorderRadius.circular(6),
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(2.0),
+                                        child: Icon(
+                                          Icons.edit_outlined,
+                                          size: 14,
+                                          color: isDark
+                                              ? const Color(0xFF64748B)
+                                              : const Color(0xFF94A3B8),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 20),
+
+                              // Quick account & personal activity strip
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 16, vertical: 12),
+                                decoration: BoxDecoration(
+                                  color: isDark
+                                      ? const Color(0xFF0F172A)
+                                          .withValues(alpha: 0.5)
+                                      : const Color(0xFFF1F5F9)
+                                          .withValues(alpha: 0.7),
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(
+                                    color: isDark
+                                        ? const Color(0xFF334155)
+                                            .withValues(alpha: 0.6)
+                                        : const Color(0xFFE2E8F0),
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceAround,
+                                  children: [
+                                    Column(
+                                      children: [
+                                        Text(
+                                          'YOUR SPEND',
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.w700,
+                                            letterSpacing: 0.8,
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .onSurfaceVariant,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 3),
+                                        Text(
+                                          currencyFormat.format(userTotalSpend),
+                                          style: TextStyle(
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w700,
+                                            color: isDark
+                                                ? Colors.white
+                                                : const Color(0xFF0F172A),
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ],
+                                    ),
+                                    Container(
+                                      height: 24,
+                                      width: 1,
+                                      color: isDark
+                                          ? const Color(0xFF334155)
+                                          : const Color(0xFFE2E8F0),
+                                    ),
+                                    Column(
+                                      children: [
+                                        Text(
+                                          'LOGGED',
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.w700,
+                                            letterSpacing: 0.8,
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .onSurfaceVariant,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 3),
+                                        Text(
+                                          '$userTxnCount txns',
+                                          style: TextStyle(
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w700,
+                                            color: isDark
+                                                ? Colors.white
+                                                : const Color(0xFF0F172A),
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ],
+                                    ),
+                                    Container(
+                                      height: 24,
+                                      width: 1,
+                                      color: isDark
+                                          ? const Color(0xFF334155)
+                                          : const Color(0xFFE2E8F0),
+                                    ),
+                                    Column(
+                                      children: [
+                                        Text(
+                                          'STATUS',
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.w700,
+                                            letterSpacing: 0.8,
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .onSurfaceVariant,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 3),
+                                        Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Container(
+                                              width: 6,
+                                              height: 6,
+                                              decoration: const BoxDecoration(
+                                                color: Color(0xFF22C55E),
+                                                shape: BoxShape.circle,
+                                              ),
+                                            ),
+                                            const SizedBox(width: 4),
+                                            Text(
+                                              'Active',
+                                              style: TextStyle(
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.w700,
+                                                color: isDark
+                                                    ? const Color(0xFF86EFAC)
+                                                    : const Color(0xFF16A34A),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
                               ),
                             ],
                           ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                authState.email ?? '',
-                                style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 14),
-                              ),
-                              IconButton(
-                                icon: Icon(Icons.edit, size: 14, color: Theme.of(context).colorScheme.onSurfaceVariant),
-                                onPressed: () => _showEditEmailDialog(authState.email ?? ''),
-                                constraints: const BoxConstraints(),
-                                padding: const EdgeInsets.only(left: 8),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   );
 
                   Widget familyCodeCard = Card(
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(24),
+                      side: BorderSide(
+                        color: isDark
+                            ? const Color(0xFF334155)
+                            : const Color(0xFFE2E8F0),
+                        width: 1,
+                      ),
+                    ),
                     child: Padding(
                       padding: const EdgeInsets.all(20.0),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Family Group',
-                              style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontWeight: FontWeight.bold, fontSize: 13)),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Family Group',
+                                style: TextStyle(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurfaceVariant,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 13,
+                                ),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 3),
+                                decoration: BoxDecoration(
+                                  color: accentColor.withValues(
+                                      alpha: isDark ? 0.2 : 0.1),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Text(
+                                  '${familyState.members.length} Members',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                    color: accentColor,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                           const SizedBox(height: 4),
-                          Text(familyName, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                          Text(
+                            familyName,
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                           const SizedBox(height: 16),
                           Container(
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
-                              color: Theme.of(context).colorScheme.surfaceContainerHigh,
-                              borderRadius: BorderRadius.circular(12),
+                              color: isDark
+                                  ? const Color(0xFF0F172A)
+                                  : Theme.of(context)
+                                      .colorScheme
+                                      .surfaceContainerHigh,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: isDark
+                                    ? const Color(0xFF334155)
+                                    : Theme.of(context)
+                                        .colorScheme
+                                        .outlineVariant
+                                        .withValues(alpha: 0.5),
+                              ),
                             ),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -353,14 +854,22 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                 Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text('Invite Family Code',
-                                        style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurfaceVariant)),
+                                    Text(
+                                      'Invite Family Code',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onSurfaceVariant,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
                                     Text(
                                       familyCode,
                                       style: TextStyle(
                                         fontSize: 22,
                                         fontWeight: FontWeight.bold,
-                                        color: Theme.of(context).primaryColor,
+                                        color: accentColor,
                                         letterSpacing: 1.5,
                                       ),
                                     ),
@@ -369,17 +878,27 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                 Row(
                                   children: [
                                     IconButton(
-                                      onPressed: () => _showQrCodeDialog(familyCode),
-                                      icon: Icon(Icons.qr_code, color: Theme.of(context).primaryColor),
+                                      onPressed: () =>
+                                          _showQrCodeDialog(familyCode),
+                                      tooltip: 'Show QR Code',
+                                      icon: Icon(Icons.qr_code_2_rounded,
+                                          color: accentColor, size: 26),
                                     ),
                                     IconButton(
                                       onPressed: () {
-                                        Clipboard.setData(ClipboardData(text: familyCode));
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                          const SnackBar(content: Text('Family Code copied to clipboard')),
+                                        Clipboard.setData(
+                                            ClipboardData(text: familyCode));
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          const SnackBar(
+                                            content: Text(
+                                                'Family Code copied to clipboard'),
+                                          ),
                                         );
                                       },
-                                      icon: Icon(Icons.copy, color: Theme.of(context).primaryColor),
+                                      tooltip: 'Copy Code',
+                                      icon: Icon(Icons.copy_rounded,
+                                          color: accentColor, size: 22),
                                     ),
                                   ],
                                 )
@@ -391,13 +910,23 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     ),
                   );
 
-                  final isCurrentUserAdmin = familyState.members.any((m) => m.userId == authState.userId && m.role == 'admin');
-
                   final analyticsState = ref.watch(analyticsProvider);
                   final totalSpent = analyticsState.totalSpent;
-                  final budgetProgress = currentBudget > 0 ? (totalSpent / currentBudget).clamp(0.0, 1.0) : 0.0;
+                  final budgetProgress = currentBudget > 0
+                      ? (totalSpent / currentBudget).clamp(0.0, 1.0)
+                      : 0.0;
 
                   Widget familyBudgetCard = Card(
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(24),
+                      side: BorderSide(
+                        color: isDark
+                            ? const Color(0xFF334155)
+                            : const Color(0xFFE2E8F0),
+                        width: 1,
+                      ),
+                    ),
                     child: Padding(
                       padding: const EdgeInsets.all(20.0),
                       child: Column(
@@ -406,39 +935,128 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text('Monthly Family Budget',
-                                  style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontWeight: FontWeight.bold, fontSize: 13)),
+                              Text(
+                                'Monthly Family Budget',
+                                style: TextStyle(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurfaceVariant,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 13,
+                                ),
+                              ),
                               if (isCurrentUserAdmin)
                                 InkWell(
-                                  onTap: () => _showEditBudgetDialog(currentBudget),
-                                  child: Text('SET BUDGET',
-                                      style: TextStyle(
-                                          color: Theme.of(context).primaryColor,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 13)),
+                                  onTap: () =>
+                                      _showEditBudgetDialog(currentBudget),
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8, vertical: 4),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(Icons.edit_outlined,
+                                            size: 13, color: accentColor),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          'SET BUDGET',
+                                          style: TextStyle(
+                                            color: accentColor,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
                                 ),
                             ],
                           ),
                           const SizedBox(height: 8),
-                          Text(currencyFormat.format(currentBudget),
-                              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900)),
-                          const SizedBox(height: 12),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Text(
+                                currencyFormat.format(currentBudget),
+                                style: const TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.w900,
+                                ),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: budgetProgress >= 1.0
+                                      ? Colors.red.withValues(alpha: 0.15)
+                                      : (budgetProgress >= 0.8
+                                          ? Colors.orange.withValues(alpha: 0.15)
+                                          : const Color(0xFF22C55E)
+                                              .withValues(alpha: 0.15)),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Text(
+                                  budgetProgress >= 1.0
+                                      ? 'Over Budget'
+                                      : (budgetProgress >= 0.8
+                                          ? 'Approaching Limit'
+                                          : 'On Track'),
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                    color: budgetProgress >= 1.0
+                                        ? Colors.red
+                                        : (budgetProgress >= 0.8
+                                            ? Colors.orange
+                                            : const Color(0xFF16A34A)),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 14),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text('Spent: ${currencyFormat.format(totalSpent)}', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurfaceVariant)),
-                              Text('${(budgetProgress * 100).toStringAsFixed(1)}%', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: budgetProgress >= 1.0 ? Colors.red : Theme.of(context).colorScheme.onSurfaceVariant)),
+                              Text(
+                                'Spent: ${currencyFormat.format(totalSpent)}',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurfaceVariant,
+                                ),
+                              ),
+                              Text(
+                                '${(budgetProgress * 100).toStringAsFixed(1)}%',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: budgetProgress >= 1.0
+                                      ? Colors.red
+                                      : Theme.of(context)
+                                          .colorScheme
+                                          .onSurfaceVariant,
+                                ),
+                              ),
                             ],
                           ),
-                          const SizedBox(height: 6),
+                          const SizedBox(height: 8),
                           ClipRRect(
-                            borderRadius: BorderRadius.circular(4),
+                            borderRadius: BorderRadius.circular(6),
                             child: LinearProgressIndicator(
                               value: budgetProgress.clamp(0.0, 1.0),
-                              backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
+                              backgroundColor: Theme.of(context)
+                                  .colorScheme
+                                  .surfaceContainerHigh,
                               color: budgetProgress >= 1.0
                                   ? Colors.red
-                                  : (budgetProgress >= 0.8 ? Colors.orange : Theme.of(context).primaryColor),
+                                  : (budgetProgress >= 0.8
+                                      ? Colors.orange
+                                      : accentColor),
                               minHeight: 8,
                             ),
                           ),
@@ -448,12 +1066,25 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   );
 
                   Widget familyMembersCard = Card(
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(24),
+                      side: BorderSide(
+                        color: isDark
+                            ? const Color(0xFF334155)
+                            : const Color(0xFFE2E8F0),
+                        width: 1,
+                      ),
+                    ),
                     child: Padding(
                       padding: const EdgeInsets.all(20.0),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Family Members (${familyState.members.length})', style: Theme.of(context).textTheme.titleMedium),
+                          Text(
+                            'Family Members (${familyState.members.length})',
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
                           const Divider(height: 24),
                           ListView.builder(
                             shrinkWrap: true,
@@ -465,55 +1096,125 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                               return ListTile(
                                 contentPadding: EdgeInsets.zero,
                                 leading: CircleAvatar(
-                                  backgroundColor: Theme.of(context).primaryColor.withValues(alpha: 0.15),
+                                  backgroundColor: accentColor.withValues(
+                                      alpha: isDark ? 0.22 : 0.14),
                                   child: Text(
-                                      member.displayName.isNotEmpty ? member.displayName[0].toUpperCase() : 'M', style: TextStyle(color: Theme.of(context).primaryColor, fontWeight: FontWeight.bold)),
+                                    member.displayName.isNotEmpty
+                                        ? member.displayName[0].toUpperCase()
+                                        : 'M',
+                                    style: TextStyle(
+                                      color: accentColor,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
                                 ),
-                                title: Text(member.displayName, style: const TextStyle(fontWeight: FontWeight.bold)),
+                                title: Text(
+                                  member.displayName,
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.bold),
+                                ),
                                 trailing: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     Container(
-                                      padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 4, horizontal: 8),
                                       decoration: BoxDecoration(
-                                        color: isAdmin ? const Color(0xFFFEF3C7) : Theme.of(context).colorScheme.surfaceContainerHigh,
-                                        borderRadius: BorderRadius.circular(6),
+                                        color: isAdmin
+                                            ? (isDark
+                                                ? const Color(0xFF78350F)
+                                                    .withValues(alpha: 0.35)
+                                                : const Color(0xFFFEF3C7))
+                                            : (isDark
+                                                ? const Color(0xFF1E293B)
+                                                : Theme.of(context)
+                                                    .colorScheme
+                                                    .surfaceContainerHigh),
+                                        borderRadius:
+                                            BorderRadius.circular(6),
+                                        border: Border.all(
+                                          color: isAdmin
+                                              ? (isDark
+                                                  ? const Color(0xFFD97706)
+                                                      .withValues(alpha: 0.4)
+                                                  : const Color(0xFFFDE68A))
+                                              : (isDark
+                                                  ? const Color(0xFF334155)
+                                                  : Colors.transparent),
+                                        ),
                                       ),
                                       child: Text(
                                         isAdmin ? 'Admin' : 'Member',
                                         style: TextStyle(
-                                          fontSize: 12,
+                                          fontSize: 11,
                                           fontWeight: FontWeight.bold,
-                                          color: isAdmin ? const Color(0xFFD97706) : Theme.of(context).colorScheme.onSurfaceVariant,
+                                          color: isAdmin
+                                              ? (isDark
+                                                  ? const Color(0xFFFBBF24)
+                                                  : const Color(0xFFD97706))
+                                              : Theme.of(context)
+                                                  .colorScheme
+                                                  .onSurfaceVariant,
                                         ),
                                       ),
                                     ),
                                     if (isCurrentUserAdmin && !isAdmin)
                                       PopupMenuButton<String>(
-                                        icon: const Icon(Icons.more_vert, size: 20),
+                                        icon: const Icon(Icons.more_vert,
+                                            size: 20),
                                         onSelected: (val) async {
                                           if (val == 'remove') {
-                                            final confirmed = await showDialog<bool>(
+                                            final confirmed =
+                                                await showDialog<bool>(
                                               context: context,
                                               builder: (ctx) => AlertDialog(
-                                                title: const Text('Remove Member'),
-                                                content: Text('Are you sure you want to remove ${member.displayName} from the family?'),
+                                                title: const Text(
+                                                    'Remove Member'),
+                                                content: Text(
+                                                    'Are you sure you want to remove ${member.displayName} from the family?'),
                                                 actions: [
-                                                  TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('CANCEL')),
-                                                  TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('REMOVE', style: TextStyle(color: Colors.red))),
+                                                  TextButton(
+                                                    onPressed: () =>
+                                                        Navigator.pop(
+                                                            ctx, false),
+                                                    child: const Text(
+                                                        'CANCEL'),
+                                                  ),
+                                                  TextButton(
+                                                    onPressed: () =>
+                                                        Navigator.pop(
+                                                            ctx, true),
+                                                    child: const Text(
+                                                      'REMOVE',
+                                                      style: TextStyle(
+                                                          color: Colors.red),
+                                                    ),
+                                                  ),
                                                 ],
                                               ),
                                             );
                                             if (confirmed == true) {
-                                              ref.read(familyProvider.notifier).removeMember(member.userId);
+                                              ref
+                                                  .read(familyProvider.notifier)
+                                                  .removeMember(member.userId);
                                               if (context.mounted) {
-                                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${member.displayName} removed')));
+                                                ScaffoldMessenger.of(context)
+                                                    .showSnackBar(SnackBar(
+                                                        content: Text(
+                                                            '${member.displayName} removed')));
                                               }
                                             }
                                           }
                                         },
                                         itemBuilder: (context) => [
-                                          const PopupMenuItem(value: 'remove', child: Text('Remove from Family', style: TextStyle(color: Colors.red))),
+                                          const PopupMenuItem(
+                                            value: 'remove',
+                                            child: Text(
+                                              'Remove from Family',
+                                              style: TextStyle(
+                                                  color: Colors.red),
+                                            ),
+                                          ),
                                         ],
                                       ),
                                   ],
@@ -527,28 +1228,53 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   );
 
                   Widget reportsCard = Card(
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(24),
+                      side: BorderSide(
+                        color: isDark
+                            ? const Color(0xFF334155)
+                            : const Color(0xFFE2E8F0),
+                        width: 1,
+                      ),
+                    ),
                     child: Padding(
                       padding: const EdgeInsets.all(20.0),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Family Reports', style: Theme.of(context).textTheme.titleMedium),
+                          Text('Family Reports',
+                              style: Theme.of(context).textTheme.titleMedium),
                           const SizedBox(height: 4),
-                          Text('Generate and share expense history directly.',
-                              style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 13)),
+                          Text(
+                            'Generate and share expense history directly.',
+                            style: TextStyle(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurfaceVariant,
+                              fontSize: 13,
+                            ),
+                          ),
                           const Divider(height: 24),
                           Row(
                             children: [
                               Expanded(
                                 child: OutlinedButton.icon(
                                   onPressed: () {
-                                    ReportService.exportAndShareCsv(expenseState.expenses);
+                                    ReportService.exportAndShareCsv(
+                                        expenseState.expenses);
                                   },
-                                  icon: const Icon(Icons.table_view),
+                                  icon: const Icon(Icons.table_view_rounded),
                                   label: const Text('SHARE CSV'),
                                   style: OutlinedButton.styleFrom(
-                                    padding: const EdgeInsets.symmetric(vertical: 14),
-                                    textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 14),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(14),
+                                    ),
+                                    textStyle: const TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold),
                                   ),
                                 ),
                               ),
@@ -562,11 +1288,17 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                       budgetLimit: currentBudget,
                                     );
                                   },
-                                  icon: const Icon(Icons.picture_as_pdf),
+                                  icon: const Icon(Icons.picture_as_pdf_rounded),
                                   label: const Text('SHARE PDF'),
                                   style: ElevatedButton.styleFrom(
-                                    padding: const EdgeInsets.symmetric(vertical: 14),
-                                    textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 14),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(14),
+                                    ),
+                                    textStyle: const TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold),
                                   ),
                                 ),
                               )
