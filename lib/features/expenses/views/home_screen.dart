@@ -177,7 +177,7 @@ class HomeScreen extends ConsumerWidget {
                   );
 
                   Widget budgetCard = _buildBudgetCard(
-                      context, monthTotal, budgetLimit, budgetPercent, budgetColor, currencyFormat);
+                      context, familyMonthTotal, budgetLimit, budgetPercent, budgetColor, currencyFormat);
 
                   Widget smartSuggestions = suggestions.isEmpty
                       ? const SizedBox.shrink()
