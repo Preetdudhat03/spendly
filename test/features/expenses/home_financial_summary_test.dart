@@ -230,21 +230,21 @@ void main() {
                 children: [
                   Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.symmetric(vertical: 12.0),
+                    padding: const EdgeInsets.only(top: 4.0, bottom: 4.0),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Text(
                           'Total Spent This Month',
                           textAlign: TextAlign.center,
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            color: theme.colorScheme.onSurfaceVariant,
+                          style: TextStyle(
+                            fontSize: 14,
                             fontWeight: FontWeight.w600,
-                            fontSize: 16,
+                            color: theme.colorScheme.onSurfaceVariant,
                             letterSpacing: 0.2,
                           ),
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 4),
                         FittedBox(
                           fit: BoxFit.scaleDown,
                           alignment: Alignment.center,
@@ -252,112 +252,139 @@ void main() {
                             currencyFormat.format(monthTotal),
                             textAlign: TextAlign.center,
                             style: TextStyle(
-                              fontSize: 48,
+                              fontSize: 44,
                               fontWeight: FontWeight.w800,
                               color: theme.colorScheme.onSurface,
                               letterSpacing: -1.0,
-                              height: 1.1,
+                              height: 1.05,
                             ),
                           ),
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 18),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Card(
-                          color: theme.cardTheme.color ?? theme.colorScheme.surface,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                            side: BorderSide(color: theme.colorScheme.outline, width: 1),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(14.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  "Today's Spending",
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
-                                    color: theme.colorScheme.onSurfaceVariant,
+                  const SizedBox(height: 14),
+                  IntrinsicHeight(
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Expanded(
+                          child: Card(
+                            elevation: 0,
+                            margin: EdgeInsets.zero,
+                            color: theme.cardTheme.color ?? theme.colorScheme.surface,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              side: BorderSide(color: theme.colorScheme.outline, width: 1),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 13.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    "Today's Spending",
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600,
+                                      color: theme.colorScheme.onSurfaceVariant,
+                                    ),
                                   ),
-                                ),
-                                const SizedBox(height: 6),
-                                Text(
-                                  currencyFormat.format(todayTotal),
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                    color: theme.colorScheme.onSurface,
+                                  const SizedBox(height: 6),
+                                  FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    alignment: Alignment.centerLeft,
+                                    child: Text(
+                                      currencyFormat.format(todayTotal),
+                                      style: TextStyle(
+                                        fontSize: 22,
+                                        fontWeight: FontWeight.bold,
+                                        color: theme.colorScheme.onSurface,
+                                        letterSpacing: -0.3,
+                                      ),
+                                    ),
                                   ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  'Today',
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w500,
-                                    color: theme.colorScheme.onSurfaceVariant,
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'Today',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w500,
+                                      color: theme.colorScheme.onSurfaceVariant,
+                                    ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Card(
-                          color: theme.cardTheme.color ?? theme.colorScheme.surface,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                            side: BorderSide(color: theme.colorScheme.outline, width: 1),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(14.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Remaining This Month',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
-                                    color: theme.colorScheme.onSurfaceVariant,
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Card(
+                            elevation: 0,
+                            margin: EdgeInsets.zero,
+                            color: theme.cardTheme.color ?? theme.colorScheme.surface,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              side: BorderSide(color: theme.colorScheme.outline, width: 1),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 13.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    'Remaining This Month',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600,
+                                      color: theme.colorScheme.onSurfaceVariant,
+                                    ),
                                   ),
-                                ),
-                                const SizedBox(height: 6),
-                                Text(
-                                  hasBudget ? currencyFormat.format(remainingBudget) : '—',
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                    color: isBudgetExceeded ? theme.colorScheme.error : theme.colorScheme.onSurface,
+                                  const SizedBox(height: 6),
+                                  FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    alignment: Alignment.centerLeft,
+                                    child: Text(
+                                      hasBudget ? currencyFormat.format(remainingBudget) : '—',
+                                      style: TextStyle(
+                                        fontSize: 22,
+                                        fontWeight: FontWeight.bold,
+                                        color: isBudgetExceeded ? theme.colorScheme.error : theme.colorScheme.onSurface,
+                                        letterSpacing: -0.3,
+                                      ),
+                                    ),
                                   ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  !hasBudget
-                                      ? 'Budget not set'
-                                      : (isBudgetExceeded
-                                          ? 'Budget exceeded'
-                                          : '${currencyFormat.format(budgetLimit)} budget'),
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w500,
-                                    color: isBudgetExceeded ? theme.colorScheme.error : theme.colorScheme.onSurfaceVariant,
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    !hasBudget
+                                        ? 'Budget not set'
+                                        : (isBudgetExceeded
+                                            ? 'Budget exceeded'
+                                            : '${currencyFormat.format(budgetLimit)} budget'),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w500,
+                                      color: isBudgetExceeded ? theme.colorScheme.error : theme.colorScheme.onSurfaceVariant,
+                                    ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ],
               ),
