@@ -230,7 +230,7 @@ void main() {
                 children: [
                   Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.only(top: 4.0, bottom: 4.0),
+                    padding: const EdgeInsets.only(top: 2.0, bottom: 2.0),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
@@ -238,10 +238,10 @@ void main() {
                           'Total Spent This Month',
                           textAlign: TextAlign.center,
                           style: TextStyle(
-                            fontSize: 14,
+                            fontSize: 15,
                             fontWeight: FontWeight.w600,
                             color: theme.colorScheme.onSurfaceVariant,
-                            letterSpacing: 0.2,
+                            letterSpacing: 0.1,
                           ),
                         ),
                         const SizedBox(height: 4),
@@ -252,10 +252,10 @@ void main() {
                             currencyFormat.format(monthTotal),
                             textAlign: TextAlign.center,
                             style: TextStyle(
-                              fontSize: 44,
+                              fontSize: 46,
                               fontWeight: FontWeight.w800,
                               color: theme.colorScheme.onSurface,
-                              letterSpacing: -1.0,
+                              letterSpacing: -1.2,
                               height: 1.05,
                             ),
                           ),
@@ -263,7 +263,7 @@ void main() {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 14),
+                  const SizedBox(height: 12),
                   IntrinsicHeight(
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -278,7 +278,7 @@ void main() {
                               side: BorderSide(color: theme.colorScheme.outline, width: 1),
                             ),
                             child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 13.0),
+                              padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 12.0),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -288,22 +288,24 @@ void main() {
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
-                                      fontSize: 13,
+                                      fontSize: 14,
                                       fontWeight: FontWeight.w600,
                                       color: theme.colorScheme.onSurfaceVariant,
+                                      letterSpacing: 0.1,
                                     ),
                                   ),
-                                  const SizedBox(height: 6),
+                                  const SizedBox(height: 4),
                                   FittedBox(
                                     fit: BoxFit.scaleDown,
                                     alignment: Alignment.centerLeft,
                                     child: Text(
                                       currencyFormat.format(todayTotal),
                                       style: TextStyle(
-                                        fontSize: 22,
+                                        fontSize: 24,
                                         fontWeight: FontWeight.bold,
                                         color: theme.colorScheme.onSurface,
-                                        letterSpacing: -0.3,
+                                        letterSpacing: -0.4,
+                                        height: 1.15,
                                       ),
                                     ),
                                   ),
@@ -313,7 +315,7 @@ void main() {
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
-                                      fontSize: 12,
+                                      fontSize: 13,
                                       fontWeight: FontWeight.w500,
                                       color: theme.colorScheme.onSurfaceVariant,
                                     ),
@@ -334,7 +336,7 @@ void main() {
                               side: BorderSide(color: theme.colorScheme.outline, width: 1),
                             ),
                             child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 13.0),
+                              padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 12.0),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -344,22 +346,24 @@ void main() {
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
-                                      fontSize: 13,
+                                      fontSize: 14,
                                       fontWeight: FontWeight.w600,
                                       color: theme.colorScheme.onSurfaceVariant,
+                                      letterSpacing: 0.1,
                                     ),
                                   ),
-                                  const SizedBox(height: 6),
+                                  const SizedBox(height: 4),
                                   FittedBox(
                                     fit: BoxFit.scaleDown,
                                     alignment: Alignment.centerLeft,
                                     child: Text(
                                       hasBudget ? currencyFormat.format(remainingBudget) : '—',
                                       style: TextStyle(
-                                        fontSize: 22,
+                                        fontSize: 24,
                                         fontWeight: FontWeight.bold,
                                         color: isBudgetExceeded ? theme.colorScheme.error : theme.colorScheme.onSurface,
-                                        letterSpacing: -0.3,
+                                        letterSpacing: -0.4,
+                                        height: 1.15,
                                       ),
                                     ),
                                   ),
@@ -373,7 +377,7 @@ void main() {
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
-                                      fontSize: 12,
+                                      fontSize: 13,
                                       fontWeight: FontWeight.w500,
                                       color: isBudgetExceeded ? theme.colorScheme.error : theme.colorScheme.onSurfaceVariant,
                                     ),
