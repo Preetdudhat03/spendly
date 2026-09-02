@@ -398,9 +398,9 @@ class HomeScreen extends ConsumerWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               welcomeMessage,
-                              const SizedBox(height: 12),
+                              const SizedBox(height: 28),
                               financialSummarySection,
-                              const SizedBox(height: 16),
+                              const SizedBox(height: 28),
                               budgetCard,
                               const SizedBox(height: 24),
                               smartSuggestions,
@@ -426,9 +426,9 @@ class HomeScreen extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         welcomeMessage,
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 28),
                         financialSummarySection,
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 28),
                         budgetCard,
                         const SizedBox(height: 24),
                         smartSuggestions,
@@ -462,10 +462,10 @@ class HomeScreen extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        // 1. Primary Hero Amount: Total Spent This Month
+        // 1. PRIMARY HERO FINANCIAL DISPLAY (Dedicated whitespace, dominant focal point)
         Container(
           width: double.infinity,
-          padding: const EdgeInsets.only(top: 2.0, bottom: 2.0),
+          padding: const EdgeInsets.symmetric(vertical: 4.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
@@ -473,13 +473,13 @@ class HomeScreen extends ConsumerWidget {
                 'Total Spent This Month',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  fontSize: 15,
+                  fontSize: 17,
                   fontWeight: FontWeight.w600,
                   color: colorScheme.onSurfaceVariant,
-                  letterSpacing: 0.1,
+                  letterSpacing: 0.2,
                 ),
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 8),
               FittedBox(
                 fit: BoxFit.scaleDown,
                 alignment: Alignment.center,
@@ -487,10 +487,10 @@ class HomeScreen extends ConsumerWidget {
                   currencyFormat.format(monthTotal),
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontSize: 46,
+                    fontSize: 58,
                     fontWeight: FontWeight.w800,
                     color: colorScheme.onSurface,
-                    letterSpacing: -1.2,
+                    letterSpacing: -1.8,
                     height: 1.05,
                   ),
                 ),
@@ -498,9 +498,9 @@ class HomeScreen extends ConsumerWidget {
             ],
           ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 32),
 
-        // 2. Secondary Cards Row (Unified Height & Proportions)
+        // 2. SUPPORTING SECONDARY CARDS (Subordinate to Hero)
         IntrinsicHeight(
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -514,7 +514,7 @@ class HomeScreen extends ConsumerWidget {
                   subtitleColor: colorScheme.onSurfaceVariant,
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 14),
               Expanded(
                 child: _buildSecondaryCard(
                   context,
@@ -552,11 +552,11 @@ class HomeScreen extends ConsumerWidget {
       margin: EdgeInsets.zero,
       color: theme.cardTheme.color ?? colorScheme.surface,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
         side: BorderSide(color: colorScheme.outline, width: 1),
       ),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 12.0),
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -566,28 +566,27 @@ class HomeScreen extends ConsumerWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                fontSize: 14,
+                fontSize: 15,
                 fontWeight: FontWeight.w600,
                 color: colorScheme.onSurfaceVariant,
-                letterSpacing: 0.1,
               ),
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 8),
             FittedBox(
               fit: BoxFit.scaleDown,
               alignment: Alignment.centerLeft,
               child: Text(
                 amount,
                 style: TextStyle(
-                  fontSize: 24,
+                  fontSize: 26,
                   fontWeight: FontWeight.bold,
                   color: amountColor ?? colorScheme.onSurface,
-                  letterSpacing: -0.4,
+                  letterSpacing: -0.5,
                   height: 1.15,
                 ),
               ),
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 6),
             Text(
               subtitle,
               maxLines: 1,
