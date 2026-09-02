@@ -155,8 +155,8 @@ void main() {
     });
 
     test('handles no budget configured scenario correctly', () {
-      final Budget? currentBudget = null;
-      final bool hasBudget = currentBudget != null && (currentBudget as Budget).monthlyBudget > 0;
+      const Budget? currentBudget = null;
+      final bool hasBudget = currentBudget != null && currentBudget.monthlyBudget > 0;
 
       expect(hasBudget, isFalse);
     });
