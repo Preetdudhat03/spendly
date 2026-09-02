@@ -230,7 +230,7 @@ void main() {
                 children: [
                   Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.only(top: 2.0, bottom: 2.0),
+                    padding: const EdgeInsets.symmetric(vertical: 4.0),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
@@ -238,13 +238,13 @@ void main() {
                           'Total Spent This Month',
                           textAlign: TextAlign.center,
                           style: TextStyle(
-                            fontSize: 15,
+                            fontSize: 17,
                             fontWeight: FontWeight.w600,
                             color: theme.colorScheme.onSurfaceVariant,
-                            letterSpacing: 0.1,
+                            letterSpacing: 0.2,
                           ),
                         ),
-                        const SizedBox(height: 4),
+                        const SizedBox(height: 8),
                         FittedBox(
                           fit: BoxFit.scaleDown,
                           alignment: Alignment.center,
@@ -252,10 +252,10 @@ void main() {
                             currencyFormat.format(monthTotal),
                             textAlign: TextAlign.center,
                             style: TextStyle(
-                              fontSize: 46,
+                              fontSize: 58,
                               fontWeight: FontWeight.w800,
                               color: theme.colorScheme.onSurface,
-                              letterSpacing: -1.2,
+                              letterSpacing: -1.8,
                               height: 1.05,
                             ),
                           ),
@@ -263,7 +263,7 @@ void main() {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 32),
                   IntrinsicHeight(
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -274,11 +274,11 @@ void main() {
                             margin: EdgeInsets.zero,
                             color: theme.cardTheme.color ?? theme.colorScheme.surface,
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
+                              borderRadius: BorderRadius.circular(20),
                               side: BorderSide(color: theme.colorScheme.outline, width: 1),
                             ),
                             child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 12.0),
+                              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -288,28 +288,27 @@ void main() {
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
-                                      fontSize: 14,
+                                      fontSize: 15,
                                       fontWeight: FontWeight.w600,
                                       color: theme.colorScheme.onSurfaceVariant,
-                                      letterSpacing: 0.1,
                                     ),
                                   ),
-                                  const SizedBox(height: 4),
+                                  const SizedBox(height: 8),
                                   FittedBox(
                                     fit: BoxFit.scaleDown,
                                     alignment: Alignment.centerLeft,
                                     child: Text(
                                       currencyFormat.format(todayTotal),
                                       style: TextStyle(
-                                        fontSize: 24,
+                                        fontSize: 26,
                                         fontWeight: FontWeight.bold,
                                         color: theme.colorScheme.onSurface,
-                                        letterSpacing: -0.4,
+                                        letterSpacing: -0.5,
                                         height: 1.15,
                                       ),
                                     ),
                                   ),
-                                  const SizedBox(height: 4),
+                                  const SizedBox(height: 6),
                                   Text(
                                     'Today',
                                     maxLines: 1,
@@ -325,18 +324,18 @@ void main() {
                             ),
                           ),
                         ),
-                        const SizedBox(width: 12),
+                        const SizedBox(width: 14),
                         Expanded(
                           child: Card(
                             elevation: 0,
                             margin: EdgeInsets.zero,
                             color: theme.cardTheme.color ?? theme.colorScheme.surface,
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
+                              borderRadius: BorderRadius.circular(20),
                               side: BorderSide(color: theme.colorScheme.outline, width: 1),
                             ),
                             child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 12.0),
+                              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -346,28 +345,27 @@ void main() {
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
-                                      fontSize: 14,
+                                      fontSize: 15,
                                       fontWeight: FontWeight.w600,
                                       color: theme.colorScheme.onSurfaceVariant,
-                                      letterSpacing: 0.1,
                                     ),
                                   ),
-                                  const SizedBox(height: 4),
+                                  const SizedBox(height: 8),
                                   FittedBox(
                                     fit: BoxFit.scaleDown,
                                     alignment: Alignment.centerLeft,
                                     child: Text(
                                       hasBudget ? currencyFormat.format(remainingBudget) : '—',
                                       style: TextStyle(
-                                        fontSize: 24,
+                                        fontSize: 26,
                                         fontWeight: FontWeight.bold,
                                         color: isBudgetExceeded ? theme.colorScheme.error : theme.colorScheme.onSurface,
-                                        letterSpacing: -0.4,
+                                        letterSpacing: -0.5,
                                         height: 1.15,
                                       ),
                                     ),
                                   ),
-                                  const SizedBox(height: 4),
+                                  const SizedBox(height: 6),
                                   Text(
                                     !hasBudget
                                         ? 'Budget not set'
