@@ -72,6 +72,96 @@ void main() {
       expect(currencyFormat.format(monthTotal), '₹2,000');
     });
 
+    test('isolates current user spending from other family members spending', () {
+      final now = DateTime(2026, 9, 2, 14, 30);
+      const currentUserId = 'u1';
+      final expenses = [
+        // Current user (u1) today
+        Expense(
+          id: '1',
+          familyId: 'f1',
+          createdBy: 'u1',
+          amount: 300.0,
+          category: 'Food',
+          description: 'My Lunch',
+          paymentMethod: 'UPI',
+          expenseDate: DateTime(2026, 9, 2, 13, 0),
+          createdAt: DateTime(2026, 9, 2, 13, 0),
+          createdByName: 'Preet',
+        ),
+        // Other family member (u2) today
+        Expense(
+          id: '2',
+          familyId: 'f1',
+          createdBy: 'u2',
+          amount: 1200.0,
+          category: 'Groceries',
+          description: 'Family Groceries',
+          paymentMethod: 'UPI',
+          expenseDate: DateTime(2026, 9, 2, 11, 0),
+          createdAt: DateTime(2026, 9, 2, 11, 0),
+          createdByName: 'Family Member 2',
+        ),
+        // Current user (u1) earlier this month
+        Expense(
+          id: '3',
+          familyId: 'f1',
+          createdBy: 'u1',
+          amount: 700.0,
+          category: 'Petrol',
+          description: 'Fuel',
+          paymentMethod: 'UPI',
+          expenseDate: DateTime(2026, 9, 1, 10, 0),
+          createdAt: DateTime(2026, 9, 1, 10, 0),
+          createdByName: 'Preet',
+        ),
+        // Other family member (u2) earlier this month
+        Expense(
+          id: '4',
+          familyId: 'f1',
+          createdBy: 'u2',
+          amount: 5000.0,
+          category: 'Bills',
+          description: 'Electricity Bill',
+          paymentMethod: 'UPI',
+          expenseDate: DateTime(2026, 9, 1, 10, 0),
+          createdAt: DateTime(2026, 9, 1, 10, 0),
+          createdByName: 'Family Member 2',
+        ),
+      ];
+
+      final userExpenses = expenses.where((e) => e.createdBy == currentUserId);
+
+      final todayUserExpenses = userExpenses.where((e) {
+        return e.expenseDate.year == now.year &&
+            e.expenseDate.month == now.month &&
+            e.expenseDate.day == now.day;
+      });
+      final todayUserTotal = todayUserExpenses.fold<double>(0, (sum, item) => sum + item.amount);
+
+      final monthUserExpenses = userExpenses.where((e) {
+        return e.expenseDate.year == now.year && e.expenseDate.month == now.month;
+      });
+      final monthUserTotal = monthUserExpenses.fold<double>(0, (sum, item) => sum + item.amount);
+
+      // Entire family month total
+      final familyMonthExpenses = expenses.where((e) {
+        return e.expenseDate.year == now.year && e.expenseDate.month == now.month;
+      });
+      final familyMonthTotal = familyMonthExpenses.fold<double>(0, (sum, item) => sum + item.amount);
+
+      // User totals must only reflect u1's expenses
+      expect(todayUserTotal, 300.0);
+      expect(currencyFormat.format(todayUserTotal), '₹300');
+
+      expect(monthUserTotal, 1000.0);
+      expect(currencyFormat.format(monthUserTotal), '₹1,000');
+
+      // Family total reflects all members
+      expect(familyMonthTotal, 7200.0);
+      expect(currencyFormat.format(familyMonthTotal), '₹7,200');
+    });
+
     test('handles zero spending this month with previous month expenses correctly', () {
       final now = DateTime(2026, 9, 2, 10, 0);
       final expenses = [
