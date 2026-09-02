@@ -399,7 +399,7 @@ class HomeScreen extends ConsumerWidget {
                             children: [
                               welcomeMessage,
                               const SizedBox(height: 18),
-                              summaryRow,
+                              financialSummarySection,
                               const SizedBox(height: 20),
                               budgetCard,
                               const SizedBox(height: 24),
@@ -427,7 +427,7 @@ class HomeScreen extends ConsumerWidget {
                       children: [
                         welcomeMessage,
                         const SizedBox(height: 18),
-                        summaryRow,
+                        financialSummarySection,
                         const SizedBox(height: 20),
                         budgetCard,
                         const SizedBox(height: 24),
@@ -446,32 +446,144 @@ class HomeScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildSummaryCard(
-    BuildContext context,
-    String label,
-    String amount,
-    Color bg,
-    Color textCol,
-  ) {
+  Widget _buildFinancialSummarySection(
+    BuildContext context, {
+    required double monthTotal,
+    required double todayTotal,
+    required bool hasBudget,
+    required double remainingBudget,
+    required bool isBudgetExceeded,
+    required double budgetLimit,
+    required NumberFormat currencyFormat,
+  }) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // 1. Primary Amount: Total Spent This Month
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 4.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Total Spent This Month',
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 0.2,
+                ),
+              ),
+              const SizedBox(height: 6),
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  currencyFormat.format(monthTotal),
+                  style: theme.textTheme.headlineLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: colorScheme.onSurface,
+                    letterSpacing: -0.5,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 14),
+
+        // 2. Secondary Cards Row
+        Row(
+          children: [
+            Expanded(
+              child: _buildSecondaryCard(
+                context,
+                title: "Today's Spending",
+                amount: currencyFormat.format(todayTotal),
+                subtitle: 'Today',
+                subtitleColor: colorScheme.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _buildSecondaryCard(
+                context,
+                title: 'Remaining This Month',
+                amount: hasBudget ? currencyFormat.format(remainingBudget) : '—',
+                amountColor: isBudgetExceeded ? colorScheme.error : colorScheme.onSurface,
+                subtitle: !hasBudget
+                    ? 'Budget not set'
+                    : (isBudgetExceeded
+                        ? 'Budget exceeded'
+                        : '${currencyFormat.format(budgetLimit)} budget'),
+                subtitleColor: isBudgetExceeded ? colorScheme.error : colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSecondaryCard(
+    BuildContext context, {
+    required String title,
+    required String amount,
+    Color? amountColor,
+    required String subtitle,
+    Color? subtitleColor,
+  }) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Card(
-      color: bg,
+      elevation: 0,
+      color: theme.cardTheme.color ?? colorScheme.surface,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-        side: BorderSide.none,
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: colorScheme.outline, width: 1),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 14.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              label,
-              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.grey),
+              title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: colorScheme.onSurfaceVariant,
+              ),
             ),
             const SizedBox(height: 6),
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(
+                amount,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: amountColor ?? colorScheme.onSurface,
+                ),
+              ),
+            ),
+            const SizedBox(height: 4),
             Text(
-              amount,
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: textCol),
+              subtitle,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w500,
+                color: subtitleColor ?? colorScheme.onSurfaceVariant,
+              ),
             ),
           ],
         ),
