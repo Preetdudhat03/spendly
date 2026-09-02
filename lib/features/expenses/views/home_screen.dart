@@ -22,21 +22,32 @@ class HomeScreen extends ConsumerWidget {
 
     // Calculations
     final now = DateTime.now();
-    final todayExpenses = expenseState.expenses.where((e) {
+    final currentUserId = authState.userId;
+    final userExpenses = (currentUserId != null && currentUserId.isNotEmpty)
+        ? expenseState.expenses.where((e) => e.createdBy == currentUserId)
+        : expenseState.expenses;
+
+    final todayExpenses = userExpenses.where((e) {
       return e.expenseDate.year == now.year &&
           e.expenseDate.month == now.month &&
           e.expenseDate.day == now.day;
     });
     final todayTotal = todayExpenses.fold<double>(0, (sum, item) => sum + item.amount);
 
-    final monthExpenses = expenseState.expenses.where((e) {
+    final monthExpenses = userExpenses.where((e) {
       return e.expenseDate.year == now.year && e.expenseDate.month == now.month;
     });
     final monthTotal = monthExpenses.fold<double>(0, (sum, item) => sum + item.amount);
 
+    // Family-wide month total for Family Budget Progress card
+    final familyMonthExpenses = expenseState.expenses.where((e) {
+      return e.expenseDate.year == now.year && e.expenseDate.month == now.month;
+    });
+    final familyMonthTotal = familyMonthExpenses.fold<double>(0, (sum, item) => sum + item.amount);
+
     final hasBudget = budgetState.currentBudget != null && budgetState.currentBudget!.monthlyBudget > 0;
     final budgetLimit = hasBudget ? budgetState.currentBudget!.monthlyBudget : 20000.0;
-    final double budgetPercent = budgetLimit > 0 ? (monthTotal / budgetLimit) : 0.0;
+    final double budgetPercent = budgetLimit > 0 ? (familyMonthTotal / budgetLimit) : 0.0;
 
     final double remainingBudget;
     final bool isBudgetExceeded;
