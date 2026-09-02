@@ -460,39 +460,45 @@ class HomeScreen extends ConsumerWidget {
     final colorScheme = theme.colorScheme;
 
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        // 1. Primary Amount: Total Spent This Month
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 4.0),
+        // 1. Primary Hero Amount: Total Spent This Month
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(vertical: 12.0),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Text(
                 'Total Spent This Month',
-                style: theme.textTheme.bodyMedium?.copyWith(
+                textAlign: TextAlign.center,
+                style: theme.textTheme.titleMedium?.copyWith(
                   color: colorScheme.onSurfaceVariant,
                   fontWeight: FontWeight.w600,
+                  fontSize: 16,
                   letterSpacing: 0.2,
                 ),
               ),
-              const SizedBox(height: 6),
+              const SizedBox(height: 8),
               FittedBox(
                 fit: BoxFit.scaleDown,
-                alignment: Alignment.centerLeft,
+                alignment: Alignment.center,
                 child: Text(
                   currencyFormat.format(monthTotal),
-                  style: theme.textTheme.headlineLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 48,
+                    fontWeight: FontWeight.w800,
                     color: colorScheme.onSurface,
-                    letterSpacing: -0.5,
+                    letterSpacing: -1.0,
+                    height: 1.1,
                   ),
                 ),
               ),
             ],
           ),
         ),
-        const SizedBox(height: 14),
+        const SizedBox(height: 18),
 
         // 2. Secondary Cards Row
         Row(
