@@ -113,10 +113,10 @@ class HomeScreen extends ConsumerWidget {
                   children: [
                     const ShimmerPlaceholder(width: 200, height: 28),
                     const SizedBox(height: 18),
-                    const ShimmerPlaceholder(width: 160, height: 16),
-                    const SizedBox(height: 8),
-                    const ShimmerPlaceholder(width: 220, height: 40),
-                    const SizedBox(height: 16),
+                    const Center(child: ShimmerPlaceholder(width: 180, height: 16)),
+                    const SizedBox(height: 10),
+                    const Center(child: ShimmerPlaceholder(width: 220, height: 50)),
+                    const SizedBox(height: 20),
                     const Row(
                       children: [
                         Expanded(child: ShimmerPlaceholder(height: 88, borderRadius: 16)),
