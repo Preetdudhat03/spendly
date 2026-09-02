@@ -398,9 +398,9 @@ class HomeScreen extends ConsumerWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               welcomeMessage,
-                              const SizedBox(height: 18),
+                              const SizedBox(height: 12),
                               financialSummarySection,
-                              const SizedBox(height: 20),
+                              const SizedBox(height: 16),
                               budgetCard,
                               const SizedBox(height: 24),
                               smartSuggestions,
@@ -426,9 +426,9 @@ class HomeScreen extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         welcomeMessage,
-                        const SizedBox(height: 18),
+                        const SizedBox(height: 12),
                         financialSummarySection,
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 16),
                         budgetCard,
                         const SizedBox(height: 24),
                         smartSuggestions,
@@ -465,21 +465,21 @@ class HomeScreen extends ConsumerWidget {
         // 1. Primary Hero Amount: Total Spent This Month
         Container(
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(vertical: 12.0),
+          padding: const EdgeInsets.only(top: 4.0, bottom: 4.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Text(
                 'Total Spent This Month',
                 textAlign: TextAlign.center,
-                style: theme.textTheme.titleMedium?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
+                style: TextStyle(
+                  fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  fontSize: 16,
+                  color: colorScheme.onSurfaceVariant,
                   letterSpacing: 0.2,
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 4),
               FittedBox(
                 fit: BoxFit.scaleDown,
                 alignment: Alignment.center,
@@ -487,47 +487,50 @@ class HomeScreen extends ConsumerWidget {
                   currencyFormat.format(monthTotal),
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontSize: 48,
+                    fontSize: 44,
                     fontWeight: FontWeight.w800,
                     color: colorScheme.onSurface,
                     letterSpacing: -1.0,
-                    height: 1.1,
+                    height: 1.05,
                   ),
                 ),
               ),
             ],
           ),
         ),
-        const SizedBox(height: 18),
+        const SizedBox(height: 14),
 
-        // 2. Secondary Cards Row
-        Row(
-          children: [
-            Expanded(
-              child: _buildSecondaryCard(
-                context,
-                title: "Today's Spending",
-                amount: currencyFormat.format(todayTotal),
-                subtitle: 'Today',
-                subtitleColor: colorScheme.onSurfaceVariant,
+        // 2. Secondary Cards Row (Unified Height)
+        IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(
+                child: _buildSecondaryCard(
+                  context,
+                  title: "Today's Spending",
+                  amount: currencyFormat.format(todayTotal),
+                  subtitle: 'Today',
+                  subtitleColor: colorScheme.onSurfaceVariant,
+                ),
               ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildSecondaryCard(
-                context,
-                title: 'Remaining This Month',
-                amount: hasBudget ? currencyFormat.format(remainingBudget) : '—',
-                amountColor: isBudgetExceeded ? colorScheme.error : colorScheme.onSurface,
-                subtitle: !hasBudget
-                    ? 'Budget not set'
-                    : (isBudgetExceeded
-                        ? 'Budget exceeded'
-                        : '${currencyFormat.format(budgetLimit)} budget'),
-                subtitleColor: isBudgetExceeded ? colorScheme.error : colorScheme.onSurfaceVariant,
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildSecondaryCard(
+                  context,
+                  title: 'Remaining This Month',
+                  amount: hasBudget ? currencyFormat.format(remainingBudget) : '—',
+                  amountColor: isBudgetExceeded ? colorScheme.error : colorScheme.onSurface,
+                  subtitle: !hasBudget
+                      ? 'Budget not set'
+                      : (isBudgetExceeded
+                          ? 'Budget exceeded'
+                          : '${currencyFormat.format(budgetLimit)} budget'),
+                  subtitleColor: isBudgetExceeded ? colorScheme.error : colorScheme.onSurfaceVariant,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ],
     );
@@ -546,23 +549,24 @@ class HomeScreen extends ConsumerWidget {
 
     return Card(
       elevation: 0,
+      margin: EdgeInsets.zero,
       color: theme.cardTheme.color ?? colorScheme.surface,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
         side: BorderSide(color: colorScheme.outline, width: 1),
       ),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 14.0),
+        padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 13.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
               title,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                fontSize: 12,
+                fontSize: 13,
                 fontWeight: FontWeight.w600,
                 color: colorScheme.onSurfaceVariant,
               ),
@@ -574,9 +578,10 @@ class HomeScreen extends ConsumerWidget {
               child: Text(
                 amount,
                 style: TextStyle(
-                  fontSize: 18,
+                  fontSize: 22,
                   fontWeight: FontWeight.bold,
                   color: amountColor ?? colorScheme.onSurface,
+                  letterSpacing: -0.3,
                 ),
               ),
             ),
@@ -586,7 +591,7 @@ class HomeScreen extends ConsumerWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                fontSize: 11,
+                fontSize: 12,
                 fontWeight: FontWeight.w500,
                 color: subtitleColor ?? colorScheme.onSurfaceVariant,
               ),
