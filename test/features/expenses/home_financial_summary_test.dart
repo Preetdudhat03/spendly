@@ -111,10 +111,10 @@ void main() {
     test('calculates remaining budget correctly when within budget', () {
       const budgetLimit = 20000.0;
       const monthTotal = 7500.0;
-      const hasBudget = true;
+      const bool hasBudget = true;
 
-      final double remainingBudget;
-      final bool isBudgetExceeded;
+      double remainingBudget = 0.0;
+      bool isBudgetExceeded = false;
       if (hasBudget) {
         final diff = budgetLimit - monthTotal;
         if (diff < 0) {
@@ -124,9 +124,6 @@ void main() {
           remainingBudget = diff;
           isBudgetExceeded = false;
         }
-      } else {
-        remainingBudget = 0.0;
-        isBudgetExceeded = false;
       }
 
       expect(remainingBudget, 12500.0);
@@ -137,10 +134,10 @@ void main() {
     test('handles budget exceeded scenario correctly', () {
       const budgetLimit = 20000.0;
       const monthTotal = 24500.0;
-      const hasBudget = true;
+      const bool hasBudget = true;
 
-      final double remainingBudget;
-      final bool isBudgetExceeded;
+      double remainingBudget = 0.0;
+      bool isBudgetExceeded = false;
       if (hasBudget) {
         final diff = budgetLimit - monthTotal;
         if (diff < 0) {
@@ -150,9 +147,6 @@ void main() {
           remainingBudget = diff;
           isBudgetExceeded = false;
         }
-      } else {
-        remainingBudget = 0.0;
-        isBudgetExceeded = false;
       }
 
       expect(remainingBudget, 0.0);
@@ -161,8 +155,8 @@ void main() {
     });
 
     test('handles no budget configured scenario correctly', () {
-      Budget? currentBudget;
-      final hasBudget = currentBudget != null && currentBudget.monthlyBudget > 0;
+      final Budget? currentBudget = null;
+      final bool hasBudget = currentBudget != null && (currentBudget as Budget).monthlyBudget > 0;
 
       expect(hasBudget, isFalse);
     });
