@@ -34,8 +34,25 @@ class HomeScreen extends ConsumerWidget {
     });
     final monthTotal = monthExpenses.fold<double>(0, (sum, item) => sum + item.amount);
 
-    final budgetLimit = budgetState.currentBudget?.monthlyBudget ?? 20000.0; // Default if not set
+    final hasBudget = budgetState.currentBudget != null && budgetState.currentBudget!.monthlyBudget > 0;
+    final budgetLimit = hasBudget ? budgetState.currentBudget!.monthlyBudget : 20000.0;
     final double budgetPercent = budgetLimit > 0 ? (monthTotal / budgetLimit) : 0.0;
+
+    final double remainingBudget;
+    final bool isBudgetExceeded;
+    if (hasBudget) {
+      final diff = budgetLimit - monthTotal;
+      if (diff < 0) {
+        remainingBudget = 0.0;
+        isBudgetExceeded = true;
+      } else {
+        remainingBudget = diff;
+        isBudgetExceeded = false;
+      }
+    } else {
+      remainingBudget = 0.0;
+      isBudgetExceeded = false;
+    }
 
     // Determine budget color
     Color budgetColor = const Color(0xFF34D399); // Green (<70%)
@@ -96,11 +113,15 @@ class HomeScreen extends ConsumerWidget {
                   children: [
                     const ShimmerPlaceholder(width: 200, height: 28),
                     const SizedBox(height: 18),
+                    const ShimmerPlaceholder(width: 160, height: 16),
+                    const SizedBox(height: 8),
+                    const ShimmerPlaceholder(width: 220, height: 40),
+                    const SizedBox(height: 16),
                     const Row(
                       children: [
-                        Expanded(child: ShimmerPlaceholder(height: 100, borderRadius: 20)),
-                        SizedBox(width: 16),
-                        Expanded(child: ShimmerPlaceholder(height: 100, borderRadius: 20)),
+                        Expanded(child: ShimmerPlaceholder(height: 88, borderRadius: 16)),
+                        SizedBox(width: 12),
+                        Expanded(child: ShimmerPlaceholder(height: 88, borderRadius: 16)),
                       ],
                     ),
                     const SizedBox(height: 20),
@@ -133,28 +154,15 @@ class HomeScreen extends ConsumerWidget {
                         ),
                   );
 
-                  Widget summaryRow = Row(
-                    children: [
-                      Expanded(
-                        child: _buildSummaryCard(
-                          context,
-                          'Today\'s Spending',
-                          currencyFormat.format(todayTotal),
-                          const Color(0xFFE8EAF6),
-                          Theme.of(context).primaryColor,
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: _buildSummaryCard(
-                          context,
-                          'This Month',
-                          currencyFormat.format(monthTotal),
-                          const Color(0xFFECFDF5),
-                          const Color(0xFF059669),
-                        ),
-                      ),
-                    ],
+                  Widget financialSummarySection = _buildFinancialSummarySection(
+                    context,
+                    monthTotal: monthTotal,
+                    todayTotal: todayTotal,
+                    hasBudget: hasBudget,
+                    remainingBudget: remainingBudget,
+                    isBudgetExceeded: isBudgetExceeded,
+                    budgetLimit: budgetLimit,
+                    currencyFormat: currencyFormat,
                   );
 
                   Widget budgetCard = _buildBudgetCard(
