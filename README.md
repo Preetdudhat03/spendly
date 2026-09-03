@@ -462,4 +462,4 @@ Each operation is assigned a unique <code>operationId</code>, <code>deviceId</co
 Developed with ❤️ by **Preet Dudhat**.
 
 - 🐙 **GitHub Repository:** [Preetdudhat03/spendly](https://github.com/Preetdudhat03/spendly)
-- 📄 **License:** MIT License - free for personal and educational use..
+- 📄 **License:** MIT License - free for personal and educational use...
