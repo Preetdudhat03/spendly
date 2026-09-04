@@ -35,7 +35,6 @@ class HomeHeaderAppBarTitle extends StatelessWidget {
         statusText = 'Offline';
         break;
       case ConnectionStatus.checking:
-      default:
         statusColor = const Color(0xFF9CA3AF);
         statusText = 'Connecting...';
         break;
