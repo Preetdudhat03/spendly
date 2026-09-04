@@ -120,13 +120,10 @@ class _AccountSecurityScreenState extends ConsumerState<AccountSecurityScreen> {
         elevation: 0,
         scrolledUnderElevation: 0,
         surfaceTintColor: Colors.transparent,
-        title: const Text(
-          'Account Security',
-          style: TextStyle(
-            fontWeight: FontWeight.w800,
-            fontSize: 20,
-            letterSpacing: -0.5,
-          ),
+        centerTitle: true,
+        title: const CapsuleHeader(
+          title: 'Account Security',
+          icon: Icons.security_rounded,
         ),
       ),
       body: SingleChildScrollView(
