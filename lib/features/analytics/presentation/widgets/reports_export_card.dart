@@ -293,6 +293,7 @@ class ReportsExportCard extends StatelessWidget {
 
             // Export Actions Grid
             GridView(
+              padding: EdgeInsets.zero,
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
