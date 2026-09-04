@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import 'package:spendly/core/providers/state_providers.dart';
+import 'package:spendly/core/widgets/capsule_top_bar.dart';
 import 'package:spendly/core/widgets/shimmer_loading.dart';
 import 'package:spendly/features/expenses/widgets/expense_detail_modal.dart';
 import 'package:spendly/models/expense.dart';
