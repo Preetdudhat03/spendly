@@ -34,15 +34,15 @@ class BudgetOverviewCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
           color: isDark
-              ? colorScheme.outline.withOpacity(0.4)
-              : colorScheme.outline.withOpacity(0.8),
+              ? colorScheme.outline.withValues(alpha: 0.4)
+              : colorScheme.outline.withValues(alpha: 0.8),
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
             color: isDark
-                ? Colors.black.withOpacity(0.2)
-                : colorScheme.shadow.withOpacity(0.04),
+                ? Colors.black.withValues(alpha: 0.2)
+                : colorScheme.shadow.withValues(alpha: 0.04),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -81,10 +81,10 @@ class BudgetOverviewCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: budgetColor.withOpacity(0.12),
+                  color: budgetColor.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(100),
                   border: Border.all(
-                    color: budgetColor.withOpacity(0.25),
+                    color: budgetColor.withValues(alpha: 0.25),
                     width: 1,
                   ),
                 ),
@@ -109,7 +109,7 @@ class BudgetOverviewCard extends StatelessWidget {
                 width: double.infinity,
                 decoration: BoxDecoration(
                   color: isDark
-                      ? colorScheme.outline.withOpacity(0.3)
+                      ? colorScheme.outline.withValues(alpha: 0.3)
                       : const Color(0xFFE2E8F0),
                   borderRadius: BorderRadius.circular(100),
                 ),
@@ -123,7 +123,7 @@ class BudgetOverviewCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(100),
                     boxShadow: [
                       BoxShadow(
-                        color: budgetColor.withOpacity(0.3),
+                        color: budgetColor.withValues(alpha: 0.3),
                         blurRadius: 6,
                         offset: const Offset(0, 1),
                       ),
