@@ -114,7 +114,11 @@ class _AccountSecurityScreenState extends ConsumerState<AccountSecurityScreen> {
     final familyName = familyState.family?.name ?? 'your family';
     final otherMembersExist = familyState.members.where((m) => m.userId != authState.userId).isNotEmpty;
 
+    final topInset = MediaQuery.of(context).padding.top;
+    final contentTopPadding = topInset + 58.0;
+
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -127,7 +131,7 @@ class _AccountSecurityScreenState extends ConsumerState<AccountSecurityScreen> {
         ),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20.0),
+        padding: EdgeInsets.fromLTRB(20.0, contentTopPadding, 20.0, 20.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
