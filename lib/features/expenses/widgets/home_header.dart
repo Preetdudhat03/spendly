@@ -72,31 +72,10 @@ class FamilyHeader extends ConsumerWidget {
           onTap: onTap ?? () => context.go('/profile'),
           borderRadius: BorderRadius.circular(100),
           child: Container(
-            padding: const EdgeInsets.fromLTRB(6, 4, 12, 4),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             constraints: const BoxConstraints(
               minHeight: 44,
               maxWidth: 320,
-            ),
-            decoration: BoxDecoration(
-              color: isDark
-                  ? colorScheme.surfaceContainer.withValues(alpha: 0.8)
-                  : colorScheme.surface,
-              borderRadius: BorderRadius.circular(100),
-              border: Border.all(
-                color: isDark
-                    ? colorScheme.outline.withValues(alpha: 0.4)
-                    : colorScheme.outline.withValues(alpha: 0.8),
-                width: 1,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: isDark
-                      ? Colors.black.withValues(alpha: 0.2)
-                      : colorScheme.shadow.withValues(alpha: 0.03),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ],
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
