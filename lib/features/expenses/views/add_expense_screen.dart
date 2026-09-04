@@ -179,14 +179,9 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
         scrolledUnderElevation: 0,
         surfaceTintColor: Colors.transparent,
         centerTitle: true,
-        title: Text(
-          'Add Expense',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w700,
-            color: colorScheme.onSurface,
-            letterSpacing: -0.2,
-          ),
+        title: const CapsuleHeader(
+          title: 'Add Expense',
+          icon: Icons.add_circle_outline_rounded,
         ),
       ),
       body: Center(
