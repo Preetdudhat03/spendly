@@ -60,7 +60,18 @@ class _FamilySetupScreenState extends ConsumerState<FamilySetupScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Setup Family'),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        surfaceTintColor: Colors.transparent,
+        title: const Text(
+          'Setup Family',
+          style: TextStyle(
+            fontWeight: FontWeight.w800,
+            fontSize: 20,
+            letterSpacing: -0.5,
+          ),
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
