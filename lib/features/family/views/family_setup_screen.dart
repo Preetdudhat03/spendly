@@ -65,13 +65,10 @@ class _FamilySetupScreenState extends ConsumerState<FamilySetupScreen> {
         elevation: 0,
         scrolledUnderElevation: 0,
         surfaceTintColor: Colors.transparent,
-        title: const Text(
-          'Setup Family',
-          style: TextStyle(
-            fontWeight: FontWeight.w800,
-            fontSize: 20,
-            letterSpacing: -0.5,
-          ),
+        centerTitle: true,
+        title: const CapsuleHeader(
+          title: 'Setup Family',
+          icon: Icons.group_rounded,
         ),
         actions: [
           IconButton(
