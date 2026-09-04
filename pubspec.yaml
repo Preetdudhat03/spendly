@@ -53,7 +53,6 @@ dependencies:
   archive: ^4.0.9
   qr_flutter: ^4.1.0
   fui_kit: ^2.1.0
-  lucide_icons: ^0.257.0
   flutter_svg: ^2.3.0
   uuid: ^4.5.1
   path: ^1.9.0
