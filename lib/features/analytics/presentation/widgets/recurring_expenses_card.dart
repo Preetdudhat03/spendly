@@ -105,6 +105,7 @@ class RecurringExpensesCard extends StatelessWidget {
               )
             else
               ListView.builder(
+                padding: EdgeInsets.zero,
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 itemCount: items.length,
