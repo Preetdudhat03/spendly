@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
-import 'package:spendly/core/providers/state_providers.dart';
+import 'package:spendly/features/expenses/views/add_expense_screen.dart';
 import 'package:spendly/features/expenses/widgets/expense_detail_modal.dart';
 
 class QuickCategoryCarousel extends ConsumerWidget {
