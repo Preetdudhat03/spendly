@@ -171,8 +171,11 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
     final colorScheme = theme.colorScheme;
     final isDark = theme.brightness == Brightness.dark;
     final isWide = MediaQuery.of(context).size.width > 720;
+    final topInset = MediaQuery.of(context).padding.top;
+    final contentTopPadding = topInset + 58.0;
 
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -188,7 +191,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
         child: Container(
           constraints: BoxConstraints(maxWidth: isWide ? 600 : double.infinity),
           child: SingleChildScrollView(
-            padding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, isWide ? 20.0 : 100.0),
+            padding: EdgeInsets.fromLTRB(20.0, contentTopPadding, 20.0, isWide ? 20.0 : 100.0),
             child: Form(
               key: _formKey,
               child: Column(
