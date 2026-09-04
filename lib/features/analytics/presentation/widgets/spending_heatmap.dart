@@ -188,6 +188,7 @@ class SpendingHeatmap extends ConsumerWidget {
 
                       // Weeks rows
                       ListView.builder(
+                        padding: EdgeInsets.zero,
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
                         itemCount: weeks.length,
