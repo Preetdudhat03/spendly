@@ -81,6 +81,7 @@ class CategoryComparisonChart extends StatelessWidget {
 
             // Horizontal Bars ListView
             ListView.builder(
+              padding: EdgeInsets.zero,
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               itemCount: sortedShares.length,
