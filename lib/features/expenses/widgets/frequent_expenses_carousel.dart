@@ -97,15 +97,15 @@ class FrequentExpensesCarousel extends ConsumerWidget {
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: isDark
-              ? colorScheme.outline.withOpacity(0.4)
-              : colorScheme.outline.withOpacity(0.8),
+              ? colorScheme.outline.withValues(alpha: 0.4)
+              : colorScheme.outline.withValues(alpha: 0.8),
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
             color: isDark
-                ? Colors.black.withOpacity(0.2)
-                : colorScheme.shadow.withOpacity(0.04),
+                ? Colors.black.withValues(alpha: 0.2)
+                : colorScheme.shadow.withValues(alpha: 0.04),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -126,7 +126,7 @@ class FrequentExpensesCarousel extends ConsumerWidget {
                   height: 32,
                   padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
-                    color: catColor.withOpacity(0.12),
+                    color: catColor.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: SvgPicture.asset(
