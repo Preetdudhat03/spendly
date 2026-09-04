@@ -505,14 +505,10 @@ class _AllExpensesScreenState extends ConsumerState<AllExpensesScreen> {
         scrolledUnderElevation: 0,
         surfaceTintColor: Colors.transparent,
         centerTitle: true,
-        title: Text(
-          'All Family Expenses',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w700,
-            color: colorScheme.onSurface,
-            letterSpacing: -0.2,
-          ),
+        title: CapsuleHeader(
+          title: 'All Expenses',
+          icon: Icons.receipt_long_rounded,
+          badge: filteredExpenses.isNotEmpty ? '${filteredExpenses.length}' : null,
         ),
       ),
       body: isWide
