@@ -318,6 +318,7 @@ class SpendingTrendChart extends StatelessWidget {
               builder: (context, constraints) {
                 final isNarrow = constraints.maxWidth < 360;
                 return GridView(
+                  padding: EdgeInsets.zero,
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
