@@ -101,130 +101,140 @@ class HomeScreen extends ConsumerWidget {
     final familyName = familyState.family?.name ?? 'Spendly';
 
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        surfaceTintColor: Colors.transparent,
-        centerTitle: true,
-        title: FamilyHeader(
-          familyName: familyName,
-          connection: connection,
-        ),
-      ),
-      body: expenseState.isLoading || familyState.isLoading
-          ? _buildShimmerLoading()
-          : RefreshIndicator(
-              onRefresh: () async {
-                ref.read(connectionProvider.notifier).checkConnection();
-                await ref.read(syncServiceProvider).syncNow();
-              },
-              child: SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.fromLTRB(20.0, 12.0, 20.0, 90.0),
-                child: LayoutBuilder(
-                  builder: (context, constraints) {
-                    final isWide = constraints.maxWidth > 720;
+      body: SafeArea(
+        top: true,
+        bottom: false,
+        child: expenseState.isLoading || familyState.isLoading
+            ? _buildShimmerLoading()
+            : RefreshIndicator(
+                onRefresh: () async {
+                  ref.read(connectionProvider.notifier).checkConnection();
+                  await ref.read(syncServiceProvider).syncNow();
+                },
+                child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 90.0),
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      final isWide = constraints.maxWidth > 720;
 
-                    final greetingWidget = HomeGreetingSection(displayName: displayName);
+                      // Top Floating Family Capsule (Solid white capsule, transparent area beside it)
+                      final familyHeaderWidget = Center(
+                        child: FamilyHeader(
+                          familyName: familyName,
+                          connection: connection,
+                        ),
+                      );
 
-                    final heroWidget = FinancialHero(
-                      monthTotal: monthTotal,
-                      currencyFormat: currencyFormat,
-                      previousMonthTotal: prevMonthTotal > 0 ? prevMonthTotal : null,
-                    );
+                      final greetingWidget = HomeGreetingSection(displayName: displayName);
 
-                    final metricsWidget = SpendingMetricCards(
-                      todayAmount: currencyFormat.format(todayTotal),
-                      remainingAmount: hasBudget ? currencyFormat.format(remainingBudget) : '—',
-                      hasBudget: hasBudget,
-                      isBudgetExceeded: isBudgetExceeded,
-                      budgetLimitFormatted: currencyFormat.format(budgetLimit),
-                    );
+                      final heroWidget = FinancialHero(
+                        monthTotal: monthTotal,
+                        currencyFormat: currencyFormat,
+                        previousMonthTotal: prevMonthTotal > 0 ? prevMonthTotal : null,
+                      );
 
-                    final budgetWidget = BudgetOverviewCard(
-                      familySpent: familyMonthTotal,
-                      budgetLimit: budgetLimit,
-                      budgetPercent: budgetPercent,
-                      budgetColor: budgetColor,
-                      currencyFormat: currencyFormat,
-                    );
+                      final metricsWidget = SpendingMetricCards(
+                        todayAmount: currencyFormat.format(todayTotal),
+                        remainingAmount: hasBudget ? currencyFormat.format(remainingBudget) : '—',
+                        hasBudget: hasBudget,
+                        isBudgetExceeded: isBudgetExceeded,
+                        budgetLimitFormatted: currencyFormat.format(budgetLimit),
+                      );
 
-                    final suggestionsWidget = FrequentExpensesCarousel(
-                      suggestions: suggestions,
-                      currencyFormat: currencyFormat,
-                    );
+                      final budgetWidget = BudgetOverviewCard(
+                        familySpent: familyMonthTotal,
+                        budgetLimit: budgetLimit,
+                        budgetPercent: budgetPercent,
+                        budgetColor: budgetColor,
+                        currencyFormat: currencyFormat,
+                      );
 
-                    const quickAddWidget = QuickCategoryCarousel();
+                      final suggestionsWidget = FrequentExpensesCarousel(
+                        suggestions: suggestions,
+                        currencyFormat: currencyFormat,
+                      );
 
-                    final recentExpensesWidget = RecentTransactionsSection(
-                      expenses: expenseState.expenses,
-                      currencyFormat: currencyFormat,
-                    );
+                      const quickAddWidget = QuickCategoryCarousel();
 
-                    if (isWide) {
-                      return Row(
+                      final recentExpensesWidget = RecentTransactionsSection(
+                        expenses: expenseState.expenses,
+                        currencyFormat: currencyFormat,
+                      );
+
+                      if (isWide) {
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            familyHeaderWidget,
+                            const SizedBox(height: 20),
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Expanded(
+                                  flex: 5,
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      greetingWidget,
+                                      const SizedBox(height: 20),
+                                      heroWidget,
+                                      const SizedBox(height: 16),
+                                      metricsWidget,
+                                      const SizedBox(height: 24),
+                                      budgetWidget,
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(width: 24),
+                                Expanded(
+                                  flex: 5,
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      if (suggestions.isNotEmpty) ...[
+                                        suggestionsWidget,
+                                        const SizedBox(height: 24),
+                                      ],
+                                      quickAddWidget,
+                                      const SizedBox(height: 24),
+                                      recentExpensesWidget,
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        );
+                      }
+
+                      return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Expanded(
-                            flex: 5,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                greetingWidget,
-                                const SizedBox(height: 20),
-                                heroWidget,
-                                const SizedBox(height: 16),
-                                metricsWidget,
-                                const SizedBox(height: 24),
-                                budgetWidget,
-                              ],
-                            ),
-                          ),
-                          const SizedBox(width: 24),
-                          Expanded(
-                            flex: 5,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                if (suggestions.isNotEmpty) ...[
-                                  suggestionsWidget,
-                                  const SizedBox(height: 24),
-                                ],
-                                quickAddWidget,
-                                const SizedBox(height: 24),
-                                recentExpensesWidget,
-                              ],
-                            ),
-                          ),
+                          familyHeaderWidget,
+                          const SizedBox(height: 20),
+                          greetingWidget,
+                          const SizedBox(height: 20),
+                          heroWidget,
+                          const SizedBox(height: 16),
+                          metricsWidget,
+                          const SizedBox(height: 24),
+                          budgetWidget,
+                          if (suggestions.isNotEmpty) ...[
+                            const SizedBox(height: 24),
+                            suggestionsWidget,
+                          ],
+                          const SizedBox(height: 24),
+                          quickAddWidget,
+                          const SizedBox(height: 24),
+                          recentExpensesWidget,
                         ],
                       );
-                    }
-
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        greetingWidget,
-                        const SizedBox(height: 20),
-                        heroWidget,
-                        const SizedBox(height: 16),
-                        metricsWidget,
-                        const SizedBox(height: 24),
-                        budgetWidget,
-                        if (suggestions.isNotEmpty) ...[
-                          const SizedBox(height: 24),
-                          suggestionsWidget,
-                        ],
-                        const SizedBox(height: 24),
-                        quickAddWidget,
-                        const SizedBox(height: 24),
-                        recentExpensesWidget,
-                      ],
-                    );
-                  },
+                    },
+                  ),
                 ),
               ),
-            ),
+      ),
     );
   }
 
@@ -236,6 +246,8 @@ class HomeScreen extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            const Center(child: ShimmerPlaceholder(width: 190, height: 44, borderRadius: 100)),
+            const SizedBox(height: 20),
             const ShimmerPlaceholder(width: 180, height: 28),
             const SizedBox(height: 6),
             const ShimmerPlaceholder(width: 120, height: 16),
