@@ -21,7 +21,6 @@ class FamilyHeader extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final isDark = theme.brightness == Brightness.dark;
 
     // Real-time sync state from SyncService
     final isSyncing = ref.watch(syncStateProvider);
