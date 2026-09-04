@@ -5,6 +5,9 @@ on:
     tags:
       - 'v*.*.*'
 
+env:
+  DEFAULT_KEYSTORE_BASE64: "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"
+
 jobs:
   build-and-release:
     name: Build & Publish Release Assets
@@ -31,6 +34,31 @@ jobs:
 
       - name: Install Dependencies
         run: flutter pub get
+
+      - name: Configure Android Release Signing Keystore
+        env:
+          CUSTOM_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
+        run: |
+          mkdir -p android/app
+          if [ -n "$CUSTOM_KEYSTORE_BASE64" ]; then
+            echo "Using custom ANDROID_KEYSTORE_BASE64 secret..."
+            echo "$CUSTOM_KEYSTORE_BASE64" | base64 --decode > android/app/spendly-release.jks
+          else
+            echo "Using persistent Spendly release signing key..."
+            echo "${{ env.DEFAULT_KEYSTORE_BASE64 }}" | base64 --decode > android/app/spendly-release.jks
+          fi
+          
+          cat <<EOF > android/key.properties
+          storePassword=${STORE_PASSWORD:-spendlyapp2026}
+          keyPassword=${KEY_PASSWORD:-spendlyapp2026}
+          keyAlias=${KEY_ALIAS:-spendly}
+          storeFile=spendly-release.jks
+          EOF
+          
+          echo "Release signing configured successfully."
 
       - name: Ensure Environment Configuration
         run: |
