@@ -59,7 +59,11 @@ class _FamilySetupScreenState extends ConsumerState<FamilySetupScreen> {
   Widget build(BuildContext context) {
     final familyState = ref.watch(familyProvider);
 
+    final topInset = MediaQuery.of(context).padding.top;
+    final contentTopPadding = topInset + 58.0;
+
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -81,12 +85,12 @@ class _FamilySetupScreenState extends ConsumerState<FamilySetupScreen> {
           ? ShimmerLoading(
               isLoading: true,
               child: Padding(
-                padding: const EdgeInsets.all(28.0),
+                padding: EdgeInsets.fromLTRB(28.0, contentTopPadding, 28.0, 28.0),
                 child: const ShimmerListPlaceholder(itemCount: 4),
               ),
             )
           : SingleChildScrollView(
-              padding: const EdgeInsets.all(28.0),
+              padding: EdgeInsets.fromLTRB(28.0, contentTopPadding, 28.0, 28.0),
               child: Builder(
                 builder: (context) {
                   final width = MediaQuery.of(context).size.width;
