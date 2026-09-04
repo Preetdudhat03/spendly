@@ -49,9 +49,17 @@ class AnalyticsPage extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        surfaceTintColor: Colors.transparent,
         title: const Text(
-          'Financial intelligence',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+          'Financial Intelligence',
+          style: TextStyle(
+            fontWeight: FontWeight.w800,
+            fontSize: 20,
+            letterSpacing: -0.5,
+          ),
         ),
       ),
       body: RefreshIndicator(
