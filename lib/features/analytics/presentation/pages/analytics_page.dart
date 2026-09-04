@@ -311,11 +311,11 @@ class AnalyticsPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildLoadingState(BuildContext context, bool isWide, WidgetRef ref) {
+  Widget _buildLoadingState(BuildContext context, bool isWide, WidgetRef ref, double contentTopPadding) {
     return SingleChildScrollView(
       padding: isWide
-          ? const EdgeInsets.symmetric(horizontal: 20, vertical: 10)
-          : const EdgeInsets.fromLTRB(20, 10, 20, 140),
+          ? EdgeInsets.fromLTRB(20, contentTopPadding, 20, 10)
+          : EdgeInsets.fromLTRB(20, contentTopPadding, 20, 140),
       child: ShimmerLoading(
         isLoading: true,
         child: Column(
@@ -355,6 +355,7 @@ class AnalyticsPage extends ConsumerWidget {
     List<Expense> allExpenses,
     bool isWide,
     WidgetRef ref,
+    double contentTopPadding,
   ) {
     Widget animatedItem(Widget child, int index) {
       return child;
@@ -363,7 +364,7 @@ class AnalyticsPage extends ConsumerWidget {
     if (isWide) {
       return SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        padding: EdgeInsets.fromLTRB(24, contentTopPadding, 24, 16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -443,7 +444,7 @@ class AnalyticsPage extends ConsumerWidget {
     } else {
       return SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.fromLTRB(20, 12, 20, 140),
+        padding: EdgeInsets.fromLTRB(20, contentTopPadding, 20, 140),
         child: Column(
           children: [
             animatedItem(const AnalyticsFilterHeader(), 0),
