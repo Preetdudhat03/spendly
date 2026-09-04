@@ -255,8 +255,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final currentBudget = budgetState.currentBudget?.monthlyBudget ?? 20000.0;
 
     final currencyFormat = NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 0);
+    final topInset = MediaQuery.of(context).padding.top;
+    final contentTopPadding = topInset + 58.0;
 
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -272,12 +275,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           ? ShimmerLoading(
               isLoading: true,
               child: Padding(
-                padding: const EdgeInsets.all(20.0),
+                padding: EdgeInsets.fromLTRB(20.0, contentTopPadding, 20.0, 20.0),
                 child: const ShimmerProfilePlaceholder(),
               ),
             )
           : SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(20.0, 20.0, 20.0, 80.0), //20, 20, 20, 100
+              padding: EdgeInsets.fromLTRB(20.0, contentTopPadding, 20.0, 80.0),
               child: Builder(
                 builder: (context) {
                   final width = MediaQuery.of(context).size.width;
