@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spendly/core/providers/state_providers.dart';
 import 'package:spendly/core/utils/schema_validator.dart';
+import 'package:spendly/core/widgets/capsule_top_bar.dart';
 import 'package:spendly/core/widgets/shimmer_loading.dart';
 
 class FamilySetupScreen extends ConsumerStatefulWidget {
