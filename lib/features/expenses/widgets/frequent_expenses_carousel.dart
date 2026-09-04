@@ -3,9 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import 'package:lucide_icons/lucide_icons.dart';
 import 'package:spendly/core/providers/state_providers.dart';
 import 'package:spendly/core/services/suggestions_service.dart';
+import 'package:spendly/features/expenses/views/add_expense_screen.dart';
 import 'package:spendly/features/expenses/widgets/expense_detail_modal.dart';
 
 class FrequentExpensesCarousel extends ConsumerWidget {
@@ -160,7 +160,7 @@ class FrequentExpensesCarousel extends ConsumerWidget {
                       value: 'edit',
                       child: Row(
                         children: [
-                          Icon(LucideIcons.edit3, size: 16),
+                          Icon(Icons.edit_outlined, size: 16),
                           SizedBox(width: 8),
                           Text('Edit details'),
                         ],
@@ -170,7 +170,7 @@ class FrequentExpensesCarousel extends ConsumerWidget {
                       value: 'delete',
                       child: Row(
                         children: [
-                          Icon(LucideIcons.trash2, size: 16, color: Colors.red),
+                          Icon(Icons.delete_outline_rounded, size: 16, color: Colors.red),
                           SizedBox(width: 8),
                           Text('Delete shortcut', style: TextStyle(color: Colors.red)),
                         ],
@@ -247,11 +247,11 @@ class FrequentExpensesCarousel extends ConsumerWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       const Icon(
-                        LucideIcons.zap,
-                        size: 13,
+                        Icons.bolt_rounded,
+                        size: 14,
                         color: Colors.white,
                       ),
-                      const SizedBox(width: 5),
+                      const SizedBox(width: 4),
                       Text(
                         'One Tap Save',
                         style: TextStyle(
