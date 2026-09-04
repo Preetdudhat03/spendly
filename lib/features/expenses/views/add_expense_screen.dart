@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import 'package:spendly/core/providers/state_providers.dart';
 import 'package:spendly/core/utils/schema_validator.dart';
+import 'package:spendly/core/widgets/capsule_top_bar.dart';
 import 'package:spendly/features/expenses/widgets/expense_detail_modal.dart';
 
 // Provider to hold quick-add categories selected from home screen
