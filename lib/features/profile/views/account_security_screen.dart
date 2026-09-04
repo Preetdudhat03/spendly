@@ -115,8 +115,18 @@ class _AccountSecurityScreenState extends ConsumerState<AccountSecurityScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Account Security'),
+        backgroundColor: Colors.transparent,
         elevation: 0,
+        scrolledUnderElevation: 0,
+        surfaceTintColor: Colors.transparent,
+        title: const Text(
+          'Account Security',
+          style: TextStyle(
+            fontWeight: FontWeight.w800,
+            fontSize: 20,
+            letterSpacing: -0.5,
+          ),
+        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20.0),
