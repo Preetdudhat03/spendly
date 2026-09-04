@@ -102,8 +102,8 @@ class FloatingSpendlyNavigationBar extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     final activeBgColor = isDark
-        ? colors.primary.withOpacity(0.20)
-        : colors.primary.withOpacity(0.12);
+        ? colors.primary.withValues(alpha: 0.20)
+        : colors.primary.withValues(alpha: 0.12);
 
     final activeColor = colors.primary;
     final inactiveColor = isDark ? colors.neutral400 : colors.neutral500;
@@ -115,8 +115,8 @@ class FloatingSpendlyNavigationBar extends StatelessWidget {
         duration: const Duration(milliseconds: 250),
         curve: Curves.easeInOutCubic,
         padding: EdgeInsets.symmetric(
-          horizontal: isSelected ? 20.0 : 14.0,//16 ,12
-          vertical: 10.0, //10
+          horizontal: isSelected ? 20.0 : 14.0,
+          vertical: 10.0,
         ),
         decoration: BoxDecoration(
           color: isSelected ? activeBgColor : Colors.transparent,
@@ -127,8 +127,8 @@ class FloatingSpendlyNavigationBar extends StatelessWidget {
           children: [
             SvgPicture.asset(
               iconPath,
-              width: 26, //22
-              height: 26, //22
+              width: 26,
+              height: 26,
               colorFilter: ColorFilter.mode(
                 isSelected ? activeColor : inactiveColor,
                 BlendMode.srcIn,
@@ -144,7 +144,7 @@ class FloatingSpendlyNavigationBar extends StatelessWidget {
                     style: TextStyle(
                       color: activeColor,
                       fontWeight: FontWeight.w700,
-                      fontSize: 14, //13
+                      fontSize: 14,
                       letterSpacing: -0.2,
                     ),
                   ),
@@ -224,8 +224,8 @@ class __AddExpenseFloatingButtonState
       child: ScaleTransition(
         scale: _scaleAnimation,
         child: Container(
-          width: 56, //52
-          height: 56,//52
+          width: 56,
+          height: 56,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: colors.primary,
@@ -233,8 +233,8 @@ class __AddExpenseFloatingButtonState
           child: Center(
             child: SvgPicture.asset(
               'assets/icons/plus.svg',
-              width: 40, //24
-              height: 40, //24
+              width: 40,
+              height: 40,
               colorFilter: const ColorFilter.mode(
                 Colors.white,
                 BlendMode.srcIn,
