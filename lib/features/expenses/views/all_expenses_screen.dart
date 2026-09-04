@@ -76,10 +76,12 @@ class _AllExpensesScreenState extends ConsumerState<AllExpensesScreen> {
     final groupedKeys = groupedExpenses.keys.toList();
 
     final isWide = MediaQuery.of(context).size.width > 720;
+    final topInset = MediaQuery.of(context).padding.top;
+    final contentTopPadding = topInset + 58.0;
 
     // Search Bar Widget
     Widget searchBar = Padding(
-      padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 8.0),
+      padding: EdgeInsets.fromLTRB(16.0, contentTopPadding, 16.0, 8.0),
       child: TextField(
         controller: _searchController,
         onChanged: (val) {
