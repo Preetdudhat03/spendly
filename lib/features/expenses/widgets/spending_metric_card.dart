@@ -87,15 +87,15 @@ class SpendingMetricCards extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: isDark
-              ? colorScheme.outline.withOpacity(0.4)
-              : colorScheme.outline.withOpacity(0.8),
+              ? colorScheme.outline.withValues(alpha: 0.4)
+              : colorScheme.outline.withValues(alpha: 0.8),
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
             color: isDark
-                ? Colors.black.withOpacity(0.2)
-                : colorScheme.shadow.withOpacity(0.04),
+                ? Colors.black.withValues(alpha: 0.2)
+                : colorScheme.shadow.withValues(alpha: 0.04),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -122,7 +122,7 @@ class SpendingMetricCards extends StatelessWidget {
                 width: 28,
                 height: 28,
                 decoration: BoxDecoration(
-                  color: accentColor.withOpacity(0.12),
+                  color: accentColor.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(
