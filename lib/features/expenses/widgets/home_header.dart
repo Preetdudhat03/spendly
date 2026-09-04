@@ -79,8 +79,8 @@ class FamilyHeader extends ConsumerWidget {
             ),
             decoration: BoxDecoration(
               color: isDark
-                  ? colorScheme.surfaceContainer.withValues(alpha: 0.8)
-                  : colorScheme.surface,
+                  ? colorScheme.surface
+                  : Colors.white,
               borderRadius: BorderRadius.circular(100),
               border: Border.all(
                 color: isDark
