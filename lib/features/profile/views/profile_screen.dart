@@ -262,13 +262,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         elevation: 0,
         scrolledUnderElevation: 0,
         surfaceTintColor: Colors.transparent,
-        title: const Text(
-          'Profile & Settings',
-          style: TextStyle(
-            fontWeight: FontWeight.w800,
-            fontSize: 20,
-            letterSpacing: -0.5,
-          ),
+        centerTitle: true,
+        title: const CapsuleHeader(
+          title: 'Profile & Settings',
+          icon: Icons.person_rounded,
         ),
       ),
       body: authState.isLoading || familyState.isLoading
