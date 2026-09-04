@@ -47,8 +47,11 @@ class AnalyticsPage extends ConsumerWidget {
     final expenseState = ref.watch(expenseProvider);
 
     final isWide = MediaQuery.of(context).size.width > 720;
+    final topInset = MediaQuery.of(context).padding.top;
+    final contentTopPadding = topInset + 58.0;
 
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -61,30 +64,33 @@ class AnalyticsPage extends ConsumerWidget {
         ),
       ),
       body: RefreshIndicator(
+        edgeOffset: contentTopPadding,
         onRefresh: () => _handleRefresh(ref),
         color: Theme.of(context).primaryColor,
         child: expenseState.isLoading || state.status == AnalyticsStatus.loading
-            ? _buildLoadingState(context, isWide, ref)
+            ? _buildLoadingState(context, isWide, ref, contentTopPadding)
             : !state.hasHistoricalExpenses
-                ? _buildEmptyState(context, ref)
+                ? _buildEmptyState(context, ref, contentTopPadding)
                 : _buildDashboardContent(
                     context,
                     state,
                     expenseState.expenses,
                     isWide,
                     ref,
+                    contentTopPadding,
                   ),
       ),
     );
   }
 
-  Widget _buildEmptyState(BuildContext context, WidgetRef ref) {
+  Widget _buildEmptyState(BuildContext context, WidgetRef ref, double contentTopPadding) {
     const String messageTitle = 'No expenses recorded yet';
     const String messageBody =
         'Log your first family transaction to activate real-time financial intelligence dashboard metrics.';
 
     return SingleChildScrollView(
       physics: const AlwaysScrollableScrollPhysics(),
+      padding: EdgeInsets.fromLTRB(28.0, contentTopPadding, 28.0, 28.0),
       child: Container(
         height: MediaQuery.of(context).size.height * 0.75,
         alignment: Alignment.center,
