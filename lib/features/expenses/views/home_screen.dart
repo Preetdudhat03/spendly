@@ -102,7 +102,8 @@ class HomeScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: HomeHeaderAppBarTitle(
+        centerTitle: true,
+        title: FamilyHeader(
           familyName: familyName,
           connection: connection,
         ),
