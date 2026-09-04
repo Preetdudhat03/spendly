@@ -126,6 +126,7 @@ class _TopExpensesListState extends State<TopExpensesList> {
 
             // Expandable List
             ListView.builder(
+              padding: EdgeInsets.zero,
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               itemCount: widget.state.topExpenses.length,
