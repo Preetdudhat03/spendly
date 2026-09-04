@@ -85,8 +85,8 @@ class RecentTransactionsSection extends ConsumerWidget {
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
                 color: isDark
-                    ? colorScheme.outline.withOpacity(0.4)
-                    : colorScheme.outline.withOpacity(0.8),
+                    ? colorScheme.outline.withValues(alpha: 0.4)
+                    : colorScheme.outline.withValues(alpha: 0.8),
                 width: 1,
               ),
             ),
@@ -96,7 +96,7 @@ class RecentTransactionsSection extends ConsumerWidget {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: colorScheme.primary.withOpacity(0.08),
+                    color: colorScheme.primary.withValues(alpha: 0.08),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
@@ -170,15 +170,15 @@ class _RecentTransactionTile extends ConsumerWidget {
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
           color: isDark
-              ? colorScheme.outline.withOpacity(0.4)
-              : colorScheme.outline.withOpacity(0.8),
+              ? colorScheme.outline.withValues(alpha: 0.4)
+              : colorScheme.outline.withValues(alpha: 0.8),
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
             color: isDark
-                ? Colors.black.withOpacity(0.12)
-                : colorScheme.shadow.withOpacity(0.02),
+                ? Colors.black.withValues(alpha: 0.12)
+                : colorScheme.shadow.withValues(alpha: 0.02),
             blurRadius: 6,
             offset: const Offset(0, 1),
           ),
@@ -199,7 +199,7 @@ class _RecentTransactionTile extends ConsumerWidget {
                   height: 42,
                   padding: const EdgeInsets.all(9),
                   decoration: BoxDecoration(
-                    color: catColor.withOpacity(0.12),
+                    color: catColor.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: SvgPicture.asset(
@@ -240,7 +240,7 @@ class _RecentTransactionTile extends ConsumerWidget {
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w500,
-                              color: colorScheme.onSurfaceVariant.withOpacity(0.8),
+                              color: colorScheme.onSurfaceVariant.withValues(alpha: 0.8),
                             ),
                           ),
                         ],
@@ -266,7 +266,7 @@ class _RecentTransactionTile extends ConsumerWidget {
                   icon: Icon(
                     LucideIcons.trash2,
                     size: 16,
-                    color: colorScheme.onSurfaceVariant.withOpacity(0.6),
+                    color: colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
                   ),
                   visualDensity: VisualDensity.compact,
                   padding: EdgeInsets.zero,
