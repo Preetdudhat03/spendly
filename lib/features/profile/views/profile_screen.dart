@@ -1097,8 +1097,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                             'Family Members (${familyState.members.length})',
                             style: Theme.of(context).textTheme.titleMedium,
                           ),
-                          const Divider(height: 24),
+                          const Divider(height: 16),
                           ListView.builder(
+                            padding: EdgeInsets.zero,
                             shrinkWrap: true,
                             physics: const NeverScrollableScrollPhysics(),
                             itemCount: familyState.members.length,
