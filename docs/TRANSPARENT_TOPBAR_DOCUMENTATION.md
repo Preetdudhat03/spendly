@@ -591,5 +591,8 @@ class MyNewScreen extends StatelessWidget {
 ### Q: Why does the pull-to-refresh spinner hide behind the capsule?
 **A**: On `RefreshIndicator`, set `edgeOffset: contentTopPadding`.
 
+### Q: Why is there an unexpected extra gap at the top of a nested ListView/GridView?
+**A**: When `extendBodyBehindAppBar: true` is active on a `Scaffold`, Flutter's `ListView.builder` and `GridView.builder` automatically inherit `MediaQuery.of(context).padding.top` (the status bar safe area) unless you explicitly set `padding: EdgeInsets.zero`. Always add `padding: EdgeInsets.zero` to nested list/grid builders inside cards or columns.
+
 ### Q: How do I change the capsule's icon color or add a counter badge?
 **A**: Use `CapsuleHeader(title: '...', icon: Icons...., badge: '12', iconColor: Colors.amber, badgeColor: Colors.amber)`.
