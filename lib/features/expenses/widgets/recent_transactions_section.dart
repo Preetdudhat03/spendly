@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import 'package:lucide_icons/lucide_icons.dart';
 import 'package:spendly/core/providers/state_providers.dart';
 import 'package:spendly/features/expenses/widgets/expense_detail_modal.dart';
 import 'package:spendly/models/expense.dart';
@@ -64,8 +63,8 @@ class RecentTransactionsSection extends ConsumerWidget {
                   ),
                   const SizedBox(width: 4),
                   Icon(
-                    LucideIcons.chevronRight,
-                    size: 14,
+                    Icons.chevron_right_rounded,
+                    size: 16,
                     color: colorScheme.primary,
                   ),
                 ],
@@ -100,7 +99,7 @@ class RecentTransactionsSection extends ConsumerWidget {
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
-                    LucideIcons.receipt,
+                    Icons.receipt_long_outlined,
                     size: 28,
                     color: colorScheme.primary,
                   ),
@@ -264,8 +263,8 @@ class _RecentTransactionTile extends ConsumerWidget {
                 // Delete Action Button
                 IconButton(
                   icon: Icon(
-                    LucideIcons.trash2,
-                    size: 16,
+                    Icons.delete_outline_rounded,
+                    size: 18,
                     color: colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
                   ),
                   visualDensity: VisualDensity.compact,
