@@ -100,177 +100,187 @@ class HomeScreen extends ConsumerWidget {
     final displayName = authState.displayName ?? 'Family Member';
     final familyName = familyState.family?.name ?? 'Spendly';
 
+    final topInset = MediaQuery.of(context).padding.top;
+    final contentTopPadding = topInset + 58.0; // Space for pinned floating capsule
+
     return Scaffold(
-      body: SafeArea(
-        top: true,
-        bottom: false,
-        child: expenseState.isLoading || familyState.isLoading
-            ? _buildShimmerLoading()
-            : RefreshIndicator(
-                onRefresh: () async {
-                  ref.read(connectionProvider.notifier).checkConnection();
-                  await ref.read(syncServiceProvider).syncNow();
-                },
-                child: SingleChildScrollView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  padding: const EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 90.0),
-                  child: LayoutBuilder(
-                    builder: (context, constraints) {
-                      final isWide = constraints.maxWidth > 720;
+      body: Stack(
+        children: [
+          // 1. SCROLLABLE DASHBOARD CONTENT
+          expenseState.isLoading || familyState.isLoading
+              ? _buildShimmerLoading(contentTopPadding)
+              : RefreshIndicator(
+                  edgeOffset: contentTopPadding,
+                  onRefresh: () async {
+                    ref.read(connectionProvider.notifier).checkConnection();
+                    await ref.read(syncServiceProvider).syncNow();
+                  },
+                  child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: EdgeInsets.fromLTRB(20.0, contentTopPadding, 20.0, 90.0),
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        final isWide = constraints.maxWidth > 720;
 
-                      // Top Floating Family Capsule (Solid white capsule, transparent area beside it)
-                      final familyHeaderWidget = Center(
-                        child: FamilyHeader(
-                          familyName: familyName,
-                          connection: connection,
-                        ),
-                      );
+                        final greetingWidget = HomeGreetingSection(displayName: displayName);
 
-                      final greetingWidget = HomeGreetingSection(displayName: displayName);
+                        final heroWidget = FinancialHero(
+                          monthTotal: monthTotal,
+                          currencyFormat: currencyFormat,
+                          previousMonthTotal: prevMonthTotal > 0 ? prevMonthTotal : null,
+                        );
 
-                      final heroWidget = FinancialHero(
-                        monthTotal: monthTotal,
-                        currencyFormat: currencyFormat,
-                        previousMonthTotal: prevMonthTotal > 0 ? prevMonthTotal : null,
-                      );
+                        final metricsWidget = SpendingMetricCards(
+                          todayAmount: currencyFormat.format(todayTotal),
+                          remainingAmount: hasBudget ? currencyFormat.format(remainingBudget) : '—',
+                          hasBudget: hasBudget,
+                          isBudgetExceeded: isBudgetExceeded,
+                          budgetLimitFormatted: currencyFormat.format(budgetLimit),
+                        );
 
-                      final metricsWidget = SpendingMetricCards(
-                        todayAmount: currencyFormat.format(todayTotal),
-                        remainingAmount: hasBudget ? currencyFormat.format(remainingBudget) : '—',
-                        hasBudget: hasBudget,
-                        isBudgetExceeded: isBudgetExceeded,
-                        budgetLimitFormatted: currencyFormat.format(budgetLimit),
-                      );
+                        final budgetWidget = BudgetOverviewCard(
+                          familySpent: familyMonthTotal,
+                          budgetLimit: budgetLimit,
+                          budgetPercent: budgetPercent,
+                          budgetColor: budgetColor,
+                          currencyFormat: currencyFormat,
+                        );
 
-                      final budgetWidget = BudgetOverviewCard(
-                        familySpent: familyMonthTotal,
-                        budgetLimit: budgetLimit,
-                        budgetPercent: budgetPercent,
-                        budgetColor: budgetColor,
-                        currencyFormat: currencyFormat,
-                      );
+                        final suggestionsWidget = FrequentExpensesCarousel(
+                          suggestions: suggestions,
+                          currencyFormat: currencyFormat,
+                        );
 
-                      final suggestionsWidget = FrequentExpensesCarousel(
-                        suggestions: suggestions,
-                        currencyFormat: currencyFormat,
-                      );
+                        const quickAddWidget = QuickCategoryCarousel();
 
-                      const quickAddWidget = QuickCategoryCarousel();
+                        final recentExpensesWidget = RecentTransactionsSection(
+                          expenses: expenseState.expenses,
+                          currencyFormat: currencyFormat,
+                        );
 
-                      final recentExpensesWidget = RecentTransactionsSection(
-                        expenses: expenseState.expenses,
-                        currencyFormat: currencyFormat,
-                      );
+                        if (isWide) {
+                          return Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                flex: 5,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const SizedBox(height: 8),
+                                    greetingWidget,
+                                    const SizedBox(height: 20),
+                                    heroWidget,
+                                    const SizedBox(height: 16),
+                                    metricsWidget,
+                                    const SizedBox(height: 24),
+                                    budgetWidget,
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 24),
+                              Expanded(
+                                flex: 5,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const SizedBox(height: 8),
+                                    if (suggestions.isNotEmpty) ...[
+                                      suggestionsWidget,
+                                      const SizedBox(height: 24),
+                                    ],
+                                    quickAddWidget,
+                                    const SizedBox(height: 24),
+                                    recentExpensesWidget,
+                                  ],
+                                ),
+                              ),
+                            ],
+                          );
+                        }
 
-                      if (isWide) {
                         return Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            familyHeaderWidget,
+                            const SizedBox(height: 8),
+                            greetingWidget,
                             const SizedBox(height: 20),
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Expanded(
-                                  flex: 5,
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      greetingWidget,
-                                      const SizedBox(height: 20),
-                                      heroWidget,
-                                      const SizedBox(height: 16),
-                                      metricsWidget,
-                                      const SizedBox(height: 24),
-                                      budgetWidget,
-                                    ],
-                                  ),
-                                ),
-                                const SizedBox(width: 24),
-                                Expanded(
-                                  flex: 5,
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      if (suggestions.isNotEmpty) ...[
-                                        suggestionsWidget,
-                                        const SizedBox(height: 24),
-                                      ],
-                                      quickAddWidget,
-                                      const SizedBox(height: 24),
-                                      recentExpensesWidget,
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
+                            heroWidget,
+                            const SizedBox(height: 16),
+                            metricsWidget,
+                            const SizedBox(height: 24),
+                            budgetWidget,
+                            if (suggestions.isNotEmpty) ...[
+                              const SizedBox(height: 24),
+                              suggestionsWidget,
+                            ],
+                            const SizedBox(height: 24),
+                            quickAddWidget,
+                            const SizedBox(height: 24),
+                            recentExpensesWidget,
                           ],
                         );
-                      }
+                      },
+                    ),
+                  ),
+                ),
 
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          familyHeaderWidget,
-                          const SizedBox(height: 20),
-                          greetingWidget,
-                          const SizedBox(height: 20),
-                          heroWidget,
-                          const SizedBox(height: 16),
-                          metricsWidget,
-                          const SizedBox(height: 24),
-                          budgetWidget,
-                          if (suggestions.isNotEmpty) ...[
-                            const SizedBox(height: 24),
-                            suggestionsWidget,
-                          ],
-                          const SizedBox(height: 24),
-                          quickAddWidget,
-                          const SizedBox(height: 24),
-                          recentExpensesWidget,
-                        ],
-                      );
-                    },
+          // 2. PINNED FLOATING FAMILY CAPSULE (Holds position when scrolling, transparent sides)
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: SafeArea(
+              top: true,
+              bottom: false,
+              child: Padding(
+                padding: const EdgeInsets.only(top: 6.0),
+                child: Center(
+                  child: FamilyHeader(
+                    familyName: familyName,
+                    connection: connection,
                   ),
                 ),
               ),
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildShimmerLoading() {
+  Widget _buildShimmerLoading(double topPadding) {
     return ShimmerLoading(
       isLoading: true,
       child: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 12.0),
-        child: Column(
+        padding: EdgeInsets.fromLTRB(20.0, topPadding, 20.0, 90.0),
+        child: const Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Center(child: ShimmerPlaceholder(width: 190, height: 44, borderRadius: 100)),
-            const SizedBox(height: 20),
-            const ShimmerPlaceholder(width: 180, height: 28),
-            const SizedBox(height: 6),
-            const ShimmerPlaceholder(width: 120, height: 16),
-            const SizedBox(height: 24),
-            const ShimmerPlaceholder(height: 140, borderRadius: 24),
-            const SizedBox(height: 16),
-            const Row(
+            SizedBox(height: 8),
+            ShimmerPlaceholder(width: 180, height: 28),
+            SizedBox(height: 6),
+            ShimmerPlaceholder(width: 120, height: 16),
+            SizedBox(height: 24),
+            ShimmerPlaceholder(height: 140, borderRadius: 24),
+            SizedBox(height: 16),
+            Row(
               children: [
                 Expanded(child: ShimmerPlaceholder(height: 110, borderRadius: 20)),
                 SizedBox(width: 14),
                 Expanded(child: ShimmerPlaceholder(height: 110, borderRadius: 20)),
               ],
             ),
-            const SizedBox(height: 24),
-            const ShimmerPlaceholder(height: 140, borderRadius: 24),
-            const SizedBox(height: 24),
-            const ShimmerPlaceholder(width: 160, height: 22),
-            const SizedBox(height: 12),
-            const ShimmerPlaceholder(height: 96, borderRadius: 18),
-            const SizedBox(height: 24),
-            const ShimmerPlaceholder(width: 160, height: 22),
-            const SizedBox(height: 12),
-            const ShimmerListPlaceholder(itemCount: 4),
+            SizedBox(height: 24),
+            ShimmerPlaceholder(height: 140, borderRadius: 24),
+            SizedBox(height: 24),
+            ShimmerPlaceholder(width: 160, height: 22),
+            SizedBox(height: 12),
+            ShimmerPlaceholder(height: 96, borderRadius: 18),
+            SizedBox(height: 24),
+            ShimmerPlaceholder(width: 160, height: 22),
+            SizedBox(height: 12),
+            ShimmerListPlaceholder(itemCount: 4),
           ],
         ),
       ),
