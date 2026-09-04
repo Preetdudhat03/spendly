@@ -501,6 +501,7 @@ class _AllExpensesScreenState extends ConsumerState<AllExpensesScreen> {
               );
 
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
