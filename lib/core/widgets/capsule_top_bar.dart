@@ -38,9 +38,9 @@ class CapsuleHeader extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(100),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+          padding: const EdgeInsets.fromLTRB(6, 4, 14, 4),
           constraints: const BoxConstraints(
-            minHeight: 40,
+            minHeight: 44,
             maxWidth: 340,
           ),
           decoration: BoxDecoration(
@@ -56,7 +56,7 @@ class CapsuleHeader extends StatelessWidget {
               BoxShadow(
                 color: isDark
                     ? Colors.black.withValues(alpha: 0.2)
-                    : colorScheme.shadow.withValues(alpha: 0.04),
+                    : colorScheme.shadow.withValues(alpha: 0.03),
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               ),
@@ -65,23 +65,27 @@ class CapsuleHeader extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               if (leading != null) ...[
                 leading!,
                 const SizedBox(width: 8),
               ] else if (icon != null) ...[
                 Container(
-                  padding: const EdgeInsets.all(4),
+                  width: 32,
+                  height: 32,
                   decoration: BoxDecoration(
                     color: effectiveIconColor.withValues(
-                      alpha: isDark ? 0.2 : 0.1,
+                      alpha: isDark ? 0.2 : 0.12,
                     ),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(
-                    icon,
-                    size: 14,
-                    color: effectiveIconColor,
+                  child: Center(
+                    child: Icon(
+                      icon,
+                      size: 16,
+                      color: effectiveIconColor,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 8),
