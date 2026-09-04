@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:lucide_icons/lucide_icons.dart';
 
 class SpendingMetricCards extends StatelessWidget {
   final String todayAmount;
@@ -36,7 +35,7 @@ class SpendingMetricCards extends StatelessWidget {
               amountColor: colorScheme.onSurface,
               subtitle: "Today's spending",
               subtitleColor: colorScheme.onSurfaceVariant,
-              icon: LucideIcons.calendar,
+              icon: Icons.calendar_today_rounded,
               accentColor: colorScheme.primary,
               isDark: isDark,
             ),
@@ -56,7 +55,7 @@ class SpendingMetricCards extends StatelessWidget {
                       ? 'Budget exceeded'
                       : 'of $budgetLimitFormatted budget'),
               subtitleColor: isBudgetExceeded ? colorScheme.error : colorScheme.onSurfaceVariant,
-              icon: LucideIcons.wallet,
+              icon: Icons.account_balance_wallet_outlined,
               accentColor: isBudgetExceeded ? colorScheme.error : const Color(0xFF10B981),
               isDark: isDark,
             ),
