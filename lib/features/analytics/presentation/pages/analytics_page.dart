@@ -54,13 +54,10 @@ class AnalyticsPage extends ConsumerWidget {
         elevation: 0,
         scrolledUnderElevation: 0,
         surfaceTintColor: Colors.transparent,
-        title: const Text(
-          'Financial Intelligence',
-          style: TextStyle(
-            fontWeight: FontWeight.w800,
-            fontSize: 20,
-            letterSpacing: -0.5,
-          ),
+        centerTitle: true,
+        title: const CapsuleHeader(
+          title: 'Financial Intelligence',
+          icon: Icons.insights_rounded,
         ),
       ),
       body: RefreshIndicator(
