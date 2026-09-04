@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:spendly/main.dart';
+import 'package:spendly/core/providers/state_providers.dart';
 
 class HomeHeaderAppBarTitle extends StatelessWidget {
   final String familyName;
@@ -33,6 +33,11 @@ class HomeHeaderAppBarTitle extends StatelessWidget {
       case ConnectionStatus.offline:
         statusColor = const Color(0xFFF59E0B);
         statusText = 'Offline';
+        break;
+      case ConnectionStatus.checking:
+      default:
+        statusColor = const Color(0xFF9CA3AF);
+        statusText = 'Connecting...';
         break;
     }
 
