@@ -34,16 +34,16 @@ class FinancialHero extends StatelessWidget {
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.symmetric(vertical: 4),
-      padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+      padding: const EdgeInsets.symmetric(vertical: 22, horizontal: 16),
       decoration: BoxDecoration(
         color: isDark
-            ? colorScheme.surface.withOpacity(0.6)
-            : colorScheme.primary.withOpacity(0.04),
+            ? colorScheme.surface.withValues(alpha: 0.6)
+            : colorScheme.primary.withValues(alpha: 0.04),
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
           color: isDark
-              ? colorScheme.outline.withOpacity(0.3)
-              : colorScheme.primary.withOpacity(0.08),
+              ? colorScheme.outline.withValues(alpha: 0.3)
+              : colorScheme.primary.withValues(alpha: 0.08),
           width: 1,
         ),
       ),
@@ -101,8 +101,8 @@ class FinancialHero extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
                 color: isTrendUp
-                    ? colorScheme.error.withOpacity(0.12)
-                    : colorScheme.secondary.withOpacity(0.12),
+                    ? colorScheme.error.withValues(alpha: 0.12)
+                    : colorScheme.secondary.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(100),
               ),
               child: Text(
@@ -121,7 +121,7 @@ class FinancialHero extends StatelessWidget {
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w500,
-                color: colorScheme.onSurfaceVariant.withOpacity(0.8),
+                color: colorScheme.onSurfaceVariant.withValues(alpha: 0.8),
               ),
             ),
           ],
