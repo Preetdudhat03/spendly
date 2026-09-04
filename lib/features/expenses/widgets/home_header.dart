@@ -54,7 +54,7 @@ class HomeHeaderAppBarTitle extends StatelessWidget {
           decoration: BoxDecoration(
             color: isDark
                 ? colorScheme.surfaceContainer
-                : colorScheme.surfaceContainerHigh.withOpacity(0.5),
+                : colorScheme.surfaceContainerHigh.withValues(alpha: 0.5),
             borderRadius: BorderRadius.circular(100),
           ),
           child: Row(
@@ -68,7 +68,7 @@ class HomeHeaderAppBarTitle extends StatelessWidget {
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: statusColor.withOpacity(0.5),
+                      color: statusColor.withValues(alpha: 0.5),
                       blurRadius: 4,
                       offset: const Offset(0, 0),
                     ),
