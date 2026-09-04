@@ -258,6 +258,7 @@ class _PaymentMethodChartState extends State<PaymentMethodChart> {
 
             // Legend
             ListView.builder(
+              padding: EdgeInsets.zero,
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               itemCount: widget.state.paymentMethodShares.length,
