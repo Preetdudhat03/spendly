@@ -376,11 +376,7 @@ class _AllExpensesScreenState extends ConsumerState<AllExpensesScreen> {
                         child: Column(
                           children: List.generate(groupItems.length, (index) {
                             final exp = groupItems[index];
-                            final amtStr = NumberFormat.currency(
-                              locale: 'en_IN',
-                              decimalDigits: 0,
-                              symbol: '₹',
-                            ).format(exp.amount);
+                            final amtStr = CurrencyFormatter.format(exp.amount);
                             final catColor = getCategoryColor(exp.category);
                             final iconPath = getCategoryIconPath(exp.category);
                             final isLast = index == groupItems.length - 1;
