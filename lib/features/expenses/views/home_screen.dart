@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:spendly/core/providers/state_providers.dart';
+import 'package:spendly/core/utils/currency_formatter.dart';
 import 'package:spendly/core/services/suggestions_service.dart';
 import 'package:spendly/core/widgets/shimmer_loading.dart';
 import 'package:spendly/features/expenses/widgets/budget_overview_card.dart';
