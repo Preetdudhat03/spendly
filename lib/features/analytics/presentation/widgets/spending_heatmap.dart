@@ -39,7 +39,7 @@ class SpendingHeatmap extends ConsumerWidget {
     final currencyFmt = NumberFormat.currency(
       locale: 'en_IN',
       symbol: '₹',
-      decimalDigits: 0,
+      decimalDigits: 2,
     );
     final dateFmt = DateFormat('EEE, MMM d');
     final colorScheme = Theme.of(context).colorScheme;
