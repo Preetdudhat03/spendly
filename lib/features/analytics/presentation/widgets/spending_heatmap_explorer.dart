@@ -928,7 +928,7 @@ class _SpendingHeatmapExplorerState extends State<SpendingHeatmapExplorer> {
     final currencyFmt = NumberFormat.currency(
       locale: 'en_IN',
       symbol: '₹',
-      decimalDigits: 0,
+      decimalDigits: 2,
     );
     final colorScheme = Theme.of(context).colorScheme;
     final monthNames = [
@@ -1267,7 +1267,7 @@ class _SpendingHeatmapExplorerState extends State<SpendingHeatmapExplorer> {
     final currencyFmt = NumberFormat.currency(
       locale: 'en_IN',
       symbol: '₹',
-      decimalDigits: 0,
+      decimalDigits: 2,
     );
     final dateFmt = DateFormat('MMM d, yyyy');
     final colorScheme = Theme.of(context).colorScheme;
