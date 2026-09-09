@@ -34,7 +34,7 @@ class FamilyMemberLeaderboard extends StatelessWidget {
     final currencyFmt = NumberFormat.currency(
       locale: 'en_IN',
       symbol: '₹',
-      decimalDigits: 0,
+      decimalDigits: 2,
     );
 
     // Sum of all member spending to compute percentages
