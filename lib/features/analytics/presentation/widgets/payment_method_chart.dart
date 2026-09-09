@@ -110,7 +110,7 @@ class _PaymentMethodChartState extends State<PaymentMethodChart> {
     final currencyFmt = NumberFormat.currency(
       locale: 'en_IN',
       symbol: '₹',
-      decimalDigits: 0,
+      decimalDigits: 2,
     );
 
     // Build chart sections
