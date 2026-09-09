@@ -33,7 +33,7 @@ class MemberComparisonChart extends StatelessWidget {
     final currencyFmt = NumberFormat.currency(
       locale: 'en_IN',
       symbol: '₹',
-      decimalDigits: 0,
+      decimalDigits: 2,
     );
 
     double maxSpending = 100.0;
