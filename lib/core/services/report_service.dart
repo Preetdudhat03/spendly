@@ -50,7 +50,7 @@ class ReportService {
         .where((e) => e.expenseDate.year == now.year && e.expenseDate.month == now.month)
         .fold<double>(0, (sum, e) => sum + e.amount);
 
-    final currencyFormat = NumberFormat.currency(locale: 'en_IN', symbol: 'Rs ', decimalDigits: 0);
+    final currencyFormat = NumberFormat.currency(locale: 'en_IN', symbol: 'Rs ', decimalDigits: 2);
 
     // Group categories
     final Map<String, double> catTotals = {};
