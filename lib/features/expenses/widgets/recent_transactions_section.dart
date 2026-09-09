@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:spendly/core/providers/state_providers.dart';
+import 'package:spendly/core/utils/currency_formatter.dart';
 import 'package:spendly/features/expenses/widgets/expense_detail_modal.dart';
 import 'package:spendly/models/expense.dart';
 
