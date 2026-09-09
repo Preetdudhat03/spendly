@@ -20,7 +20,7 @@ class CategoryComparisonChart extends StatelessWidget {
     final currencyFmt = NumberFormat.currency(
       locale: 'en_IN',
       symbol: '₹',
-      decimalDigits: 0,
+      decimalDigits: 2,
     );
 
     // We sort shares descending (they are already sorted in the provider, but let's be sure)
