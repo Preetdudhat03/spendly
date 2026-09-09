@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:spendly/core/providers/state_providers.dart';
 import 'package:spendly/core/utils/schema_validator.dart';
+import 'package:spendly/core/utils/currency_formatter.dart';
 import 'package:spendly/models/expense.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
