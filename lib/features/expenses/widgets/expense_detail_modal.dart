@@ -367,7 +367,7 @@ class _EditExpenseFormState extends State<_EditExpenseForm> {
   @override
   void initState() {
     super.initState();
-    _amountController = TextEditingController(text: widget.expense.amount.toStringAsFixed(0));
+    _amountController = TextEditingController(text: CurrencyFormatter.toEditString(widget.expense.amount));
     _descriptionController = TextEditingController(text: widget.expense.description);
     _selectedCategory = widget.expense.category;
     _paymentMethod = widget.expense.paymentMethod;
