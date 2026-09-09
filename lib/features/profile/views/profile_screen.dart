@@ -27,7 +27,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   final _emailController = TextEditingController();
 
   void _showEditBudgetDialog(double currentBudget) {
-    _budgetController.text = currentBudget.toStringAsFixed(0);
+    _budgetController.text = CurrencyFormatter.toEditString(currentBudget);
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -255,7 +255,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final familyName = familyState.family?.name ?? 'My Family';
     final currentBudget = budgetState.currentBudget?.monthlyBudget ?? 20000.0;
 
-    final currencyFormat = NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 0);
+    final currencyFormat = NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 2);
     final topInset = MediaQuery.of(context).padding.top;
     final contentTopPadding = topInset + 58.0;
 
