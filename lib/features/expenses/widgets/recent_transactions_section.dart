@@ -251,7 +251,7 @@ class _RecentTransactionTile extends ConsumerWidget {
 
                 // Amount
                 Text(
-                  '-${currencyFormat.format(exp.amount)}',
+                  '-${CurrencyFormatter.format(exp.amount)}',
                   style: const TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w800,
