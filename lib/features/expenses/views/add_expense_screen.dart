@@ -61,7 +61,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
           ref.read(selectedCategoryProvider.notifier).state = null;
         }
         if (quickAmount != null) {
-          _amountController.text = quickAmount.toStringAsFixed(0);
+          _amountController.text = CurrencyFormatter.toEditString(quickAmount);
           ref.read(prefilledAmountProvider.notifier).state = null;
         }
         if (quickDesc != null) {
