@@ -37,7 +37,7 @@ class _StackedChartConsumer extends ConsumerWidget {
     final currencyFmt = NumberFormat.currency(
       locale: 'en_IN',
       symbol: '₹',
-      decimalDigits: 0,
+      decimalDigits: 2,
     );
 
     // Calculate last 6 months
