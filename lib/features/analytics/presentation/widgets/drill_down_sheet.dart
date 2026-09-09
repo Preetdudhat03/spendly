@@ -55,7 +55,7 @@ class DrillDownSheet extends StatelessWidget {
     final currencyFmt = NumberFormat.currency(
       locale: 'en_IN',
       symbol: '₹',
-      decimalDigits: 0,
+      decimalDigits: 2,
     );
     final dateFmt = DateFormat('MMM d, hh:mm a');
 
