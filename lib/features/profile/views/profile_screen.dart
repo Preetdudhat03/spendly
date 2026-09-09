@@ -12,6 +12,7 @@ import 'package:spendly/core/widgets/capsule_top_bar.dart';
 import 'package:spendly/core/widgets/shimmer_loading.dart';
 import 'package:spendly/core/services/report_service.dart';
 import 'package:spendly/core/services/hive_service.dart';
+import 'package:spendly/core/utils/currency_formatter.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
