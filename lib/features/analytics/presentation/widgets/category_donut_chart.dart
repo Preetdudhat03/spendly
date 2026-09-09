@@ -169,7 +169,7 @@ class _CategoryDonutChartState extends State<CategoryDonutChart> {
     final currencyFmt = NumberFormat.currency(
       locale: 'en_IN',
       symbol: '₹',
-      decimalDigits: 0,
+      decimalDigits: 2,
     );
 
     final colorScheme = Theme.of(context).colorScheme;
