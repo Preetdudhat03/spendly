@@ -208,11 +208,7 @@ class _AllExpensesScreenState extends ConsumerState<AllExpensesScreen> {
 
     // Calculate filtered summary statistics
     final totalSpentFiltered = filteredExpenses.fold<double>(0.0, (sum, exp) => sum + exp.amount);
-    final formattedTotal = NumberFormat.currency(
-      locale: 'en_IN',
-      decimalDigits: 0,
-      symbol: '₹',
-    ).format(totalSpentFiltered);
+    final formattedTotal = CurrencyFormatter.format(totalSpentFiltered);
 
     Widget summaryPanel = Container(
       margin: const EdgeInsets.all(16.0),
@@ -315,11 +311,7 @@ class _AllExpensesScreenState extends ConsumerState<AllExpensesScreen> {
                   final dateKey = groupedKeys[groupIndex];
                   final groupItems = groupedExpenses[dateKey]!;
                   final groupTotal = groupItems.fold<double>(0.0, (sum, e) => sum + e.amount);
-                  final groupTotalStr = NumberFormat.currency(
-                    locale: 'en_IN',
-                    decimalDigits: 0,
-                    symbol: '₹',
-                  ).format(groupTotal);
+                  final groupTotalStr = CurrencyFormatter.format(groupTotal);
 
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
