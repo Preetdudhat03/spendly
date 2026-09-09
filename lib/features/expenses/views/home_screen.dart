@@ -89,7 +89,7 @@ class HomeScreen extends ConsumerWidget {
       budgetColor = const Color(0xFFEF4444); // Red (>90%)
     }
 
-    final currencyFormat = NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 0);
+    final currencyFormat = NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 2);
 
     // Smart Suggestions
     final blacklistedKeys = ref.watch(blacklistSuggestionsProvider);
@@ -132,11 +132,11 @@ class HomeScreen extends ConsumerWidget {
                         );
 
                         final metricsWidget = SpendingMetricCards(
-                          todayAmount: currencyFormat.format(todayTotal),
-                          remainingAmount: hasBudget ? currencyFormat.format(remainingBudget) : '—',
+                          todayAmount: CurrencyFormatter.format(todayTotal),
+                          remainingAmount: hasBudget ? CurrencyFormatter.format(remainingBudget) : '—',
                           hasBudget: hasBudget,
                           isBudgetExceeded: isBudgetExceeded,
-                          budgetLimitFormatted: currencyFormat.format(budgetLimit),
+                          budgetLimitFormatted: CurrencyFormatter.format(budgetLimit),
                         );
 
                         final budgetWidget = BudgetOverviewCard(
