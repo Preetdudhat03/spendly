@@ -12,7 +12,6 @@ abstract class DbService {
   String? getCurrentUserEmail();
   Future<String?> getCurrentUserDisplayName();
   Future<String?> forgotPassword(String email);
-  Future<void> completeUserMigration(String oldUserId, String newUserId);
 
   // Family Management
   Future<Family?> createFamily({required String name});
