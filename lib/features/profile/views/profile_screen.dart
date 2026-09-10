@@ -376,15 +376,19 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           }
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Please enter a valid email address'), backgroundColor: Colors.orange),
-                      );
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                    elevation: 0,
+                            const SnackBar(content: Text('Please enter a valid email address'), backgroundColor: Colors.orange),
+                          );
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                        elevation: 0,
+                      ),
+                      child: const Text('Save', style: TextStyle(fontWeight: FontWeight.w800)),
+                    ),
                   ),
+                ],
               ),
             ],
           ),
