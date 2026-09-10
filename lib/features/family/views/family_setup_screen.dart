@@ -382,6 +382,11 @@ class _FamilySetupScreenState extends ConsumerState<FamilySetupScreen> {
                                     prefixText: 'FAMILY-',
                                     prefixStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
                                     prefixIcon: const Icon(Icons.key_rounded, size: 20),
+                                    suffixIcon: IconButton(
+                                      icon: const Icon(Icons.qr_code_scanner_rounded),
+                                      tooltip: 'Scan QR Code',
+                                      onPressed: _scanQrCode,
+                                    ),
                                     filled: true,
                                     fillColor: isDark
                                         ? const Color(0xFF0F172A).withValues(alpha: 0.6)
