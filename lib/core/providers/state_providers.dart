@@ -42,11 +42,6 @@ class AuthState {
   final String? displayName;
   final String? avatarColor;
   final String? error;
-  
-  // Migration support fields
-  final bool isMigrationPending;
-  final String? legacyUserId;
-  final String? pendingPassword;
 
   AuthState({
     required this.isLoading,
@@ -56,9 +51,6 @@ class AuthState {
     this.displayName,
     this.avatarColor,
     this.error,
-    this.isMigrationPending = false,
-    this.legacyUserId,
-    this.pendingPassword,
   });
 
   factory AuthState.initial() => AuthState(isLoading: false, isInitializing: true);
@@ -71,9 +63,6 @@ class AuthState {
     String? displayName,
     String? avatarColor,
     String? error,
-    bool? isMigrationPending,
-    String? legacyUserId,
-    String? pendingPassword,
   }) {
     return AuthState(
       isLoading: isLoading ?? this.isLoading,
@@ -83,9 +72,6 @@ class AuthState {
       displayName: displayName ?? this.displayName,
       avatarColor: avatarColor ?? this.avatarColor,
       error: error,
-      isMigrationPending: isMigrationPending ?? this.isMigrationPending,
-      legacyUserId: legacyUserId ?? this.legacyUserId,
-      pendingPassword: pendingPassword ?? this.pendingPassword,
     );
   }
 
@@ -98,10 +84,7 @@ class AuthState {
         other.userId == userId &&
         other.email == email &&
         other.displayName == displayName &&
-        other.error == error &&
-        other.isMigrationPending == isMigrationPending &&
-        other.legacyUserId == legacyUserId &&
-        other.pendingPassword == pendingPassword;
+        other.error == error;
   }
 
   @override
@@ -112,9 +95,6 @@ class AuthState {
         email,
         displayName,
         error,
-        isMigrationPending,
-        legacyUserId,
-        pendingPassword,
       );
 }
 
