@@ -259,6 +259,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           const SizedBox(height: 28),
                           TextFormField(
                             controller: _nameController,
+                            textInputAction: TextInputAction.next,
+                            autofillHints: const [AutofillHints.name],
                             decoration: InputDecoration(
                               labelText: 'Your Name (e.g. Dad, Mom, Preet)',
                               prefixIcon: const Icon(Icons.person_outline_rounded, size: 20),
@@ -296,6 +298,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           TextFormField(
                             controller: _emailController,
                             keyboardType: TextInputType.emailAddress,
+                            textInputAction: TextInputAction.next,
+                            autofillHints: const [AutofillHints.email],
                             decoration: InputDecoration(
                               labelText: 'Email Address',
                               prefixIcon: const Icon(Icons.email_outlined, size: 20),
@@ -333,6 +337,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           TextFormField(
                             controller: _passwordController,
                             obscureText: _obscurePassword,
+                            textInputAction: TextInputAction.done,
+                            autofillHints: const [AutofillHints.newPassword],
+                            onFieldSubmitted: (_) => _submit(),
                             onChanged: (val) {
                               setState(() {});
                             },
