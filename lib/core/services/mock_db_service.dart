@@ -130,11 +130,6 @@ class MockDbService implements DbService {
     return tempPassword;
   }
 
-  @override
-  Future<void> completeUserMigration(String oldUserId, String newUserId) async {
-    // No-op for mock DB
-  }
-
   // --- Family ---
 
   @override
