@@ -68,5 +68,7 @@
 		</array>
 		<key>UIStatusBarHidden</key>
 		<false/>
+		<key>NSCameraUsageDescription</key>
+		<string>Spendly needs camera access to scan family QR codes to join your family group.</string>
 	</dict>
 </plist>
