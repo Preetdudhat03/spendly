@@ -374,6 +374,54 @@ class _FamilySetupScreenState extends ConsumerState<FamilySetupScreen> {
                                   ],
                                 ),
                                 const SizedBox(height: 20),
+                                ElevatedButton.icon(
+                                  onPressed: _scanQrCode,
+                                  icon: const Icon(Icons.qr_code_scanner_rounded, size: 20),
+                                  label: const Text(
+                                    'SCAN QR CODE TO JOIN',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w800,
+                                      fontSize: 13,
+                                      letterSpacing: 0.5,
+                                    ),
+                                  ),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFF10B981),
+                                    foregroundColor: Colors.white,
+                                    padding: const EdgeInsets.symmetric(vertical: 14),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                    elevation: 0,
+                                  ),
+                                ),
+                                const SizedBox(height: 14),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: Divider(
+                                        color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                                      child: Text(
+                                        'OR ENTER MANUALLY',
+                                        style: TextStyle(
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.w700,
+                                          color: colorScheme.onSurfaceVariant,
+                                        ),
+                                      ),
+                                    ),
+                                    Expanded(
+                                      child: Divider(
+                                        color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 14),
                                 TextFormField(
                                   controller: _joinController,
                                   textCapitalization: TextCapitalization.characters,
