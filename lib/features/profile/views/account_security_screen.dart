@@ -14,87 +14,199 @@ class _AccountSecurityScreenState extends ConsumerState<AccountSecurityScreen> {
   void _showDeleteAccountDialog() {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Delete Account?', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
-        content: const Text(
-          'Are you sure you want to delete your account? All your personal profile settings will be permanently erased. This action cannot be undone.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('CANCEL', style: TextStyle(color: Colors.grey)),
+      builder: (ctx) {
+        final isDark = Theme.of(ctx).brightness == Brightness.dark;
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+          contentPadding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Center(
+                child: Container(
+                  width: 56,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    color: Colors.red.withValues(alpha: isDark ? 0.2 : 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.person_remove_rounded, color: Colors.red, size: 28),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Delete Account?',
+                textAlign: TextAlign.center,
+                style: Theme.of(ctx).textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -0.3,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Are you sure you want to delete your account? All your personal profile settings and account data will be permanently erased. This action cannot be undone.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Theme.of(ctx).colorScheme.onSurfaceVariant,
+                  height: 1.4,
+                ),
+              ),
+            ],
           ),
-          ElevatedButton(
-            onPressed: () async {
-              Navigator.pop(context); // Close confirmation dialog
-              
-              final messenger = ScaffoldMessenger.of(this.context);
-              try {
-                await ref.read(authProvider.notifier).deleteAccount();
-                messenger.showSnackBar(
-                  const SnackBar(content: Text('Your account has been deleted successfully.')),
-                );
-              } catch (e) {
-                messenger.showSnackBar(
-                  SnackBar(content: Text('Error deleting account: $e'), backgroundColor: Colors.red),
-                );
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
+          actionsPadding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+          actions: [
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.pop(ctx),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      side: BorderSide(
+                        color: isDark ? const Color(0xFF334155) : const Color(0xFFCBD5E1),
+                      ),
+                    ),
+                    child: const Text('Cancel', style: TextStyle(fontWeight: FontWeight.w700)),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      Navigator.pop(ctx);
+                      final messenger = ScaffoldMessenger.of(this.context);
+                      try {
+                        await ref.read(authProvider.notifier).deleteAccount();
+                        messenger.showSnackBar(
+                          const SnackBar(content: Text('Your account has been deleted successfully.')),
+                        );
+                      } catch (e) {
+                        messenger.showSnackBar(
+                          SnackBar(content: Text('Error deleting account: $e'), backgroundColor: Colors.red),
+                        );
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      elevation: 0,
+                    ),
+                    child: const Text('Delete', style: TextStyle(fontWeight: FontWeight.w800)),
+                  ),
+                ),
+              ],
             ),
-            child: const Text('DELETE ACCOUNT'),
-          ),
-        ],
-      ),
+          ],
+        );
+      },
     );
   }
 
   void _showDeleteFamilyDialog(String familyName) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Delete Family & Data?', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
-        content: Text(
-          'Are you sure you want to delete "$familyName" and ALL associated expenses, budgets, and member links? This action is permanent and cannot be undone.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('CANCEL', style: TextStyle(color: Colors.grey)),
+      builder: (ctx) {
+        final isDark = Theme.of(ctx).brightness == Brightness.dark;
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+          contentPadding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Center(
+                child: Container(
+                  width: 56,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    color: Colors.red.withValues(alpha: isDark ? 0.2 : 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.delete_forever_rounded, color: Colors.red, size: 28),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Delete Family & Data?',
+                textAlign: TextAlign.center,
+                style: Theme.of(ctx).textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -0.3,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Are you sure you want to delete "$familyName" and ALL associated expenses, budgets, and member links? This action is permanent and cannot be undone.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Theme.of(ctx).colorScheme.onSurfaceVariant,
+                  height: 1.4,
+                ),
+              ),
+            ],
           ),
-          ElevatedButton(
-            onPressed: () async {
-              Navigator.pop(context); // Close confirmation dialog
-              
-              final messenger = ScaffoldMessenger.of(this.context);
-              try {
-                final success = await ref.read(familyProvider.notifier).deleteFamily();
-                if (success) {
-                  messenger.showSnackBar(
-                    const SnackBar(content: Text('Family and all its data deleted successfully.')),
-                  );
-                } else {
-                  final errorMsg = ref.read(familyProvider).error ?? 'Unknown error';
-                  messenger.showSnackBar(
-                    SnackBar(content: Text('Error deleting family: $errorMsg'), backgroundColor: Colors.red),
-                  );
-                }
-              } catch (e) {
-                messenger.showSnackBar(
-                  SnackBar(content: Text('Error deleting family: $e'), backgroundColor: Colors.red),
-                );
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
+          actionsPadding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+          actions: [
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.pop(ctx),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      side: BorderSide(
+                        color: isDark ? const Color(0xFF334155) : const Color(0xFFCBD5E1),
+                      ),
+                    ),
+                    child: const Text('Cancel', style: TextStyle(fontWeight: FontWeight.w700)),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      Navigator.pop(ctx);
+                      final messenger = ScaffoldMessenger.of(this.context);
+                      try {
+                        final success = await ref.read(familyProvider.notifier).deleteFamily();
+                        if (success) {
+                          messenger.showSnackBar(
+                            const SnackBar(content: Text('Family and all its data deleted successfully.')),
+                          );
+                        } else {
+                          final errorMsg = ref.read(familyProvider).error ?? 'Unknown error';
+                          messenger.showSnackBar(
+                            SnackBar(content: Text('Error deleting family: $errorMsg'), backgroundColor: Colors.red),
+                          );
+                        }
+                      } catch (e) {
+                        messenger.showSnackBar(
+                          SnackBar(content: Text('Error deleting family: $e'), backgroundColor: Colors.red),
+                        );
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      elevation: 0,
+                    ),
+                    child: const Text('Delete Family', style: TextStyle(fontWeight: FontWeight.w800)),
+                  ),
+                ),
+              ],
             ),
-            child: const Text('DELETE FAMILY'),
-          ),
-        ],
-      ),
+          ],
+        );
+      },
     );
   }
 
@@ -160,19 +272,65 @@ class _AccountSecurityScreenState extends ConsumerState<AccountSecurityScreen> {
                   ? () {
                       showDialog(
                         context: context,
-                        builder: (context) => AlertDialog(
-                          title: const Text('Admin Restriction', style: TextStyle(fontWeight: FontWeight.bold)),
-                          content: const Text(
-                            'As the family admin, you cannot delete your account while the family group still exists.\n\n'
-                            'Please use the "DELETE FAMILY & ALL DATA" button first to clean up the group before deleting your personal account.',
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.pop(context),
-                              child: const Text('UNDERSTOOD'),
+                        builder: (ctx) {
+                          final isDark = Theme.of(ctx).brightness == Brightness.dark;
+                          final accentColor = isDark ? const Color(0xFFF59E0B) : const Color(0xFFD97706);
+                          return AlertDialog(
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+                            contentPadding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
+                            content: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                Center(
+                                  child: Container(
+                                    width: 56,
+                                    height: 56,
+                                    decoration: BoxDecoration(
+                                      color: accentColor.withValues(alpha: isDark ? 0.2 : 0.1),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: Icon(Icons.admin_panel_settings_rounded, color: accentColor, size: 28),
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                                Text(
+                                  'Admin Restriction',
+                                  textAlign: TextAlign.center,
+                                  style: Theme.of(ctx).textTheme.titleLarge?.copyWith(
+                                    fontWeight: FontWeight.w800,
+                                    letterSpacing: -0.3,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'As the family admin, you cannot delete your account while the family group still exists.\n\nPlease use "DELETE FAMILY & ALL DATA" first to clean up the group before deleting your personal account.',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Theme.of(ctx).colorScheme.onSurfaceVariant,
+                                    height: 1.4,
+                                  ),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
+                            actionsPadding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+                            actions: [
+                              SizedBox(
+                                width: double.infinity,
+                                child: ElevatedButton(
+                                  onPressed: () => Navigator.pop(ctx),
+                                  style: ElevatedButton.styleFrom(
+                                    padding: const EdgeInsets.symmetric(vertical: 14),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                                    elevation: 0,
+                                  ),
+                                  child: const Text('Understood', style: TextStyle(fontWeight: FontWeight.w800)),
+                                ),
+                              ),
+                            ],
+                          );
+                        },
                       );
                     }
                   : _showDeleteAccountDialog,
@@ -194,19 +352,65 @@ class _AccountSecurityScreenState extends ConsumerState<AccountSecurityScreen> {
                     ? () {
                         showDialog(
                           context: context,
-                          builder: (context) => AlertDialog(
-                            title: const Text('Members Still Active', style: TextStyle(fontWeight: FontWeight.bold)),
-                            content: const Text(
-                              'As the admin, you can only delete the family once all other members have deleted their accounts or left the family group.\n\n'
-                              'Please ensure other members are removed before deleting the family.',
-                            ),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.pop(context),
-                                child: const Text('UNDERSTOOD'),
+                          builder: (ctx) {
+                            final isDark = Theme.of(ctx).brightness == Brightness.dark;
+                            final accentColor = isDark ? const Color(0xFFF59E0B) : const Color(0xFFD97706);
+                            return AlertDialog(
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+                              contentPadding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
+                              content: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  Center(
+                                    child: Container(
+                                      width: 56,
+                                      height: 56,
+                                      decoration: BoxDecoration(
+                                        color: accentColor.withValues(alpha: isDark ? 0.2 : 0.1),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: Icon(Icons.group_remove_rounded, color: accentColor, size: 28),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    'Members Still Active',
+                                    textAlign: TextAlign.center,
+                                    style: Theme.of(ctx).textTheme.titleLarge?.copyWith(
+                                      fontWeight: FontWeight.w800,
+                                      letterSpacing: -0.3,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    'As the admin, you can only delete the family once all other members have deleted their accounts or left the family group.\n\nPlease ensure other members are removed before deleting the family.',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: Theme.of(ctx).colorScheme.onSurfaceVariant,
+                                      height: 1.4,
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ],
-                          ),
+                              actionsPadding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+                              actions: [
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: ElevatedButton(
+                                    onPressed: () => Navigator.pop(ctx),
+                                    style: ElevatedButton.styleFrom(
+                                      padding: const EdgeInsets.symmetric(vertical: 14),
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                                      elevation: 0,
+                                    ),
+                                    child: const Text('Understood', style: TextStyle(fontWeight: FontWeight.w800)),
+                                  ),
+                                ),
+                              ],
+                            );
+                          },
                         );
                       }
                     : () => _showDeleteFamilyDialog(familyName),
