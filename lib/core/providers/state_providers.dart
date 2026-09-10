@@ -1002,11 +1002,11 @@ class ConnectionNotifier extends StateNotifier<ConnectionStatus> {
         return;
       }
 
-      // Try to query users table
-      await Supabase.instance.client.from('users').select('id').limit(1);
+      // Try to query profiles table for connection health check
+      await Supabase.instance.client.from('profiles').select('id').limit(1);
       state = ConnectionStatus.online;
     } on PostgrestException catch (e) {
-      // If table doesn't exist but we get database response, we are online!
+      // If profiles table responds or throws permission/empty, Supabase is reachable!
       debugPrint('Connection check: PostgrestException (Supabase is reachable): $e');
       state = ConnectionStatus.online;
     } catch (e) {
