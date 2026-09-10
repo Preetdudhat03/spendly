@@ -77,7 +77,7 @@ class _AccountSecurityScreenState extends ConsumerState<AccountSecurityScreen> {
                   child: ElevatedButton(
                     onPressed: () async {
                       Navigator.pop(ctx);
-                      final messenger = ScaffoldMessenger.of(this.context);
+                      final messenger = ScaffoldMessenger.of(context);
                       try {
                         await ref.read(authProvider.notifier).deleteAccount();
                         messenger.showSnackBar(
@@ -173,7 +173,7 @@ class _AccountSecurityScreenState extends ConsumerState<AccountSecurityScreen> {
                   child: ElevatedButton(
                     onPressed: () async {
                       Navigator.pop(ctx);
-                      final messenger = ScaffoldMessenger.of(this.context);
+                      final messenger = ScaffoldMessenger.of(context);
                       try {
                         final success = await ref.read(familyProvider.notifier).deleteFamily();
                         if (success) {
