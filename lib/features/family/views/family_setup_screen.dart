@@ -4,6 +4,7 @@ import 'package:spendly/core/providers/state_providers.dart';
 import 'package:spendly/core/utils/schema_validator.dart';
 import 'package:spendly/core/widgets/capsule_top_bar.dart';
 import 'package:spendly/core/widgets/shimmer_loading.dart';
+import 'package:spendly/core/widgets/qr_scanner_modal.dart';
 
 class FamilySetupScreen extends ConsumerStatefulWidget {
   const FamilySetupScreen({super.key});
@@ -44,6 +45,18 @@ class _FamilySetupScreenState extends ConsumerState<FamilySetupScreen> {
     if (!success) {
       _showError(ref.read(familyProvider).error ?? 'Failed to join family');
     }
+  }
+
+  Future<void> _scanQrCode() async {
+    final scanned = await QrScannerModal.show(context);
+    if (!mounted || scanned == null || scanned.trim().isEmpty) return;
+    
+    String code = scanned.trim().toUpperCase();
+    if (code.startsWith('FAMILY-')) {
+      code = code.replaceFirst('FAMILY-', '');
+    }
+    _joinController.text = code;
+    await _joinFamily();
   }
 
   void _showError(String message) {
