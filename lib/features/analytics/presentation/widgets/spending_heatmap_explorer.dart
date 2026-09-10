@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:spendly/core/utils/currency_formatter.dart';
 import 'package:spendly/models/expense.dart';
 
 enum ExplorerLevel { year, month, day }
