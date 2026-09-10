@@ -1555,31 +1555,85 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                             final confirmed =
                                                 await showDialog<bool>(
                                               context: context,
-                                              builder: (ctx) => AlertDialog(
-                                                title: const Text(
-                                                    'Remove Member'),
-                                                content: Text(
-                                                    'Are you sure you want to remove ${member.displayName} from the family?'),
-                                                actions: [
-                                                  TextButton(
-                                                    onPressed: () =>
-                                                        Navigator.pop(
-                                                            ctx, false),
-                                                    child: const Text(
-                                                        'CANCEL'),
+                                              builder: (ctx) {
+                                                final isDark = Theme.of(ctx).brightness == Brightness.dark;
+                                                return AlertDialog(
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius: BorderRadius.circular(28),
                                                   ),
-                                                  TextButton(
-                                                    onPressed: () =>
-                                                        Navigator.pop(
-                                                            ctx, true),
-                                                    child: const Text(
-                                                      'REMOVE',
-                                                      style: TextStyle(
-                                                          color: Colors.red),
+                                                  contentPadding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
+                                                  content: Column(
+                                                    mainAxisSize: MainAxisSize.min,
+                                                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                                                    children: [
+                                                      Center(
+                                                        child: Container(
+                                                          width: 56,
+                                                          height: 56,
+                                                          decoration: BoxDecoration(
+                                                            color: Colors.red.withValues(alpha: isDark ? 0.2 : 0.1),
+                                                            shape: BoxShape.circle,
+                                                          ),
+                                                          child: const Icon(Icons.person_remove_rounded, color: Colors.red, size: 28),
+                                                        ),
+                                                      ),
+                                                      const SizedBox(height: 16),
+                                                      Text(
+                                                        'Remove Member?',
+                                                        textAlign: TextAlign.center,
+                                                        style: Theme.of(ctx).textTheme.titleLarge?.copyWith(
+                                                          fontWeight: FontWeight.w800,
+                                                          letterSpacing: -0.3,
+                                                        ),
+                                                      ),
+                                                      const SizedBox(height: 8),
+                                                      Text(
+                                                        'Are you sure you want to remove ${member.displayName} from the family group? They will lose access to shared expenses and budgets.',
+                                                        textAlign: TextAlign.center,
+                                                        style: TextStyle(
+                                                          fontSize: 14,
+                                                          color: Theme.of(ctx).colorScheme.onSurfaceVariant,
+                                                          height: 1.4,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  actionsPadding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+                                                  actions: [
+                                                    Row(
+                                                      children: [
+                                                        Expanded(
+                                                          child: OutlinedButton(
+                                                            onPressed: () => Navigator.pop(ctx, false),
+                                                            style: OutlinedButton.styleFrom(
+                                                              padding: const EdgeInsets.symmetric(vertical: 14),
+                                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                                                              side: BorderSide(
+                                                                color: isDark ? const Color(0xFF334155) : const Color(0xFFCBD5E1),
+                                                              ),
+                                                            ),
+                                                            child: const Text('Cancel', style: TextStyle(fontWeight: FontWeight.w700)),
+                                                          ),
+                                                        ),
+                                                        const SizedBox(width: 12),
+                                                        Expanded(
+                                                          child: ElevatedButton(
+                                                            onPressed: () => Navigator.pop(ctx, true),
+                                                            style: ElevatedButton.styleFrom(
+                                                              backgroundColor: Colors.red,
+                                                              foregroundColor: Colors.white,
+                                                              padding: const EdgeInsets.symmetric(vertical: 14),
+                                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                                                              elevation: 0,
+                                                            ),
+                                                            child: const Text('Remove', style: TextStyle(fontWeight: FontWeight.w800)),
+                                                          ),
+                                                        ),
+                                                      ],
                                                     ),
-                                                  ),
-                                                ],
-                                              ),
+                                                  ],
+                                                );
+                                              },
                                             );
                                             if (confirmed == true) {
                                               ref
