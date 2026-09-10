@@ -1265,11 +1265,6 @@ class _SpendingHeatmapExplorerState extends State<SpendingHeatmapExplorer> {
   Widget _buildDayView(BuildContext context) {
     final month = _selectedMonth ?? 1;
     final day = _selectedDay ?? 1;
-    final currencyFmt = NumberFormat.currency(
-      locale: 'en_IN',
-      symbol: '₹',
-      decimalDigits: 2,
-    );
     final dateFmt = DateFormat('MMM d, yyyy');
     final colorScheme = Theme.of(context).colorScheme;
 
@@ -1343,7 +1338,7 @@ class _SpendingHeatmapExplorerState extends State<SpendingHeatmapExplorer> {
               FittedBox(
                 fit: BoxFit.scaleDown,
                 child: Text(
-                  currencyFmt.format(totalSpent),
+                  CurrencyFormatter.format(totalSpent),
                   style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.w900,
@@ -1397,7 +1392,7 @@ class _SpendingHeatmapExplorerState extends State<SpendingHeatmapExplorer> {
                 child: _buildDetailStatBox(
                   context,
                   'Peak Category Spend',
-                  currencyFmt.format(topCategoryAmt),
+                  CurrencyFormatter.format(topCategoryAmt),
                   Icons.monetization_on,
                   Colors.teal,
                 ),
@@ -1448,7 +1443,7 @@ class _SpendingHeatmapExplorerState extends State<SpendingHeatmapExplorer> {
                     ),
                     const SizedBox(width: 12),
                     Text(
-                      currencyFmt.format(m.value),
+                      CurrencyFormatter.format(m.value),
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.bold,
@@ -1512,11 +1507,11 @@ class _SpendingHeatmapExplorerState extends State<SpendingHeatmapExplorer> {
                   ),
                 ),
                 trailing: Text(
-                  currencyFmt.format(exp.amount),
+                  CurrencyFormatter.format(exp.amount),
                   style: TextStyle(
                     fontWeight: FontWeight.w900,
-                    fontSize: 14,
-                    color: colorScheme.primary,
+                    fontSize: 15,
+                    color: colorScheme.onSurface,
                   ),
                 ),
               ),
