@@ -385,12 +385,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                     elevation: 0,
                   ),
-                  child: const Text('Save', style: TextStyle(fontWeight: FontWeight.w800)),
-                ),
               ),
             ],
           ),
-        ],
+        ),
       ),
     );
   }
