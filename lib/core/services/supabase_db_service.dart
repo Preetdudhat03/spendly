@@ -169,21 +169,7 @@ class SupabaseDbService implements DbService {
     return tempPassword;
   }
 
-  @override
-  Future<void> completeUserMigration(String oldUserId, String newUserId) async {
-    debugPrint('Supabase Auth: completing user migration from $oldUserId to $newUserId');
-    await _client.rpc('complete_user_migration', params: {
-      'old_user_id': oldUserId,
-      'new_user_id': newUserId,
-    });
-    
-    // Clear legacy SharedPreferences session to complete cutover
-    await _prefs.remove(_keySupaUserId);
-    await _prefs.remove(_keySupaUserEmail);
-    await _prefs.remove(_keySupaUserDisplayName);
-  }
-
-  // --- Family ---
+  // --- Family Management ---
 
   @override
   Future<Family?> createFamily({required String name}) async {
