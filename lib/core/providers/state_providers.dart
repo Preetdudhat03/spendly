@@ -160,7 +160,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       userId: user.id,
       displayName: user.userMetadata?['display_name'] as String? ?? 'User',
       email: user.email,
-      appVersion: '5.4.0',
+      appVersion: '5.5.0',
       boxVersion: 1,
     );
 
