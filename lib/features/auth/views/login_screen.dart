@@ -53,12 +53,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           ),
         );
       }
-    } else {
-      // Check if migration is pending
-      final authState = ref.read(authProvider);
-      if (authState.isMigrationPending) {
-        context.go('/verify-email');
-      }
     }
   }
 
