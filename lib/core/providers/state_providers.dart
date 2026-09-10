@@ -123,7 +123,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     
     state = state.copyWith(isLoading: true, isInitializing: true);
     
-    // Check native user first (Account Integrity Guard)
+    // Check native user (Account Integrity Guard)
     final user = _ref.read(currentUserProvider);
     if (user != null) {
       if (HiveService.currentUserId != user.id) {
@@ -135,45 +135,19 @@ class AuthNotifier extends StateNotifier<AuthState> {
       return;
     }
 
-    // Check legacy user in SharedPreferences
-    final legacyId = _dbService.getCurrentUserId();
-    if (legacyId != null) {
-      if (HiveService.currentUserId != legacyId) {
-        await HiveService.openUserBoxes(legacyId);
-      }
-      final email = _dbService.getCurrentUserEmail();
-      final displayName = await _dbService.getCurrentUserDisplayName();
-      state = AuthState(
-        isLoading: false,
-        isInitializing: false,
-        userId: legacyId,
-        email: email,
-        displayName: displayName,
-      );
-      await HiveService.settings.put('active_user_id', legacyId);
-      _ref.read(familyProvider.notifier).loadFamily();
-    } else {
-      if (HiveService.currentUserId != HiveService.guestNamespace) {
-        await HiveService.openUserBoxes(HiveService.guestNamespace);
-      }
-      state = AuthState(isLoading: false, isInitializing: false);
+    if (HiveService.currentUserId != HiveService.guestNamespace) {
+      await HiveService.openUserBoxes(HiveService.guestNamespace);
     }
+    state = AuthState(isLoading: false, isInitializing: false);
   }
 
   Future<void> _updateStateFromProviders() async {
     final user = _ref.read(currentUserProvider);
     if (user == null) {
-      // If legacy session still exists in SharedPreferences, keep it active
-      final legacyId = _dbService.getCurrentUserId();
-      if (legacyId != null && !state.isMigrationPending) {
-        return; // Don't wipe legacy session if active
+      if (HiveService.currentUserId != HiveService.guestNamespace) {
+        await HiveService.openUserBoxes(HiveService.guestNamespace);
       }
-      if (!state.isMigrationPending) {
-        if (HiveService.currentUserId != HiveService.guestNamespace) {
-          await HiveService.openUserBoxes(HiveService.guestNamespace);
-        }
-        state = AuthState(isLoading: false, isInitializing: false);
-      }
+      state = AuthState(isLoading: false, isInitializing: false);
       return;
     }
 
@@ -186,7 +160,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       userId: user.id,
       displayName: user.userMetadata?['display_name'] as String? ?? 'User',
       email: user.email,
-      appVersion: '4.4.25',
+      appVersion: '5.4.0',
       boxVersion: 1,
     );
 
@@ -196,13 +170,6 @@ class AuthNotifier extends StateNotifier<AuthState> {
     profileAsync.when(
       data: (profile) {
         if (profile != null) {
-          // If the profile exists but migration is not completed, auto-trigger the transactional migration
-          final legacyId = profile.legacyUserId ?? state.legacyUserId;
-          if (!profile.migrationCompleted && legacyId != null) {
-            _autoCompleteMigration(legacyId, profile.id);
-            return;
-          }
-
           state = AuthState(
             isLoading: false,
             isInitializing: false,
@@ -210,16 +177,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
             email: profile.email,
             displayName: profile.displayName.isNotEmpty ? profile.displayName : (user.userMetadata?['display_name'] as String? ?? 'User'),
             avatarColor: savedAvatar,
-            isMigrationPending: false,
           );
           HiveService.settings.put('active_user_id', profile.id);
           _ref.read(familyProvider.notifier).loadFamily();
         } else {
-          // Profile doesn't exist yet (e.g. email is not confirmed)
-          if (state.isMigrationPending) {
-            return;
-          }
-          
           state = AuthState(
             isLoading: false,
             isInitializing: false,
@@ -245,36 +206,6 @@ class AuthNotifier extends StateNotifier<AuthState> {
         );
       },
     );
-  }
-
-  Future<void> _autoCompleteMigration(String legacyUserId, String newUserId) async {
-    if (state.isLoading) return;
-    state = state.copyWith(isLoading: true);
-    try {
-      debugPrint('Supabase Auth: auto-completing migration for legacy user $legacyUserId to new native user $newUserId');
-      await _dbService.completeUserMigration(legacyUserId, newUserId);
-      
-      // Refresh profile to trigger state reload with completed = true
-      await _ref.read(profileNotifierProvider(newUserId).notifier).refresh();
-      
-      state = AuthState(
-        isLoading: false,
-        isInitializing: false,
-        userId: newUserId,
-        email: _ref.read(currentUserProvider)?.email,
-        displayName: state.displayName,
-        isMigrationPending: false,
-      );
-      
-      _ref.read(familyProvider.notifier).loadFamily();
-    } catch (e) {
-      debugPrint('Supabase Auth: auto-complete migration failed: $e');
-      state = state.copyWith(
-        isLoading: false,
-        isInitializing: false,
-        error: ErrorHelper.getReadableErrorMessage(e),
-      );
-    }
   }
 
   Future<bool> signIn(String email, String password) async {
@@ -324,7 +255,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
         return false;
       }
 
-      // 1. Try native Supabase Auth sign-in
+      // 1. Native Supabase Auth sign-in
       try {
         final client = Supabase.instance.client;
         final response = await client.auth.signInWithPassword(
@@ -338,60 +269,13 @@ class AuthNotifier extends StateNotifier<AuthState> {
         }
       } on AuthException catch (supabaseError) {
         final msg = supabaseError.message.toLowerCase();
-        // If it's invalid credentials, check legacy database
         if (msg.contains('invalid login credentials') || msg.contains('invalid_credentials')) {
-          final client = Supabase.instance.client;
-          
-          final legacyUser = await client.from('users').select().eq('email', cleanEmail).maybeSingle().timeout(const Duration(seconds: 10));
-          final nativeProfile = await client.from('profiles').select().eq('email', cleanEmail).maybeSingle().timeout(const Duration(seconds: 10));
-          
-          if (legacyUser == null && nativeProfile == null) {
-            state = state.copyWith(isLoading: false, error: 'USER_NOT_FOUND');
-            return false;
-          }
-
-          if (legacyUser != null) {
-            // Check legacy password
-            final hashedInput = CryptoUtils.hashPassword(password);
-            if (legacyUser['password'] != hashedInput) {
-              state = state.copyWith(isLoading: false, error: 'Invalid email or password.');
-              return false;
-            }
-
-            // Credentials match legacy database! Migration required.
-            final legacyUserId = legacyUser['id'] as String;
-            
-            // Check if already completed migration
-            final existingProfile = await client.from('profiles').select().eq('legacy_user_id', legacyUserId).maybeSingle().timeout(const Duration(seconds: 10));
-            if (existingProfile != null && existingProfile['migration_completed'] == true) {
-              state = state.copyWith(
-                isLoading: false,
-                error: 'Your account was already migrated. Please use your updated Supabase Auth password.',
-              );
-              return false;
-            }
-
-            // Trigger migration flow
-            state = AuthState(
-              isLoading: false,
-              userId: legacyUserId,
-              email: legacyUser['email'] as String,
-              displayName: legacyUser['display_name'] as String,
-              isMigrationPending: true,
-              legacyUserId: legacyUserId,
-              pendingPassword: password,
-            );
-            return true;
-          } else {
-            // Native profile exists, but password was wrong
-            state = state.copyWith(isLoading: false, error: 'Invalid email or password.');
-            return false;
-          }
+          state = state.copyWith(isLoading: false, error: 'Invalid email or password.');
+          return false;
         } else if (msg.contains('email not confirmed')) {
           state = AuthState(
             isLoading: false,
             email: cleanEmail,
-            isMigrationPending: false,
             error: 'Please verify your email address before logging in.',
           );
           return false;
@@ -402,6 +286,30 @@ class AuthNotifier extends StateNotifier<AuthState> {
       }
       return false;
     } catch (e) {
+      final errStr = e.toString().toLowerCase();
+      if (e is TimeoutException ||
+          e is SocketException ||
+          errStr.contains('timeout') ||
+          errStr.contains('socketexception') ||
+          errStr.contains('httpexception') ||
+          errStr.contains('clientexception') ||
+          errStr.contains('failed host lookup') ||
+          errStr.contains('connection failed') ||
+          errStr.contains('handshake') ||
+          errStr.contains('unreachable')) {
+        state = state.copyWith(
+          isLoading: false,
+          error: "Unable to connect. Check your internet connection and try again.",
+        );
+      } else {
+        state = state.copyWith(
+          isLoading: false,
+          error: ErrorHelper.getReadableErrorMessage(e),
+        );
+      }
+      return false;
+    }
+  } catch (e) {
       final errStr = e.toString().toLowerCase();
       if (e is TimeoutException ||
           e is SocketException ||
