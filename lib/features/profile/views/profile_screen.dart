@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:spendly/core/providers/state_providers.dart';
 import 'package:spendly/core/providers/settings_provider.dart';
 import 'package:spendly/features/analytics/providers/analytics_providers.dart';
