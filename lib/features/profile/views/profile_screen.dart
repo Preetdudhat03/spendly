@@ -34,118 +34,118 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (context) => Dialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
-        contentPadding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Center(
-              child: Container(
-                width: 56,
-                height: 56,
-                decoration: BoxDecoration(
-                  color: accentColor.withValues(alpha: isDark ? 0.2 : 0.1),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(Icons.account_balance_wallet_rounded, color: accentColor, size: 28),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Set Monthly Budget',
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.w800,
-                letterSpacing: -0.3,
-              ),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              'Set the total target spending limit for your entire family group.',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 13,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-            ),
-            const SizedBox(height: 20),
-            TextField(
-              controller: _budgetController,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              autofocus: true,
-              style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
-              decoration: InputDecoration(
-                labelText: 'Budget Limit',
-                prefixText: '₹ ',
-                prefixStyle: TextStyle(
-                  fontWeight: FontWeight.w800,
-                  fontSize: 16,
-                  color: accentColor,
-                ),
-                prefixIcon: const Icon(Icons.currency_rupee_rounded, size: 20),
-                filled: true,
-                fillColor: isDark
-                    ? const Color(0xFF0F172A).withValues(alpha: 0.6)
-                    : const Color(0xFFF8FAFC),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  borderSide: BorderSide(
-                    color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
-                  ),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  borderSide: BorderSide(
-                    color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-        actionsPadding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-        actions: [
-          Row(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Expanded(
-                child: OutlinedButton(
-                  onPressed: () => Navigator.pop(context),
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                    side: BorderSide(
-                      color: isDark ? const Color(0xFF334155) : const Color(0xFFCBD5E1),
+              Center(
+                child: Container(
+                  width: 56,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    color: accentColor.withValues(alpha: isDark ? 0.2 : 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(Icons.account_balance_wallet_rounded, color: accentColor, size: 28),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Set Monthly Budget',
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -0.3,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'Set the total target spending limit for your entire family group.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 13,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(height: 20),
+              TextField(
+                controller: _budgetController,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                autofocus: true,
+                style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
+                decoration: InputDecoration(
+                  labelText: 'Budget Limit',
+                  prefixText: '₹ ',
+                  prefixStyle: TextStyle(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 16,
+                    color: accentColor,
+                  ),
+                  prefixIcon: const Icon(Icons.currency_rupee_rounded, size: 20),
+                  filled: true,
+                  fillColor: isDark
+                      ? const Color(0xFF0F172A).withValues(alpha: 0.6)
+                      : const Color(0xFFF8FAFC),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: BorderSide(
+                      color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
                     ),
                   ),
-                  child: const Text('Cancel', style: TextStyle(fontWeight: FontWeight.w700)),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: BorderSide(
+                      color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                    ),
+                  ),
                 ),
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: () {
-                    final newBudget = double.tryParse(_budgetController.text) ?? 0.0;
-                    if (newBudget >= 0) {
-                      ref.read(budgetProvider.notifier).setBudget(newBudget);
-                      Navigator.pop(context);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Monthly budget updated to ₹${newBudget.toStringAsFixed(2)}')),
-                      );
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                    elevation: 0,
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                        side: BorderSide(
+                          color: isDark ? const Color(0xFF334155) : const Color(0xFFCBD5E1),
+                        ),
+                      ),
+                      child: const Text('Cancel', style: TextStyle(fontWeight: FontWeight.w700)),
+                    ),
                   ),
-                  child: const Text('Save', style: TextStyle(fontWeight: FontWeight.w800)),
-                ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        final newBudget = double.tryParse(_budgetController.text) ?? 0.0;
+                        if (newBudget >= 0) {
+                          ref.read(budgetProvider.notifier).setBudget(newBudget);
+                          Navigator.pop(context);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Monthly budget updated to ₹${newBudget.toStringAsFixed(2)}')),
+                          );
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                        elevation: 0,
+                      ),
+                      child: const Text('Save', style: TextStyle(fontWeight: FontWeight.w800)),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
-        ],
+        ),
       ),
     );
   }
