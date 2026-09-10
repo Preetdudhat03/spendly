@@ -193,19 +193,46 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 
   void _showQrCodeDialog(String code) {
+    if (code.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No Family Code available to generate QR.')),
+      );
+      return;
+    }
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final accentColor = isDark
+        ? const Color(0xFF818CF8)
+        : Theme.of(context).colorScheme.primary;
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Scan to Join', textAlign: TextAlign.center),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+        title: const Text('Scan to Join Family', textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.w800)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            Text(
+              'Other family members can scan this QR code or enter the code manually to join.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 13,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: 20),
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.08),
+                    blurRadius: 16,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
               ),
               child: QrImageView(
                 data: code,
@@ -219,26 +246,69 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   dataModuleShape: QrDataModuleShape.square,
                   color: Colors.black,
                 ),
+                errorStateBuilder: (cxt, err) {
+                  return const SizedBox(
+                    width: 200,
+                    height: 200,
+                    child: Center(
+                      child: Text('Unable to display QR code.', textAlign: TextAlign.center),
+                    ),
+                  );
+                },
               ),
             ),
-            const SizedBox(height: 14),
-            Text(
-              code,
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 1.5,
-                color: isDark
-                    ? const Color(0xFF818CF8)
-                    : Theme.of(context).colorScheme.primary,
+            const SizedBox(height: 18),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: accentColor.withValues(alpha: isDark ? 0.16 : 0.08),
+                borderRadius: BorderRadius.circular(100),
+                border: Border.all(color: accentColor.withValues(alpha: 0.2)),
+              ),
+              child: Text(
+                code,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 1.5,
+                  color: accentColor,
+                ),
               ),
             ),
           ],
         ),
+        actionsAlignment: MainAxisAlignment.spaceBetween,
+        actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('CLOSE'),
+          IconButton(
+            tooltip: 'Share Invite',
+            icon: const Icon(Icons.share_rounded),
+            onPressed: () {
+              Share.share('Join our family expense group on Spendly! Use Family Code: $code');
+            },
+          ),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextButton.icon(
+                icon: const Icon(Icons.copy_rounded, size: 18),
+                label: const Text('COPY'),
+                onPressed: () {
+                  Clipboard.setData(ClipboardData(text: code));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Family Code copied to clipboard')),
+                  );
+                },
+              ),
+              const SizedBox(width: 8),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context),
+                style: ElevatedButton.styleFrom(
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                child: const Text('DONE'),
+              ),
+            ],
           ),
         ],
       ),
