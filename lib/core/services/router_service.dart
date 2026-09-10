@@ -170,8 +170,7 @@ class _ProviderListenable extends ChangeNotifier {
     ref.listen(authProvider, (previous, next) {
       if (previous?.userId != next.userId ||
           previous?.isInitializing != next.isInitializing ||
-          previous?.isLoading != next.isLoading ||
-          previous?.isMigrationPending != next.isMigrationPending) {
+          previous?.isLoading != next.isLoading) {
         notifyListeners();
       }
     });
