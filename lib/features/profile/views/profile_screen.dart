@@ -29,35 +29,121 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   void _showEditBudgetDialog(double currentBudget) {
     _budgetController.text = CurrencyFormatter.toEditString(currentBudget);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final accentColor = isDark ? const Color(0xFF818CF8) : Theme.of(context).colorScheme.primary;
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Set Monthly Budget'),
-        content: TextField(
-          controller: _budgetController,
-          keyboardType: TextInputType.number,
-          decoration: const InputDecoration(
-            labelText: 'Budget Limit (₹)',
-            prefixText: '₹ ',
-          ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+        contentPadding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Center(
+              child: Container(
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  color: accentColor.withValues(alpha: isDark ? 0.2 : 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(Icons.account_balance_wallet_rounded, color: accentColor, size: 28),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Set Monthly Budget',
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.w800,
+                letterSpacing: -0.3,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              'Set the total target spending limit for your entire family group.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 13,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: 20),
+            TextField(
+              controller: _budgetController,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              autofocus: true,
+              style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
+              decoration: InputDecoration(
+                labelText: 'Budget Limit',
+                prefixText: '₹ ',
+                prefixStyle: TextStyle(
+                  fontWeight: FontWeight.w800,
+                  fontSize: 16,
+                  color: accentColor,
+                ),
+                prefixIcon: const Icon(Icons.currency_rupee_rounded, size: 20),
+                filled: true,
+                fillColor: isDark
+                    ? const Color(0xFF0F172A).withValues(alpha: 0.6)
+                    : const Color(0xFFF8FAFC),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide(
+                    color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                  ),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide(
+                    color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
+        actionsPadding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('CANCEL'),
-          ),
-          TextButton(
-            onPressed: () {
-              final newBudget = double.tryParse(_budgetController.text) ?? 0.0;
-              if (newBudget >= 0) {
-                ref.read(budgetProvider.notifier).setBudget(newBudget);
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Monthly budget updated to ₹$newBudget')),
-                );
-              }
-            },
-            child: const Text('SAVE'),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    side: BorderSide(
+                      color: isDark ? const Color(0xFF334155) : const Color(0xFFCBD5E1),
+                    ),
+                  ),
+                  child: const Text('Cancel', style: TextStyle(fontWeight: FontWeight.w700)),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () {
+                    final newBudget = double.tryParse(_budgetController.text) ?? 0.0;
+                    if (newBudget >= 0) {
+                      ref.read(budgetProvider.notifier).setBudget(newBudget);
+                      Navigator.pop(context);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Monthly budget updated to ₹${newBudget.toStringAsFixed(2)}')),
+                      );
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    elevation: 0,
+                  ),
+                  child: const Text('Save', style: TextStyle(fontWeight: FontWeight.w800)),
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -66,33 +152,115 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   void _showEditNameDialog(String currentName) {
     _nameController.text = currentName;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final accentColor = isDark ? const Color(0xFF818CF8) : Theme.of(context).colorScheme.primary;
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Change Display Name'),
-        content: TextField(
-          controller: _nameController,
-          decoration: const InputDecoration(
-            labelText: 'Your Name (e.g. Dad, Mom, Preet)',
-          ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+        contentPadding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Center(
+              child: Container(
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  color: accentColor.withValues(alpha: isDark ? 0.2 : 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(Icons.person_rounded, color: accentColor, size: 28),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Change Display Name',
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.w800,
+                letterSpacing: -0.3,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              'This nickname will be displayed across all family activities.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 13,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: 20),
+            TextField(
+              controller: _nameController,
+              autofocus: true,
+              textCapitalization: TextCapitalization.words,
+              style: const TextStyle(fontWeight: FontWeight.w600),
+              decoration: InputDecoration(
+                labelText: 'Your Name (e.g. Dad, Mom, Preet)',
+                prefixIcon: const Icon(Icons.badge_outlined, size: 20),
+                filled: true,
+                fillColor: isDark
+                    ? const Color(0xFF0F172A).withValues(alpha: 0.6)
+                    : const Color(0xFFF8FAFC),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide(
+                    color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                  ),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide(
+                    color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
+        actionsPadding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('CANCEL'),
-          ),
-          TextButton(
-            onPressed: () {
-              final newName = _nameController.text.trim();
-              if (newName.isNotEmpty) {
-                ref.read(authProvider.notifier).updateProfileName(newName);
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Name updated to "$newName"')),
-                );
-              }
-            },
-            child: const Text('SAVE'),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    side: BorderSide(
+                      color: isDark ? const Color(0xFF334155) : const Color(0xFFCBD5E1),
+                    ),
+                  ),
+                  child: const Text('Cancel', style: TextStyle(fontWeight: FontWeight.w700)),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () {
+                    final newName = _nameController.text.trim();
+                    if (newName.isNotEmpty) {
+                      ref.read(authProvider.notifier).updateProfileName(newName);
+                      Navigator.pop(context);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Name updated to "$newName"')),
+                      );
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    elevation: 0,
+                  ),
+                  child: const Text('Save', style: TextStyle(fontWeight: FontWeight.w800)),
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -101,47 +269,128 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   void _showEditEmailDialog(String currentEmail) {
     _emailController.text = currentEmail;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final accentColor = isDark ? const Color(0xFF818CF8) : Theme.of(context).colorScheme.primary;
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Change Email Address'),
-        content: TextField(
-          controller: _emailController,
-          keyboardType: TextInputType.emailAddress,
-          decoration: const InputDecoration(
-            labelText: 'New Email Address',
-          ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+        contentPadding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Center(
+              child: Container(
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  color: accentColor.withValues(alpha: isDark ? 0.2 : 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(Icons.alternate_email_rounded, color: accentColor, size: 28),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Change Email Address',
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.w800,
+                letterSpacing: -0.3,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              'Enter your updated email address for your profile.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 13,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: 20),
+            TextField(
+              controller: _emailController,
+              keyboardType: TextInputType.emailAddress,
+              autofocus: true,
+              style: const TextStyle(fontWeight: FontWeight.w600),
+              decoration: InputDecoration(
+                labelText: 'New Email Address',
+                prefixIcon: const Icon(Icons.email_outlined, size: 20),
+                filled: true,
+                fillColor: isDark
+                    ? const Color(0xFF0F172A).withValues(alpha: 0.6)
+                    : const Color(0xFFF8FAFC),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide(
+                    color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                  ),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide(
+                    color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
+        actionsPadding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('CANCEL'),
-          ),
-          TextButton(
-            onPressed: () async {
-              final newEmail = _emailController.text.trim();
-              if (newEmail.isNotEmpty && newEmail.contains('@')) {
-                final messenger = ScaffoldMessenger.of(this.context);
-                final nav = Navigator.of(this.context);
-                nav.pop(); // Close dialog first
-                
-                try {
-                  await ref.read(authProvider.notifier).updateEmail(newEmail);
-                  messenger.showSnackBar(
-                    SnackBar(content: Text('Email updated to "$newEmail"')),
-                  );
-                } catch (e) {
-                  messenger.showSnackBar(
-                    SnackBar(content: Text('Failed to update email: $e'), backgroundColor: Colors.red),
-                  );
-                }
-              } else {
-                ScaffoldMessenger.of(this.context).showSnackBar(
-                  const SnackBar(content: Text('Please enter a valid email address'), backgroundColor: Colors.orange),
-                );
-              }
-            },
-            child: const Text('SAVE'),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    side: BorderSide(
+                      color: isDark ? const Color(0xFF334155) : const Color(0xFFCBD5E1),
+                    ),
+                  ),
+                  child: const Text('Cancel', style: TextStyle(fontWeight: FontWeight.w700)),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () async {
+                    final newEmail = _emailController.text.trim();
+                    if (newEmail.isNotEmpty && newEmail.contains('@')) {
+                      final messenger = ScaffoldMessenger.of(this.context);
+                      final nav = Navigator.of(this.context);
+                      nav.pop(); // Close dialog first
+                      
+                      try {
+                        await ref.read(authProvider.notifier).updateEmail(newEmail);
+                        messenger.showSnackBar(
+                          SnackBar(content: Text('Email updated to "$newEmail"')),
+                        );
+                      } catch (e) {
+                        messenger.showSnackBar(
+                          SnackBar(content: Text('Failed to update email: $e'), backgroundColor: Colors.red),
+                        );
+                      }
+                    } else {
+                      ScaffoldMessenger.of(this.context).showSnackBar(
+                        const SnackBar(content: Text('Please enter a valid email address'), backgroundColor: Colors.orange),
+                      );
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    elevation: 0,
+                  ),
+                  child: const Text('Save', style: TextStyle(fontWeight: FontWeight.w800)),
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -161,30 +410,84 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       Colors.indigo, Colors.blue, Colors.teal, Colors.green,
       Colors.orange, Colors.red, Colors.pink, Colors.purple
     ];
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final currentAvatar = ref.read(authProvider).avatarColor;
+
     showModalBottomSheet(
       context: context,
-      builder: (context) => Padding(
-        padding: const EdgeInsets.fromLTRB(20.0, 20.0, 20.0, 105.0),
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        padding: const EdgeInsets.fromLTRB(24.0, 12.0, 24.0, 36.0),
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF1E293B) : Colors.white,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: isDark ? 0.4 : 0.1),
+              blurRadius: 20,
+              offset: const Offset(0, -4),
+            ),
+          ],
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('Choose Avatar Color', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 16),
-            Wrap(
-              spacing: 12,
-              runSpacing: 12,
-              alignment: WrapAlignment.center,
-              children: colors.map((color) => GestureDetector(
-                onTap: () {
-                  final hex = '#${(color.value & 0xFFFFFF).toRadixString(16).padLeft(6, '0')}';
-                  ref.read(authProvider.notifier).updateAvatarColor(hex);
-                  Navigator.pop(context);
-                },
-                child: CircleAvatar(
-                  radius: 24,
-                  backgroundColor: color,
+            Container(
+              width: 38,
+              height: 4,
+              margin: const EdgeInsets.only(bottom: 18),
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.palette_rounded, size: 22, color: isDark ? const Color(0xFF818CF8) : Theme.of(context).colorScheme.primary),
+                const SizedBox(width: 8),
+                Text(
+                  'Choose Avatar Color',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
-              )).toList(),
+              ],
+            ),
+            const SizedBox(height: 24),
+            Wrap(
+              spacing: 16,
+              runSpacing: 16,
+              alignment: WrapAlignment.center,
+              children: colors.map((color) {
+                final hex = '#${(color.toARGB32() & 0xFFFFFF).toRadixString(16).padLeft(6, '0')}';
+                final isSelected = currentAvatar?.toLowerCase() == hex.toLowerCase();
+
+                return GestureDetector(
+                  onTap: () {
+                    ref.read(authProvider.notifier).updateAvatarColor(hex);
+                    Navigator.pop(context);
+                  },
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    padding: const EdgeInsets.all(3),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: isSelected ? (isDark ? Colors.white : Colors.black87) : Colors.transparent,
+                        width: 2.5,
+                      ),
+                    ),
+                    child: CircleAvatar(
+                      radius: 24,
+                      backgroundColor: color,
+                      child: isSelected
+                          ? const Icon(Icons.check_rounded, color: Colors.white, size: 20)
+                          : null,
+                    ),
+                  ),
+                );
+              }).toList(),
             ),
           ],
         ),
