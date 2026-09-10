@@ -30,7 +30,6 @@ final routerProvider = Provider<GoRouter>((ref) {
       }
 
       final isLoggedIn = auth.userId != null;
-      final isPendingMigration = auth.isMigrationPending;
       
       final publicRoutes = ['/login', '/register', '/forgot-password', '/verify-email', '/splash'];
       final isPublicRoute = publicRoutes.contains(state.matchedLocation);
@@ -40,13 +39,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         return isPublicRoute ? null : '/login';
       }
 
-      // User is logged in (either legacy user or native Supabase user)
-      if (isPendingMigration) {
-        // If they are in the middle of a migration, they MUST stay on verify-email
-        return state.matchedLocation == '/verify-email' ? null : '/verify-email';
-      }
-
-      // If they are logged in and verified, prevent accessing public authentication routes
+      // If they are logged in, prevent accessing public authentication routes
       if (state.matchedLocation == '/login' || 
           state.matchedLocation == '/register' || 
           state.matchedLocation == '/forgot-password' ||
