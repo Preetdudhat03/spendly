@@ -510,7 +510,7 @@ class _SpendlyDatePickerDialogState extends State<SpendlyDatePickerDialog> {
                   ? const Color(0xFF334155).withValues(alpha: 0.6)
                   : const Color(0xFFF1F5F9),
           borderRadius: BorderRadius.circular(12),
-          border: BorderSide(
+          border: Border.all(
             color: isSelected
                 ? colorScheme.primary
                 : isDark
