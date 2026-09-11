@@ -207,6 +207,105 @@ class AppTheme {
           borderRadius: radius.large,
         ),
       ),
+      datePickerTheme: DatePickerThemeData(
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(28),
+          side: BorderSide(color: borderCol, width: 1),
+        ),
+        headerBackgroundColor: colors.primary,
+        headerForegroundColor: Colors.white,
+        headerHeadlineStyle: baseTextTheme.headlineSmall?.copyWith(
+          fontWeight: FontWeight.bold,
+          color: Colors.white,
+        ),
+        headerHelpStyle: baseTextTheme.labelMedium?.copyWith(
+          color: Colors.white.withValues(alpha: 0.85),
+          fontWeight: FontWeight.w600,
+          letterSpacing: 0.5,
+        ),
+        weekdayStyle: baseTextTheme.bodySmall?.copyWith(
+          fontWeight: FontWeight.bold,
+          color: colors.neutral600,
+        ),
+        dayStyle: baseTextTheme.bodyMedium?.copyWith(
+          fontWeight: FontWeight.w600,
+        ),
+        dayForegroundColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return Colors.white;
+          }
+          if (states.contains(WidgetState.disabled)) {
+            return colors.neutral300;
+          }
+          return colors.neutral900;
+        }),
+        dayBackgroundColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return colors.primary;
+          }
+          return null;
+        }),
+        todayForegroundColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return Colors.white;
+          }
+          return colors.primary;
+        }),
+        todayBackgroundColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return colors.primary;
+          }
+          return colors.primary.withValues(alpha: 0.1);
+        }),
+        todayBorder: BorderSide(color: colors.primary, width: 1.5),
+        yearStyle: baseTextTheme.bodyLarge?.copyWith(
+          fontWeight: FontWeight.w600,
+        ),
+        yearForegroundColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return Colors.white;
+          }
+          return colors.neutral900;
+        }),
+        yearBackgroundColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return colors.primary;
+          }
+          return null;
+        }),
+        rangePickerBackgroundColor: Colors.white,
+        rangePickerHeaderBackgroundColor: colors.primary,
+        rangePickerHeaderForegroundColor: Colors.white,
+        rangePickerHeaderHeadlineStyle: baseTextTheme.titleLarge?.copyWith(
+          fontWeight: FontWeight.bold,
+          color: Colors.white,
+        ),
+        rangePickerHeaderHelpStyle: baseTextTheme.labelMedium?.copyWith(
+          fontWeight: FontWeight.w600,
+          color: Colors.white.withValues(alpha: 0.85),
+        ),
+        rangeSelectionBackgroundColor: colors.primary.withValues(alpha: 0.15),
+        rangeSelectionOverlayColor: WidgetStateProperty.all(
+          colors.primary.withValues(alpha: 0.1),
+        ),
+        dividerColor: borderCol,
+        cancelButtonStyle: TextButton.styleFrom(
+          foregroundColor: colors.neutral600,
+          textStyle: baseTextTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+        confirmButtonStyle: FilledButton.styleFrom(
+          backgroundColor: colors.primary,
+          foregroundColor: Colors.white,
+          textStyle: baseTextTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          elevation: 0,
+        ),
+      ),
       dividerTheme: const DividerThemeData(
         color: Color(0xFFE2E8F0),
         thickness: 1,
