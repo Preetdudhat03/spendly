@@ -74,11 +74,12 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
   }
 
   Future<void> _selectDate() async {
-    final DateTime? picked = await showDatePicker(
+    final DateTime? picked = await showSpendlyDatePicker(
       context: context,
       initialDate: _selectedDate,
       firstDate: DateTime(2020),
       lastDate: DateTime(2030),
+      title: 'Select Expense Date',
     );
     if (picked != null && picked != _selectedDate) {
       setState(() {
