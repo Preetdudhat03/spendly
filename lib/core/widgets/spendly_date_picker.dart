@@ -189,7 +189,7 @@ class _SpendlyDatePickerDialogState extends State<SpendlyDatePickerDialog> {
                 decoration: BoxDecoration(
                   color: heroBg,
                   borderRadius: BorderRadius.circular(18),
-                  border: BorderSide(
+                  border: Border.all(
                     color: colorScheme.primary.withValues(alpha: 0.15),
                     width: 1,
                   ),
