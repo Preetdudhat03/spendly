@@ -449,6 +449,105 @@ class AppTheme {
           borderRadius: radius.large,
         ),
       ),
+      datePickerTheme: DatePickerThemeData(
+        backgroundColor: cardBg,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(28),
+          side: BorderSide(color: borderCol, width: 1),
+        ),
+        headerBackgroundColor: const Color(0xFF312E81),
+        headerForegroundColor: Colors.white,
+        headerHeadlineStyle: baseTextTheme.headlineSmall?.copyWith(
+          fontWeight: FontWeight.bold,
+          color: Colors.white,
+        ),
+        headerHelpStyle: baseTextTheme.labelMedium?.copyWith(
+          color: Colors.white.withValues(alpha: 0.85),
+          fontWeight: FontWeight.w600,
+          letterSpacing: 0.5,
+        ),
+        weekdayStyle: baseTextTheme.bodySmall?.copyWith(
+          fontWeight: FontWeight.bold,
+          color: const Color(0xFF94A3B8),
+        ),
+        dayStyle: baseTextTheme.bodyMedium?.copyWith(
+          fontWeight: FontWeight.w600,
+        ),
+        dayForegroundColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return Colors.white;
+          }
+          if (states.contains(WidgetState.disabled)) {
+            return const Color(0xFF475569);
+          }
+          return const Color(0xFFF8FAFC);
+        }),
+        dayBackgroundColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return colors.primary;
+          }
+          return null;
+        }),
+        todayForegroundColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return Colors.white;
+          }
+          return colors.secondary;
+        }),
+        todayBackgroundColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return colors.primary;
+          }
+          return colors.primary.withValues(alpha: 0.2);
+        }),
+        todayBorder: BorderSide(color: colors.secondary, width: 1.5),
+        yearStyle: baseTextTheme.bodyLarge?.copyWith(
+          fontWeight: FontWeight.w600,
+        ),
+        yearForegroundColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return Colors.white;
+          }
+          return const Color(0xFFF8FAFC);
+        }),
+        yearBackgroundColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return colors.primary;
+          }
+          return null;
+        }),
+        rangePickerBackgroundColor: cardBg,
+        rangePickerHeaderBackgroundColor: const Color(0xFF312E81),
+        rangePickerHeaderForegroundColor: Colors.white,
+        rangePickerHeaderHeadlineStyle: baseTextTheme.titleLarge?.copyWith(
+          fontWeight: FontWeight.bold,
+          color: Colors.white,
+        ),
+        rangePickerHeaderHelpStyle: baseTextTheme.labelMedium?.copyWith(
+          fontWeight: FontWeight.w600,
+          color: Colors.white.withValues(alpha: 0.85),
+        ),
+        rangeSelectionBackgroundColor: colors.primary.withValues(alpha: 0.25),
+        rangeSelectionOverlayColor: WidgetStateProperty.all(
+          colors.primary.withValues(alpha: 0.15),
+        ),
+        dividerColor: borderCol,
+        cancelButtonStyle: TextButton.styleFrom(
+          foregroundColor: const Color(0xFF94A3B8),
+          textStyle: baseTextTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+        confirmButtonStyle: FilledButton.styleFrom(
+          backgroundColor: colors.primary,
+          foregroundColor: Colors.white,
+          textStyle: baseTextTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          elevation: 0,
+        ),
+      ),
       dividerTheme: const DividerThemeData(
         color: Color(0xFF334155),
         thickness: 1,
