@@ -327,9 +327,25 @@ class SyncService {
     final userId = nativeUser.id;
 
     final memberData = await _client.from('family_members').select().eq('user_id', userId).maybeSingle();
-    if (memberData == null) return;
+    String? familyId = memberData?['family_id'] as String?;
 
-    final familyId = memberData['family_id'] as String;
+    if (familyId == null) {
+      final createdFamily = await _client.from('families').select().eq('created_by', userId).maybeSingle();
+      if (createdFamily != null) {
+        familyId = createdFamily['id'] as String?;
+        if (familyId != null) {
+          try {
+            await _client.from('family_members').upsert({
+              'family_id': familyId,
+              'user_id': userId,
+              'role': 'admin',
+            });
+          } catch (_) {}
+        }
+      }
+    }
+
+    if (familyId == null) return;
 
     // Pull Family
     final familyData = await _client.from('families').select().eq('id', familyId).single();
