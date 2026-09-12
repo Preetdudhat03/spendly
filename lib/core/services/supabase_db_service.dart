@@ -251,9 +251,32 @@ class SupabaseDbService implements DbService {
           .eq('user_id', userId)
           .maybeSingle();
 
-      if (memberData == null) return null;
+      String? familyId = memberData?['family_id'] as String?;
 
-      final familyId = memberData['family_id'] as String?;
+      // Fallback: If membership row is missing, check if user is the creator of a family
+      if (familyId == null) {
+        final createdFamily = await _client
+            .from('families')
+            .select()
+            .eq('created_by', userId)
+            .maybeSingle();
+            
+        if (createdFamily != null) {
+          familyId = createdFamily['id'] as String?;
+          // Auto-heal membership
+          if (familyId != null) {
+            try {
+              await _client.from('family_members').upsert({
+                'family_id': familyId,
+                'user_id': userId,
+                'role': 'admin',
+              });
+            } catch (_) {}
+            return Family.fromJson(createdFamily);
+          }
+        }
+      }
+
       if (familyId == null) return null;
 
       // Get family details using the family ID
