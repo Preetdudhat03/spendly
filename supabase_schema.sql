@@ -100,4 +100,194 @@ begin
 end;
 $$ language plpgsql security definer;
 
+-- ==============================================================================
+-- 8. ROW LEVEL SECURITY (RLS) HELPER FUNCTIONS & POLICIES
+-- ==============================================================================
+
+-- Helper 1: Returns all family IDs that the given user belongs to (No recursion!)
+create or replace function public.get_user_family_ids(user_uuid uuid)
+returns setof uuid
+language sql
+security definer
+set search_path = public
+stable
+as $$
+  select family_id from public.family_members where user_id = user_uuid;
+$$;
+
+-- Helper 2: Check if user is an admin of a family
+create or replace function public.is_family_admin(user_uuid uuid, fam_id uuid)
+returns boolean
+language sql
+security definer
+set search_path = public
+stable
+as $$
+  select exists (
+    select 1 from public.family_members
+    where user_id = user_uuid and family_id = fam_id and role = 'admin'
+  );
+$$;
+
+-- Enable RLS on all tables
+alter table public.profiles enable row level security;
+alter table public.families enable row level security;
+alter table public.family_members enable row level security;
+alter table public.expenses enable row level security;
+alter table public.budgets enable row level security;
+
+-- ------------------------------------------------------------------------------
+-- PROFILES POLICIES
+-- ------------------------------------------------------------------------------
+drop policy if exists "Profiles are viewable by authenticated users" on public.profiles;
+create policy "Profiles are viewable by authenticated users"
+on public.profiles for select
+to authenticated
+using (true);
+
+drop policy if exists "Users can update their own profile" on public.profiles;
+create policy "Users can update their own profile"
+on public.profiles for update
+to authenticated
+using (auth.uid() = id);
+
+drop policy if exists "Users can insert their own profile" on public.profiles;
+create policy "Users can insert their own profile"
+on public.profiles for insert
+to authenticated
+with check (auth.uid() = id);
+
+-- ------------------------------------------------------------------------------
+-- FAMILIES POLICIES
+-- ------------------------------------------------------------------------------
+drop policy if exists "Users can view their family or search by code" on public.families;
+create policy "Users can view their family or search by code"
+on public.families for select
+to authenticated
+using (
+  id in (select public.get_user_family_ids(auth.uid()))
+  or created_by = auth.uid()
+  or family_code is not null
+);
+
+drop policy if exists "Authenticated users can create families" on public.families;
+create policy "Authenticated users can create families"
+on public.families for insert
+to authenticated
+with check (auth.uid() is not null);
+
+drop policy if exists "Family admins can update family" on public.families;
+create policy "Family admins can update family"
+on public.families for update
+to authenticated
+using (
+  public.is_family_admin(auth.uid(), id)
+  or created_by = auth.uid()
+);
+
+drop policy if exists "Family admins can delete family" on public.families;
+create policy "Family admins can delete family"
+on public.families for delete
+to authenticated
+using (
+  public.is_family_admin(auth.uid(), id)
+  or created_by = auth.uid()
+);
+
+-- ------------------------------------------------------------------------------
+-- FAMILY MEMBERS POLICIES
+-- ------------------------------------------------------------------------------
+drop policy if exists "Members can view family members" on public.family_members;
+create policy "Members can view family members"
+on public.family_members for select
+to authenticated
+using (
+  user_id = auth.uid()
+  or family_id in (select public.get_user_family_ids(auth.uid()))
+);
+
+drop policy if exists "Users can join family" on public.family_members;
+create policy "Users can join family"
+on public.family_members for insert
+to authenticated
+with check (
+  user_id = auth.uid()
+);
+
+drop policy if exists "Users or admins can update membership" on public.family_members;
+create policy "Users or admins can update membership"
+on public.family_members for update
+to authenticated
+using (
+  user_id = auth.uid()
+  or public.is_family_admin(auth.uid(), family_id)
+);
+
+drop policy if exists "Users can leave or admins can remove member" on public.family_members;
+create policy "Users can leave or admins can remove member"
+on public.family_members for delete
+to authenticated
+using (
+  user_id = auth.uid()
+  or public.is_family_admin(auth.uid(), family_id)
+);
+
+-- ------------------------------------------------------------------------------
+-- EXPENSES POLICIES
+-- ------------------------------------------------------------------------------
+drop policy if exists "Family members can view expenses" on public.expenses;
+create policy "Family members can view expenses"
+on public.expenses for select
+to authenticated
+using (
+  family_id in (select public.get_user_family_ids(auth.uid()))
+);
+
+drop policy if exists "Family members can insert expenses" on public.expenses;
+create policy "Family members can insert expenses"
+on public.expenses for insert
+to authenticated
+with check (
+  family_id in (select public.get_user_family_ids(auth.uid()))
+  and created_by = auth.uid()
+);
+
+drop policy if exists "Expense creators or admins can update expense" on public.expenses;
+create policy "Expense creators or admins can update expense"
+on public.expenses for update
+to authenticated
+using (
+  created_by = auth.uid()
+  or public.is_family_admin(auth.uid(), family_id)
+);
+
+drop policy if exists "Expense creators or admins can delete expense" on public.expenses;
+create policy "Expense creators or admins can delete expense"
+on public.expenses for delete
+to authenticated
+using (
+  created_by = auth.uid()
+  or public.is_family_admin(auth.uid(), family_id)
+);
+
+-- ------------------------------------------------------------------------------
+-- BUDGETS POLICIES
+-- ------------------------------------------------------------------------------
+drop policy if exists "Family members can view budgets" on public.budgets;
+create policy "Family members can view budgets"
+on public.budgets for select
+to authenticated
+using (
+  family_id in (select public.get_user_family_ids(auth.uid()))
+);
+
+drop policy if exists "Family members can insert/update budgets" on public.budgets;
+create policy "Family members can insert/update budgets"
+on public.budgets for all
+to authenticated
+using (
+  family_id in (select public.get_user_family_ids(auth.uid()))
+);
+
+
 
