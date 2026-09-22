@@ -314,7 +314,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
                         child: InkWell(
                           onTap: () {
                             setState(() {
-                              _selectedCategory = name;
+                              _selectedCategory = isSelected ? null : name;
                             });
                           },
                           borderRadius: BorderRadius.circular(18),
