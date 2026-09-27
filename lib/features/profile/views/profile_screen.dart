@@ -244,9 +244,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         if (newName.isNotEmpty) {
                           ref.read(authProvider.notifier).updateProfileName(newName);
                           Navigator.pop(context);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Name updated to "$newName"')),
-                          );
+                          SpendlyToast.showSuccess(context, 'Name updated to "$newName"');
                         }
                       },
                       style: ElevatedButton.styleFrom(
