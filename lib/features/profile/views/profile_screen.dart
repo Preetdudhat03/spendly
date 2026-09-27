@@ -1020,13 +1020,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                         if (email != null && email.isNotEmpty) {
                                           Clipboard.setData(
                                               ClipboardData(text: email));
-                                          ScaffoldMessenger.of(context)
-                                              .showSnackBar(
-                                            const SnackBar(
-                                              content: Text(
-                                                  'Email address copied to clipboard'),
-                                              duration: Duration(seconds: 2),
-                                            ),
+                                          SpendlyToast.showInfo(
+                                            context,
+                                            'Email address copied to clipboard',
+                                            duration: const Duration(seconds: 2),
                                           );
                                         }
                                       },
