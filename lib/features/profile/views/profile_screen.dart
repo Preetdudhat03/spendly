@@ -1681,10 +1681,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                                   .read(familyProvider.notifier)
                                                   .removeMember(member.userId);
                                               if (context.mounted) {
-                                                ScaffoldMessenger.of(context)
-                                                    .showSnackBar(SnackBar(
-                                                        content: Text(
-                                                            '${member.displayName} removed')));
+                                                SpendlyToast.showSuccess(
+                                                  context,
+                                                  '${member.displayName} removed',
+                                                );
                                               }
                                             }
                                           }
