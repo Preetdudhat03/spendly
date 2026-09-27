@@ -71,12 +71,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       );
     } else {
       final error = ref.read(authProvider).error ?? 'Registration failed';
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(error),
-          backgroundColor: Theme.of(context).colorScheme.error,
-        ),
-      );
+      SpendlyToast.showError(context, error, isAboveNavBar: false);
     }
   }
 
