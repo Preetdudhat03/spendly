@@ -406,12 +406,7 @@ class _EditExpenseFormState extends State<_EditExpenseForm> {
       SchemaValidator.validatePaymentMethod(_paymentMethod);
       SchemaValidator.validateExpenseDate(_selectedDate);
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(e.toString()),
-          backgroundColor: Colors.amber,
-        ),
-      );
+      SpendlyToast.showWarning(context, e.toString());
       return;
     }
 
