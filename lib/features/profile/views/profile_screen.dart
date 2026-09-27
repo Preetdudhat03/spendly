@@ -632,9 +632,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       label: const Text('Copy', style: TextStyle(fontWeight: FontWeight.w700)),
                       onPressed: () {
                         Clipboard.setData(ClipboardData(text: code));
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Family Code copied to clipboard')),
-                        );
+                        SpendlyToast.showInfo(context, 'Family Code copied to clipboard', duration: const Duration(seconds: 2));
                       },
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 14),
