@@ -76,16 +76,23 @@ class _AccountSecurityScreenState extends ConsumerState<AccountSecurityScreen> {
                       child: ElevatedButton(
                         onPressed: () async {
                           Navigator.pop(ctx);
-                          final messenger = ScaffoldMessenger.of(context);
                           try {
                             await ref.read(authProvider.notifier).deleteAccount();
-                            messenger.showSnackBar(
-                              const SnackBar(content: Text('Your account has been deleted successfully.')),
-                            );
+                            if (context.mounted) {
+                              SpendlyToast.showSuccess(
+                                context,
+                                'Your account has been deleted successfully.',
+                                isAboveNavBar: false,
+                              );
+                            }
                           } catch (e) {
-                            messenger.showSnackBar(
-                              SnackBar(content: Text('Error deleting account: $e'), backgroundColor: Colors.red),
-                            );
+                            if (context.mounted) {
+                              SpendlyToast.showError(
+                                context,
+                                'Error deleting account: $e',
+                                isAboveNavBar: false,
+                              );
+                            }
                           }
                         },
                         style: ElevatedButton.styleFrom(
