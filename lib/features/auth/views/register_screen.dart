@@ -5,6 +5,7 @@ import 'package:spendly/core/providers/state_providers.dart';
 import 'package:spendly/core/utils/crypto_utils.dart';
 import 'package:spendly/core/utils/schema_validator.dart';
 import 'package:spendly/core/widgets/capsule_top_bar.dart';
+import 'package:spendly/core/widgets/spendly_toast.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
   final String? initialEmail;
