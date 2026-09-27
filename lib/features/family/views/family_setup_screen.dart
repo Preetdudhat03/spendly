@@ -5,6 +5,7 @@ import 'package:spendly/core/utils/schema_validator.dart';
 import 'package:spendly/core/widgets/capsule_top_bar.dart';
 import 'package:spendly/core/widgets/shimmer_loading.dart';
 import 'package:spendly/core/widgets/qr_scanner_modal.dart';
+import 'package:spendly/core/widgets/spendly_toast.dart';
 
 class FamilySetupScreen extends ConsumerStatefulWidget {
   const FamilySetupScreen({super.key});
