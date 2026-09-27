@@ -491,9 +491,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   void _showQrCodeDialog(String code) {
     if (code.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No Family Code available to generate QR.')),
-      );
+      SpendlyToast.showWarning(context, 'No Family Code available to generate QR.');
       return;
     }
     final isDark = Theme.of(context).brightness == Brightness.dark;
