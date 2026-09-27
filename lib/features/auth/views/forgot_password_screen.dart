@@ -54,12 +54,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
       );
     } else {
       final error = ref.read(authProvider).error ?? 'Password recovery failed';
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(error),
-          backgroundColor: Theme.of(context).colorScheme.error,
-        ),
-      );
+      SpendlyToast.showError(context, error, isAboveNavBar: false);
     }
   }
 
