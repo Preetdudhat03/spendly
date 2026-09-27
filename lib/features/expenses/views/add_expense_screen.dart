@@ -102,13 +102,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
       SchemaValidator.validatePaymentMethod(_paymentMethod);
       SchemaValidator.validateExpenseDate(_selectedDate);
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(e.toString()),
-          behavior: SnackBarBehavior.floating,
-          backgroundColor: Colors.amber[800],
-        ),
-      );
+      SpendlyToast.showWarning(context, e.toString());
       return;
     }
 
@@ -123,24 +117,15 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
     if (!mounted) return;
 
     if (!success) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(ref.read(expenseProvider).error ?? 'Failed to save expense'),
-          behavior: SnackBarBehavior.floating,
-          backgroundColor: Theme.of(context).colorScheme.error,
-        ),
+      SpendlyToast.showError(
+        context,
+        ref.read(expenseProvider).error ?? 'Failed to save expense',
       );
       return;
     }
 
     // Show success & clear
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Expense logged successfully!'),
-        behavior: SnackBarBehavior.floating,
-        backgroundColor: Color(0xFF22C55E),
-      ),
-    );
+    SpendlyToast.showSuccess(context, 'Expense logged successfully!');
 
     _amountController.clear();
     _descriptionController.clear();
