@@ -179,23 +179,32 @@ class _AccountSecurityScreenState extends ConsumerState<AccountSecurityScreen> {
                       child: ElevatedButton(
                         onPressed: () async {
                           Navigator.pop(ctx);
-                          final messenger = ScaffoldMessenger.of(context);
                           try {
                             final success = await ref.read(familyProvider.notifier).deleteFamily();
-                            if (success) {
-                              messenger.showSnackBar(
-                                const SnackBar(content: Text('Family and all its data deleted successfully.')),
-                              );
-                            } else {
-                              final errorMsg = ref.read(familyProvider).error ?? 'Unknown error';
-                              messenger.showSnackBar(
-                                SnackBar(content: Text('Error deleting family: $errorMsg'), backgroundColor: Colors.red),
-                              );
+                            if (context.mounted) {
+                              if (success) {
+                                SpendlyToast.showSuccess(
+                                  context,
+                                  'Family and all its data deleted successfully.',
+                                  isAboveNavBar: false,
+                                );
+                              } else {
+                                final errorMsg = ref.read(familyProvider).error ?? 'Unknown error';
+                                SpendlyToast.showError(
+                                  context,
+                                  'Error deleting family: $errorMsg',
+                                  isAboveNavBar: false,
+                                );
+                              }
                             }
                           } catch (e) {
-                            messenger.showSnackBar(
-                              SnackBar(content: Text('Error deleting family: $e'), backgroundColor: Colors.red),
-                            );
+                            if (context.mounted) {
+                              SpendlyToast.showError(
+                                context,
+                                'Error deleting family: $e',
+                                isAboveNavBar: false,
+                              );
+                            }
                           }
                         },
                         style: ElevatedButton.styleFrom(
