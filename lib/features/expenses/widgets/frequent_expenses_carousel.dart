@@ -188,11 +188,10 @@ class FrequentExpensesCarousel extends ConsumerWidget {
                       final key = '${sug.category}|${sug.description}|${sug.amount}';
                       await ref.read(blacklistSuggestionsProvider.notifier).blacklist(key);
                       if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Shortcut removed.'),
-                            duration: Duration(seconds: 2),
-                          ),
+                        SpendlyToast.showInfo(
+                          context,
+                          'Shortcut removed.',
+                          duration: const Duration(seconds: 2),
                         );
                       }
                     }
@@ -225,14 +224,10 @@ class FrequentExpensesCarousel extends ConsumerWidget {
                         expenseDate: DateTime.now(),
                       );
                   if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          'Logged ${sug.description.isEmpty ? sug.category : sug.description} • ${currencyFormat.format(sug.amount)}!',
-                        ),
-                        behavior: SnackBarBehavior.floating,
-                        duration: const Duration(seconds: 2),
-                      ),
+                    SpendlyToast.showSuccess(
+                      context,
+                      'Logged ${sug.description.isEmpty ? sug.category : sug.description} • ${currencyFormat.format(sug.amount)}!',
+                      duration: const Duration(seconds: 2),
                     );
                   }
                 },
