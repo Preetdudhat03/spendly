@@ -38,20 +38,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     if (!success) {
       final error = ref.read(authProvider).error;
       if (error == 'USER_NOT_FOUND') {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('This account does not exist. Please sign up first.'),
-            backgroundColor: Colors.amber,
-          ),
+        SpendlyToast.showWarning(
+          context,
+          'This account does not exist. Please sign up first.',
+          isAboveNavBar: false,
         );
         // Automatically switch to the register screen and pre-fill the email!
         context.push('/register?email=${Uri.encodeComponent(email)}');
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(error ?? 'Authentication failed'),
-            backgroundColor: Theme.of(context).colorScheme.error,
-          ),
+        SpendlyToast.showError(
+          context,
+          error ?? 'Authentication failed',
+          isAboveNavBar: false,
         );
       }
     }
