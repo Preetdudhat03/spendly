@@ -357,24 +357,21 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       onPressed: () async {
                         final newEmail = _emailController.text.trim();
                         if (newEmail.isNotEmpty && newEmail.contains('@')) {
-                          final messenger = ScaffoldMessenger.of(context);
                           final nav = Navigator.of(context);
                           nav.pop(); // Close dialog first
                           
                           try {
                             await ref.read(authProvider.notifier).updateEmail(newEmail);
-                            messenger.showSnackBar(
-                              SnackBar(content: Text('Email updated to "$newEmail"')),
-                            );
+                            if (context.mounted) {
+                              SpendlyToast.showSuccess(context, 'Email updated to "$newEmail"');
+                            }
                           } catch (e) {
-                            messenger.showSnackBar(
-                              SnackBar(content: Text('Failed to update email: $e'), backgroundColor: Colors.red),
-                            );
+                            if (context.mounted) {
+                              SpendlyToast.showError(context, 'Failed to update email: $e');
+                            }
                           }
                         } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Please enter a valid email address'), backgroundColor: Colors.orange),
-                          );
+                          SpendlyToast.showWarning(context, 'Please enter a valid email address');
                         }
                       },
                       style: ElevatedButton.styleFrom(
