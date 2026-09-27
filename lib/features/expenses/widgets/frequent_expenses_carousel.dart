@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:spendly/core/providers/state_providers.dart';
 import 'package:spendly/core/services/suggestions_service.dart';
+import 'package:spendly/core/widgets/spendly_toast.dart';
 import 'package:spendly/features/expenses/views/add_expense_screen.dart';
 import 'package:spendly/features/expenses/widgets/expense_detail_modal.dart';
 
