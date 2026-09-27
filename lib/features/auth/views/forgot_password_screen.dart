@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:spendly/core/providers/state_providers.dart';
 import 'package:spendly/core/utils/schema_validator.dart';
 import 'package:spendly/core/widgets/capsule_top_bar.dart';
+import 'package:spendly/core/widgets/spendly_toast.dart';
 
 class ForgotPasswordScreen extends ConsumerStatefulWidget {
   const ForgotPasswordScreen({super.key});
