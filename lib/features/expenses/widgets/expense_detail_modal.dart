@@ -288,9 +288,7 @@ void _confirmDeleteExpense(BuildContext context, WidgetRef ref, String id) {
           onPressed: () {
             Navigator.pop(context);
             ref.read(expenseProvider.notifier).deleteExpense(id);
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Expense deleted successfully!')),
-            );
+            SpendlyToast.showSuccess(context, 'Expense deleted successfully!');
           },
           child: const Text('DELETE', style: TextStyle(color: Colors.red)),
         ),
@@ -320,9 +318,7 @@ void _showEditExpenseSheet(BuildContext context, WidgetRef ref, Expense expense)
                 expenseDate: date,
               );
           if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Expense updated successfully!')),
-            );
+            SpendlyToast.showSuccess(context, 'Expense updated successfully!');
           }
         },
       );
