@@ -61,12 +61,7 @@ class _FamilySetupScreenState extends ConsumerState<FamilySetupScreen> {
   }
 
   void _showError(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Theme.of(context).colorScheme.error,
-      ),
-    );
+    SpendlyToast.showError(context, message, isAboveNavBar: false);
   }
 
   @override
