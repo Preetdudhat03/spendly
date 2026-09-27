@@ -1318,12 +1318,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                       onPressed: () {
                                         Clipboard.setData(
                                             ClipboardData(text: familyCode));
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(
-                                          const SnackBar(
-                                            content: Text(
-                                                'Family Code copied to clipboard'),
-                                          ),
+                                        SpendlyToast.showInfo(
+                                          context,
+                                          'Family Code copied to clipboard',
+                                          duration: const Duration(seconds: 2),
                                         );
                                       },
                                       tooltip: 'Copy Code',
