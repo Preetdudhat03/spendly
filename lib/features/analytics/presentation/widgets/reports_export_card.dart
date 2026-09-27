@@ -214,9 +214,7 @@ class ReportsExportCard extends StatelessWidget {
       ], text: 'Spendly Family Expense PDF Report');
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to export PDF: ${e.toString()}')),
-        );
+        SpendlyToast.showError(context, 'Failed to export PDF: ${e.toString()}');
       }
     }
   }
