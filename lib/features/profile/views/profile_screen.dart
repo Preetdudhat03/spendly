@@ -129,9 +129,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         if (newBudget >= 0) {
                           ref.read(budgetProvider.notifier).setBudget(newBudget);
                           Navigator.pop(context);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Monthly budget updated to ₹${newBudget.toStringAsFixed(2)}')),
-                          );
+                          SpendlyToast.showSuccess(context, 'Monthly budget updated to ₹${newBudget.toStringAsFixed(2)}');
                         }
                       },
                       style: ElevatedButton.styleFrom(
