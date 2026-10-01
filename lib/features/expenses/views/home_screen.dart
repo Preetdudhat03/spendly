@@ -12,6 +12,8 @@ import 'package:spendly/features/expenses/widgets/home_header.dart';
 import 'package:spendly/features/expenses/widgets/quick_category_carousel.dart';
 import 'package:spendly/features/expenses/widgets/recent_transactions_section.dart';
 import 'package:spendly/features/expenses/widgets/spending_metric_card.dart';
+import 'package:go_router/go_router.dart';
+import 'package:spendly/features/notifications/providers/notification_providers.dart';
 import 'package:spendly/main.dart';
 
 class HomeScreen extends ConsumerWidget {
