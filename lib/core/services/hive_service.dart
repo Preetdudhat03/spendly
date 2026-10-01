@@ -92,6 +92,8 @@ class HiveService {
       _openUnencryptedBox<SyncMetadataModel>(getUserBoxName(syncMetadataBox, guestNamespace)),
       _openUnencryptedBox<dynamic>(getUserBoxName(analyticsCacheBox, guestNamespace)),
       _openUnencryptedBox<dynamic>(getUserBoxName(syncLogBox, guestNamespace)),
+      _openUnencryptedBox<dynamic>(getUserBoxName(notificationsBox, guestNamespace)),
+      _openUnencryptedBox<dynamic>(getUserBoxName(notificationPreferencesBox, guestNamespace)),
     ]);
   }
 
@@ -126,6 +128,8 @@ class HiveService {
       _openUnencryptedBox<SyncMetadataModel>(getUserBoxName(syncMetadataBox, cleanUserId)),
       _openUnencryptedBox<dynamic>(getUserBoxName(analyticsCacheBox, cleanUserId)),
       _openUnencryptedBox<dynamic>(getUserBoxName(syncLogBox, cleanUserId)),
+      _openUnencryptedBox<dynamic>(getUserBoxName(notificationsBox, cleanUserId)),
+      _openUnencryptedBox<dynamic>(getUserBoxName(notificationPreferencesBox, cleanUserId)),
     ]);
 
     _activeUserId = cleanUserId;
