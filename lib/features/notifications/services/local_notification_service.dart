@@ -49,7 +49,7 @@ class LocalNotificationService {
 
     try {
       await _plugin.initialize(
-        initSettings,
+        settings: initSettings,
         onDidReceiveNotificationResponse: (NotificationResponse response) {
           debugPrint('[LocalNotificationService] Notification tapped: ${response.payload}');
           this.onNotificationTap?.call(response.payload);
