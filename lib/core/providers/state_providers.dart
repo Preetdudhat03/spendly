@@ -986,9 +986,6 @@ class ExpenseNotifier extends StateNotifier<ExpenseState> {
       state = state.copyWith(isLoading: false, error: ErrorHelper.getReadableErrorMessage(e));
     }
   }
-      state = state.copyWith(isLoading: false, error: ErrorHelper.getReadableErrorMessage(e));
-    }
-  }
 }
 
 final expenseProvider = StateNotifierProvider<ExpenseNotifier, ExpenseState>((ref) {
