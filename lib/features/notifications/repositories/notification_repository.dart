@@ -1,0 +1,302 @@
+import 'dart:convert';
+import 'package:flutter/foundation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:spendly/core/services/hive_service.dart';
+import 'package:spendly/features/notifications/models/notification_model.dart';
+
+final notificationRepositoryProvider = Provider<NotificationRepository>((ref) {
+  return NotificationRepository();
+});
+
+class NotificationRepository {
+  final SupabaseClient _client = Supabase.instance.client;
+
+  // --- Local Hive Access ---
+
+  List<SpendlyNotification> getLocalNotifications(String familyId, [String? userId]) {
+    try {
+      final box = HiveService.notifications;
+      final list = <SpendlyNotification>[];
+
+      for (var raw in box.values) {
+        if (raw is Map) {
+          final item = SpendlyNotification.fromJson(Map<String, dynamic>.from(raw));
+          if (item.familyId == familyId && (item.userId == null || item.userId == userId)) {
+            list.add(item);
+          }
+        }
+      }
+
+      list.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      return list;
+    } catch (e) {
+      debugPrint('[NotificationRepository] Error getting local notifications: $e');
+      return [];
+    }
+  }
+
+  int getLocalUnreadCount(String familyId, [String? userId]) {
+    try {
+      final list = getLocalNotifications(familyId, userId);
+      return list.where((n) => !n.isRead).length;
+    } catch (e) {
+      return 0;
+    }
+  }
+
+  Future<void> saveLocalNotification(SpendlyNotification notification) async {
+    try {
+      final box = HiveService.notifications;
+      // Idempotency check: if notificationKey is present, check if already stored
+      if (notification.notificationKey != null && notification.notificationKey!.isNotEmpty) {
+        for (var key in box.keys) {
+          final raw = box.get(key);
+          if (raw is Map) {
+            final existing = SpendlyNotification.fromJson(Map<String, dynamic>.from(raw));
+            if (existing.familyId == notification.familyId &&
+                existing.notificationKey == notification.notificationKey) {
+              // Existing duplicate event found - do not re-add
+              debugPrint('[NotificationRepository] Duplicate local notification ignored: ${notification.notificationKey}');
+              return;
+            }
+          }
+        }
+      }
+
+      await box.put(notification.id, notification.toJson());
+    } catch (e) {
+      debugPrint('[NotificationRepository] Error saving local notification: $e');
+    }
+  }
+
+  // --- Supabase Remote Operations ---
+
+  Future<List<SpendlyNotification>> fetchRemoteNotifications({
+    required String familyId,
+    String? userId,
+    int limit = 40,
+    int offset = 0,
+  }) async {
+    if (_client.auth.currentUser == null) {
+      return getLocalNotifications(familyId, userId);
+    }
+
+    try {
+      var query = _client
+          .from('notifications')
+          .select()
+          .eq('family_id', familyId);
+
+      if (userId != null && userId.isNotEmpty) {
+        query = query.or('user_id.is.null,user_id.eq.$userId');
+      }
+
+      final response = await query
+          .order('created_at', ascending: false)
+          .range(offset, offset + limit - 1);
+
+      final List<SpendlyNotification> remoteList = [];
+      final box = HiveService.notifications;
+      final Map<String, dynamic> localUpdates = {};
+
+      for (var json in response) {
+        final notification = SpendlyNotification.fromJson(json);
+        remoteList.add(notification);
+        localUpdates[notification.id] = notification.toJson();
+      }
+
+      // Sync into Hive cache
+      if (localUpdates.isNotEmpty) {
+        await box.putAll(localUpdates);
+      }
+
+      return remoteList;
+    } catch (e) {
+      debugPrint('[NotificationRepository] Remote fetch failed (using local cache): $e');
+      return getLocalNotifications(familyId, userId);
+    }
+  }
+
+  Future<SpendlyNotification> createNotification(SpendlyNotification notification) async {
+    // 1. Save to local storage first (offline-first)
+    await saveLocalNotification(notification);
+
+    // 2. If authenticated online, sync to Supabase
+    if (_client.auth.currentUser != null) {
+      try {
+        final payload = notification.toJson();
+        final response = await _client
+            .from('notifications')
+            .upsert(
+              payload,
+              onConflict: 'family_id, notification_key',
+            )
+            .select()
+            .maybeSingle();
+
+        if (response != null) {
+          final saved = SpendlyNotification.fromJson(response);
+          await HiveService.notifications.put(saved.id, saved.toJson());
+          return saved;
+        }
+      } catch (e) {
+        debugPrint('[NotificationRepository] Remote insert error (persisted locally): $e');
+      }
+    }
+
+    return notification;
+  }
+
+  Future<void> markAsRead(String notificationId) async {
+    try {
+      // 1. Local update
+      final box = HiveService.notifications;
+      final raw = box.get(notificationId);
+      if (raw is Map) {
+        final n = SpendlyNotification.fromJson(Map<String, dynamic>.from(raw));
+        final updated = n.copyWith(isRead: true, readAt: DateTime.now());
+        await box.put(notificationId, updated.toJson());
+      }
+
+      // 2. Remote update
+      if (_client.auth.currentUser != null && !notificationId.startsWith('local_')) {
+        await _client
+            .from('notifications')
+            .update({
+              'is_read': true,
+              'read_at': DateTime.now().toIso8601String(),
+            })
+            .eq('id', notificationId);
+      }
+    } catch (e) {
+      debugPrint('[NotificationRepository] Error marking as read: $e');
+    }
+  }
+
+  Future<void> markAllAsRead(String familyId, [String? userId]) async {
+    try {
+      // 1. Local update
+      final box = HiveService.notifications;
+      final now = DateTime.now();
+      for (var key in box.keys) {
+        final raw = box.get(key);
+        if (raw is Map) {
+          final n = SpendlyNotification.fromJson(Map<String, dynamic>.from(raw));
+          if (n.familyId == familyId && (n.userId == null || n.userId == userId) && !n.isRead) {
+            final updated = n.copyWith(isRead: true, readAt: now);
+            await box.put(key, updated.toJson());
+          }
+        }
+      }
+
+      // 2. Remote update
+      if (_client.auth.currentUser != null) {
+        var query = _client.from('notifications').update({
+          'is_read': true,
+          'read_at': now.toIso8601String(),
+        }).eq('family_id', familyId).eq('is_read', false);
+
+        if (userId != null && userId.isNotEmpty) {
+          query = query.or('user_id.is.null,user_id.eq.$userId');
+        }
+
+        await query;
+      }
+    } catch (e) {
+      debugPrint('[NotificationRepository] Error marking all as read: $e');
+    }
+  }
+
+  Future<void> deleteNotification(String notificationId) async {
+    try {
+      // 1. Local removal
+      await HiveService.notifications.delete(notificationId);
+
+      // 2. Remote removal
+      if (_client.auth.currentUser != null && !notificationId.startsWith('local_')) {
+        await _client.from('notifications').delete().eq('id', notificationId);
+      }
+    } catch (e) {
+      debugPrint('[NotificationRepository] Error deleting notification: $e');
+    }
+  }
+
+  // --- Preferences ---
+
+  Future<NotificationPreferences> getPreferences(String userId) async {
+    try {
+      // 1. Check local Hive preferences
+      final box = HiveService.notificationPreferences;
+      final raw = box.get(userId);
+      if (raw is Map) {
+        return NotificationPreferences.fromJson(Map<String, dynamic>.from(raw));
+      }
+
+      // 2. Fallback to Supabase remote preferences
+      if (_client.auth.currentUser != null) {
+        final remote = await _client
+            .from('notification_preferences')
+            .select()
+            .eq('user_id', userId)
+            .maybeSingle();
+
+        if (remote != null) {
+          final prefs = NotificationPreferences.fromJson(remote);
+          await box.put(userId, prefs.toJson());
+          return prefs;
+        }
+      }
+    } catch (e) {
+      debugPrint('[NotificationRepository] Error loading preferences: $e');
+    }
+
+    return const NotificationPreferences();
+  }
+
+  Future<void> updatePreferences(String userId, NotificationPreferences preferences) async {
+    try {
+      // 1. Local save
+      final box = HiveService.notificationPreferences;
+      await box.put(userId, preferences.toJson());
+
+      // 2. Remote save
+      if (_client.auth.currentUser != null) {
+        await _client.from('notification_preferences').upsert({
+          'user_id': userId,
+          ...preferences.toJson(),
+          'updated_at': DateTime.now().toIso8601String(),
+        }, onConflict: 'user_id');
+      }
+    } catch (e) {
+      debugPrint('[NotificationRepository] Error saving preferences: $e');
+    }
+  }
+
+  // --- Multi-Device Push Tokens ---
+
+  Future<void> registerDeviceToken({
+    required String userId,
+    required String token,
+    required String platform,
+  }) async {
+    if (_client.auth.currentUser == null) return;
+
+    try {
+      final deviceId = HiveService.deviceId;
+      await _client.from('user_device_tokens').upsert({
+        'user_id': userId,
+        'device_id': deviceId,
+        'platform': platform,
+        'push_token': token,
+        'is_active': true,
+        'last_seen_at': DateTime.now().toIso8601String(),
+        'updated_at': DateTime.now().toIso8601String(),
+      }, onConflict: 'user_id, device_id');
+
+      debugPrint('[NotificationRepository] Registered device token for $deviceId');
+    } catch (e) {
+      debugPrint('[NotificationRepository] Error registering device token: $e');
+    }
+  }
+}
