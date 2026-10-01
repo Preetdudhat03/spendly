@@ -228,7 +228,7 @@ class HomeScreen extends ConsumerWidget {
                   ),
                 ),
 
-          // 2. PINNED FLOATING FAMILY CAPSULE (Holds position when scrolling, transparent sides)
+          // 2. PINNED FLOATING FAMILY CAPSULE & NOTIFICATION BELL
           Positioned(
             top: 0,
             left: 0,
@@ -237,12 +237,19 @@ class HomeScreen extends ConsumerWidget {
               top: true,
               bottom: false,
               child: Padding(
-                padding: const EdgeInsets.only(top: 6.0),
-                child: Center(
-                  child: FamilyHeader(
-                    familyName: familyName,
-                    connection: connection,
-                  ),
+                padding: const EdgeInsets.fromLTRB(20.0, 6.0, 20.0, 0.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Flexible(
+                      child: FamilyHeader(
+                        familyName: familyName,
+                        connection: connection,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    const _NotificationBellButton(),
+                  ],
                 ),
               ),
             ),
