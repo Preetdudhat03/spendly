@@ -177,6 +177,8 @@ class HiveService {
   static Box<SyncMetadataModel> get syncMetadata => _getOrFallback<SyncMetadataModel>(getUserBoxName(syncMetadataBox));
   static Box<dynamic> get analyticsCache => _getOrFallback<dynamic>(getUserBoxName(analyticsCacheBox));
   static Box<dynamic> get syncLog => _getOrFallback<dynamic>(getUserBoxName(syncLogBox));
+  static Box<dynamic> get notifications => _getOrFallback<dynamic>(getUserBoxName(notificationsBox));
+  static Box<dynamic> get notificationPreferences => _getOrFallback<dynamic>(getUserBoxName(notificationPreferencesBox));
 
   // Global unencrypted settings box
   static Box<dynamic> get settings => Hive.box<dynamic>(settingsBox);
