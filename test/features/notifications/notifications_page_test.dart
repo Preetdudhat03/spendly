@@ -56,8 +56,8 @@ void main() {
         ),
       );
 
-      expect(find.text('All Caught Up!'), findsOneWidget);
-      expect(find.text("You have no notifications right now. We'll alert you about spending and family updates here."), findsOneWidget);
+      expect(find.text("You're all caught up! 🎉"), findsOneWidget);
+      expect(find.text('New family expense updates, budget alerts, and spending insights will show up here.'), findsOneWidget);
     });
 
     testWidgets('NotificationEmptyState renders message for filtered view', (tester) async {
@@ -72,8 +72,8 @@ void main() {
         ),
       );
 
-      expect(find.text('No Notifications Found'), findsOneWidget);
-      expect(find.text('No notifications match your current filter criteria.'), findsOneWidget);
+      expect(find.text('No Matching Notifications'), findsOneWidget);
+      expect(find.text('No notifications match the selected filter criteria. Try resetting your filter.'), findsOneWidget);
     });
 
     testWidgets('NotificationGroupView renders section header and list items', (tester) async {
