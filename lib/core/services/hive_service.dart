@@ -21,6 +21,8 @@ class HiveService {
   static const String syncMetadataBox = 'sync_metadata';
   static const String analyticsCacheBox = 'analytics_cache';
   static const String syncLogBox = 'sync_log';
+  static const String notificationsBox = 'notifications';
+  static const String notificationPreferencesBox = 'notification_preferences';
 
   static String _activeUserId = guestNamespace;
   static List<int>? _encryptionKey;
