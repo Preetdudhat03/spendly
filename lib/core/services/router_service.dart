@@ -15,6 +15,7 @@ import 'package:spendly/features/analytics/presentation/pages/analytics_page.dar
 import 'package:spendly/features/expenses/views/all_expenses_screen.dart';
 import 'package:spendly/features/profile/views/profile_screen.dart';
 import 'package:spendly/features/profile/views/account_security_screen.dart';
+import 'package:spendly/features/notifications/presentation/pages/notifications_page.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
