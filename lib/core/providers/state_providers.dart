@@ -887,6 +887,7 @@ class ExpenseNotifier extends StateNotifier<ExpenseState> {
           id: id,
           familyId: familyId,
           createdBy: activeUserId,
+          createdByName: displayName,
           amount: 0,
           category: 'Expense',
           description: '',
