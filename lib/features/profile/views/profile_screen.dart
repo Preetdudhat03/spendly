@@ -13,8 +13,9 @@ import 'package:spendly/core/widgets/capsule_top_bar.dart';
 import 'package:spendly/core/widgets/shimmer_loading.dart';
 import 'package:spendly/core/services/report_service.dart';
 import 'package:spendly/core/services/hive_service.dart';
-import 'package:spendly/core/utils/currency_formatter.dart';
 import 'package:spendly/core/widgets/spendly_toast.dart';
+import 'package:spendly/features/notifications/providers/notification_providers.dart';
+import 'package:spendly/features/notifications/services/local_notification_service.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
