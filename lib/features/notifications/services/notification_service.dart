@@ -327,7 +327,7 @@ class NotificationService {
 
     for (final threshold in thresholds) {
       if (percentage >= threshold) {
-        final notificationKey = 'budget_alert:${familyId}:${year}_$month:$threshold';
+        final notificationKey = 'budget_alert:$familyId:${year}_$month:$threshold';
         
         NotificationType type;
         String title;
