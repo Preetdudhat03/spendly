@@ -1854,6 +1854,117 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     ),
                   );
 
+                  final notifPrefs = ref.watch(notificationPreferencesProvider);
+                  final notifNotifier = ref.read(notificationPreferencesProvider.notifier);
+
+                  Widget notificationPreferencesCard = Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(20.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text('Notification Settings', style: Theme.of(context).textTheme.titleMedium),
+                              IconButton(
+                                icon: const Icon(Icons.notifications_active_outlined, size: 20),
+                                tooltip: 'Notification Center',
+                                onPressed: () => context.push('/notifications'),
+                              ),
+                            ],
+                          ),
+                          const Divider(height: 16),
+                          SwitchListTile(
+                            contentPadding: EdgeInsets.zero,
+                            title: const Text('Push Notifications', style: TextStyle(fontWeight: FontWeight.w600)),
+                            subtitle: const Text('Enable device notifications for Spendly'),
+                            value: notifPrefs.pushEnabled,
+                            onChanged: (val) async {
+                              if (val) {
+                                final granted = await LocalNotificationService().requestPermission();
+                                if (!granted && context.mounted) {
+                                  SpendlyToast.showWarning(context, 'Notification permission was denied in system settings.');
+                                }
+                              }
+                              await notifNotifier.togglePushEnabled(val);
+                            },
+                          ),
+                          if (notifPrefs.pushEnabled) ...[
+                            SwitchListTile(
+                              contentPadding: EdgeInsets.zero,
+                              title: const Text('Expense Activity', style: TextStyle(fontWeight: FontWeight.w600)),
+                              subtitle: const Text('Alerts when family members add or update expenses'),
+                              value: notifPrefs.expenseAlerts,
+                              onChanged: (val) => notifNotifier.toggleExpenseAlerts(val),
+                            ),
+                            SwitchListTile(
+                              contentPadding: EdgeInsets.zero,
+                              title: const Text('Budget Alerts', style: TextStyle(fontWeight: FontWeight.w600)),
+                              subtitle: const Text('Warnings when spending reaches 80%, 95%, or 100%'),
+                              value: notifPrefs.budgetAlerts,
+                              onChanged: (val) => notifNotifier.toggleBudgetAlerts(val),
+                            ),
+                            SwitchListTile(
+                              contentPadding: EdgeInsets.zero,
+                              title: const Text('Family Activity', style: TextStyle(fontWeight: FontWeight.w600)),
+                              subtitle: const Text('When members join or leave your family group'),
+                              value: notifPrefs.familyAlerts,
+                              onChanged: (val) => notifNotifier.toggleFamilyAlerts(val),
+                            ),
+                            SwitchListTile(
+                              contentPadding: EdgeInsets.zero,
+                              title: const Text('Spending Insights', style: TextStyle(fontWeight: FontWeight.w600)),
+                              subtitle: const Text('Alerts on unusual category spend and velocity trends'),
+                              value: notifPrefs.spendingInsights,
+                              onChanged: (val) => notifNotifier.toggleSpendingInsights(val),
+                            ),
+                            SwitchListTile(
+                              contentPadding: EdgeInsets.zero,
+                              title: const Text('Daily Expense Reminder', style: TextStyle(fontWeight: FontWeight.w600)),
+                              subtitle: Text('Remind at ${notifPrefs.reminderTime} to log today\'s expenses'),
+                              value: notifPrefs.expenseReminders,
+                              onChanged: (val) async {
+                                if (val) {
+                                  await LocalNotificationService().requestPermission();
+                                }
+                                await notifNotifier.toggleExpenseReminders(val);
+                              },
+                            ),
+                            if (notifPrefs.expenseReminders)
+                              ListTile(
+                                contentPadding: EdgeInsets.zero,
+                                title: const Text('Reminder Time', style: TextStyle(fontWeight: FontWeight.w600)),
+                                subtitle: const Text('Tap to change daily notification time'),
+                                trailing: TextButton(
+                                  onPressed: () async {
+                                    final parts = notifPrefs.reminderTime.split(':');
+                                    final initialHour = int.tryParse(parts.first) ?? 20;
+                                    final initialMinute = parts.length > 1 ? (int.tryParse(parts[1]) ?? 0) : 0;
+                                    final picked = await showTimePicker(
+                                      context: context,
+                                      initialTime: TimeOfDay(hour: initialHour, minute: initialMinute),
+                                    );
+                                    if (picked != null) {
+                                      final timeStr = '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}';
+                                      await notifNotifier.setReminderTime(timeStr);
+                                      if (context.mounted) {
+                                        SpendlyToast.showSuccess(context, 'Reminder scheduled for $timeStr daily');
+                                      }
+                                    }
+                                  },
+                                  child: Text(
+                                    notifPrefs.reminderTime,
+                                    style: TextStyle(fontWeight: FontWeight.w800, color: accentColor, fontSize: 16),
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  );
+
                   Widget logoutButton = Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 4.0),
                     child: OutlinedButton.icon(
