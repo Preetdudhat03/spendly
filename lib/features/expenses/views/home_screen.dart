@@ -297,3 +297,89 @@ class HomeScreen extends ConsumerWidget {
     );
   }
 }
+
+class _NotificationBellButton extends ConsumerWidget {
+  const _NotificationBellButton();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final unreadCount = ref.watch(unreadNotificationCountProvider);
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final colorScheme = theme.colorScheme;
+    final accentColor = isDark ? const Color(0xFF818CF8) : colorScheme.primary;
+
+    return Semantics(
+      button: true,
+      label: unreadCount > 0 ? '$unreadCount unread notifications' : 'Notifications',
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => context.push('/notifications'),
+          borderRadius: BorderRadius.circular(100),
+          child: Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: isDark ? colorScheme.surface : Colors.white,
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: isDark
+                    ? colorScheme.outline.withValues(alpha: 0.4)
+                    : colorScheme.outline.withValues(alpha: 0.8),
+                width: 1,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: isDark
+                      ? Colors.black.withValues(alpha: 0.2)
+                      : colorScheme.shadow.withValues(alpha: 0.03),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                Icon(
+                  unreadCount > 0 ? Icons.notifications_active_rounded : Icons.notifications_outlined,
+                  size: 20,
+                  color: unreadCount > 0 ? accentColor : colorScheme.onSurfaceVariant,
+                ),
+                if (unreadCount > 0)
+                  Positioned(
+                    top: 6,
+                    right: 6,
+                    child: Container(
+                      padding: const EdgeInsets.all(3),
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFEF4444),
+                        shape: BoxShape.circle,
+                      ),
+                      constraints: const BoxConstraints(
+                        minWidth: 16,
+                        minHeight: 16,
+                      ),
+                      child: Center(
+                        child: Text(
+                          unreadCount > 9 ? '9+' : '$unreadCount',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 9,
+                            fontWeight: FontWeight.w900,
+                            height: 1.0,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
