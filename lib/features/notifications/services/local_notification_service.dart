@@ -243,10 +243,10 @@ class LocalNotificationService {
 
     try {
       await _plugin.show(
-        id,
-        title,
-        body,
-        details,
+        id: id,
+        title: title,
+        body: body,
+        notificationDetails: details,
         payload: jsonEncode(payloadMap),
       );
       debugPrint('[LocalNotificationService] Showed notification: $title');
@@ -265,7 +265,7 @@ class LocalNotificationService {
     if (!_isInitialized) await initialize();
 
     try {
-      await _plugin.cancel(id); // Cancel previous reminder with this ID
+      await _plugin.cancel(id: id); // Cancel previous reminder with this ID
 
       final now = tz.TZDateTime.now(tz.local);
       var scheduledDate = tz.TZDateTime(
@@ -301,11 +301,11 @@ class LocalNotificationService {
       );
 
       await _plugin.zonedSchedule(
-        id,
-        title,
-        body,
-        scheduledDate,
-        details,
+        id: id,
+        title: title,
+        body: body,
+        scheduledDate: scheduledDate,
+        notificationDetails: details,
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
         matchDateTimeComponents: DateTimeComponents.time,
         payload: jsonEncode({
@@ -322,7 +322,7 @@ class LocalNotificationService {
 
   Future<void> cancelReminder(int id) async {
     try {
-      await _plugin.cancel(id);
+      await _plugin.cancel(id: id);
       debugPrint('[LocalNotificationService] Cancelled reminder id: $id');
     } catch (e) {
       debugPrint('[LocalNotificationService] Error cancelling reminder: $e');
