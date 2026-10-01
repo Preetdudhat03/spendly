@@ -220,26 +220,26 @@ class NotificationPreferencesNotifier extends StateNotifier<NotificationPreferen
   NotificationPreferencesNotifier(this._repo, this._ref)
       : super(const NotificationPreferences()) {
     _loadPreferences();
-    _ref.listen(currentUserProvider, (prev, next) {
-      if (prev?.id != next?.id) {
+    _ref.listen(authProvider, (prev, next) {
+      if (prev?.userId != next.userId) {
         _loadPreferences();
       }
     });
   }
 
   Future<void> _loadPreferences() async {
-    final user = _ref.read(currentUserProvider);
-    if (user != null) {
-      final prefs = await _repo.getPreferences(user.id);
+    final userId = _ref.read(authProvider).userId;
+    if (userId != null && userId.isNotEmpty) {
+      final prefs = await _repo.getPreferences(userId);
       state = prefs;
     }
   }
 
   Future<void> updatePreferences(NotificationPreferences newPrefs) async {
     state = newPrefs;
-    final user = _ref.read(currentUserProvider);
-    if (user != null) {
-      await _repo.updatePreferences(user.id, newPrefs);
+    final userId = _ref.read(authProvider).userId;
+    if (userId != null && userId.isNotEmpty) {
+      await _repo.updatePreferences(userId, newPrefs);
     }
   }
 
