@@ -23,6 +23,8 @@ import 'package:spendly/models/expense.dart';
 import 'package:spendly/models/budget.dart';
 import 'package:spendly/models/hive/family_model.dart';
 import 'package:spendly/models/hive/family_member_model.dart';
+import 'package:spendly/features/notifications/services/notification_service.dart';
+import 'package:spendly/features/notifications/providers/notification_providers.dart';
 
 // ==========================================
 // 1. Authentication State & Provider
