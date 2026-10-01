@@ -238,7 +238,7 @@ class LocalNotificationService {
     final payloadMap = {
       'type': type.value,
       'deep_link': deepLink,
-      if (payload != null) ...payload,
+      ...?payload,
     };
 
     try {
