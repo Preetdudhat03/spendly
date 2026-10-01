@@ -815,21 +815,56 @@ class ExpenseNotifier extends StateNotifier<ExpenseState> {
   }) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      await _expenseRepo.addExpense(
-        familyId: _familyRepo.getCurrentFamily(HiveService.settings.get('active_user_id') ?? '')?.id ?? '',
-        createdBy: HiveService.settings.get('active_user_id') ?? '',
+      final activeUserId = HiveService.settings.get('active_user_id') ?? '';
+      final family = _familyRepo.getCurrentFamily(activeUserId);
+      final familyId = family?.id ?? '';
+      final displayName = HiveService.profiles.get(activeUserId)?.displayName ?? 'User';
+
+      final newExpense = await _expenseRepo.addExpense(
+        familyId: familyId,
+        createdBy: activeUserId,
         amount: amount,
         category: category,
         description: description,
         paymentMethod: paymentMethod,
         expenseDate: expenseDate,
-        createdByName: HiveService.profiles.get(HiveService.settings.get('active_user_id'))?.displayName ?? 'User',
+        createdByName: displayName,
       );
       state = state.copyWith(isLoading: false);
       // Reload expenses list
       await loadExpenses();
       // Trigger background sync
       _ref.read(syncServiceProvider).syncNow();
+
+      // Emit notifications
+      if (familyId.isNotEmpty) {
+        _ref.read(notificationServiceProvider).notifyExpenseAdded(
+          familyId: familyId,
+          expenseId: newExpense.id,
+          memberName: displayName,
+          amount: amount,
+          category: category,
+          createdByUserId: activeUserId,
+        );
+
+        // Check budget thresholds
+        final budget = _ref.read(budgetProvider).currentBudget;
+        if (budget != null && budget.monthlyBudget > 0) {
+          final now = DateTime.now();
+          final familyMonthExpenses = state.expenses.where((e) {
+            return e.expenseDate.year == now.year && e.expenseDate.month == now.month;
+          });
+          final familyMonthTotal = familyMonthExpenses.fold<double>(0, (sum, item) => sum + item.amount);
+          _ref.read(notificationServiceProvider).checkBudgetThresholds(
+            familyId: familyId,
+            totalSpent: familyMonthTotal,
+            budgetLimit: budget.monthlyBudget,
+            month: now.month,
+            year: now.year,
+          );
+        }
+      }
+
       return true;
     } catch (e) {
       state = state.copyWith(isLoading: false, error: ErrorHelper.getReadableErrorMessage(e));
@@ -840,11 +875,45 @@ class ExpenseNotifier extends StateNotifier<ExpenseState> {
   Future<bool> deleteExpense(String id) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      await _expenseRepo.deleteExpense(id, _familyRepo.getCurrentFamily(HiveService.settings.get('active_user_id') ?? '')?.id ?? '', HiveService.settings.get('active_user_id') ?? '');
+      final activeUserId = HiveService.settings.get('active_user_id') ?? '';
+      final family = _familyRepo.getCurrentFamily(activeUserId);
+      final familyId = family?.id ?? '';
+      final displayName = HiveService.profiles.get(activeUserId)?.displayName ?? 'User';
+
+      final expenses = _expenseRepo.getExpenses(familyId);
+      final currentExpense = expenses.firstWhere(
+        (e) => e.id == id,
+        orElse: () => Expense(
+          id: id,
+          familyId: familyId,
+          createdBy: activeUserId,
+          amount: 0,
+          category: 'Expense',
+          description: '',
+          paymentMethod: 'UPI',
+          expenseDate: DateTime.now(),
+          createdAt: DateTime.now(),
+        ),
+      );
+
+      await _expenseRepo.deleteExpense(id, familyId, activeUserId);
       state = state.copyWith(isLoading: false);
       await loadExpenses();
       // Trigger background sync
       _ref.read(syncServiceProvider).syncNow();
+
+      // Emit notification
+      if (familyId.isNotEmpty && currentExpense.amount > 0) {
+        _ref.read(notificationServiceProvider).notifyExpenseDeleted(
+          familyId: familyId,
+          expenseId: id,
+          memberName: displayName,
+          amount: currentExpense.amount,
+          category: currentExpense.category,
+          deletedByUserId: activeUserId,
+        );
+      }
+
       return true;
     } catch (e) {
       state = state.copyWith(isLoading: false, error: ErrorHelper.getReadableErrorMessage(e));
@@ -862,8 +931,14 @@ class ExpenseNotifier extends StateNotifier<ExpenseState> {
   }) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      
-      final currentExpense = _expenseRepo.getExpenses(_familyRepo.getCurrentFamily(HiveService.settings.get('active_user_id') ?? '')?.id ?? '').firstWhere((e) => e.id == id);
+      final activeUserId = HiveService.settings.get('active_user_id') ?? '';
+      final family = _familyRepo.getCurrentFamily(activeUserId);
+      final familyId = family?.id ?? '';
+      final displayName = HiveService.profiles.get(activeUserId)?.displayName ?? 'User';
+
+      final currentExpense = _expenseRepo.getExpenses(familyId).firstWhere((e) => e.id == id);
+      final oldAmount = currentExpense.amount;
+
       await _expenseRepo.updateExpense(
         currentExpense.copyWith(
           amount: amount,
@@ -871,13 +946,46 @@ class ExpenseNotifier extends StateNotifier<ExpenseState> {
           description: description,
           paymentMethod: paymentMethod,
           expenseDate: expenseDate,
-        )
+        ),
       );
       state = state.copyWith(isLoading: false);
       await loadExpenses();
       // Trigger background sync
       _ref.read(syncServiceProvider).syncNow();
+
+      // Emit notification
+      if (familyId.isNotEmpty) {
+        _ref.read(notificationServiceProvider).notifyExpenseUpdated(
+          familyId: familyId,
+          expenseId: id,
+          memberName: displayName,
+          oldAmount: oldAmount,
+          newAmount: amount,
+          category: category,
+          updatedByUserId: activeUserId,
+        );
+
+        // Check budget thresholds
+        final budget = _ref.read(budgetProvider).currentBudget;
+        if (budget != null && budget.monthlyBudget > 0) {
+          final now = DateTime.now();
+          final familyMonthExpenses = state.expenses.where((e) {
+            return e.expenseDate.year == now.year && e.expenseDate.month == now.month;
+          });
+          final familyMonthTotal = familyMonthExpenses.fold<double>(0, (sum, item) => sum + item.amount);
+          _ref.read(notificationServiceProvider).checkBudgetThresholds(
+            familyId: familyId,
+            totalSpent: familyMonthTotal,
+            budgetLimit: budget.monthlyBudget,
+            month: now.month,
+            year: now.year,
+          );
+        }
+      }
     } catch (e) {
+      state = state.copyWith(isLoading: false, error: ErrorHelper.getReadableErrorMessage(e));
+    }
+  }
       state = state.copyWith(isLoading: false, error: ErrorHelper.getReadableErrorMessage(e));
     }
   }
