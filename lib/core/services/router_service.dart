@@ -162,6 +162,10 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/account-security',
         builder: (context, state) => const AccountSecurityScreen(),
       ),
+      GoRoute(
+        path: '/notifications',
+        builder: (context, state) => const NotificationsPage(),
+      ),
     ],
   );
 });
