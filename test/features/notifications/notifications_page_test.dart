@@ -23,7 +23,6 @@ void main() {
 
     testWidgets('NotificationTile renders title, body, icon, and unread dot', (tester) async {
       bool tapped = false;
-      bool dismissed = false;
 
       await tester.pumpWidget(
         MaterialApp(
@@ -32,7 +31,7 @@ void main() {
             body: NotificationTile(
               notification: sampleNotification,
               onTap: () => tapped = true,
-              onDismiss: () => dismissed = true,
+              onDismissed: () {},
             ),
           ),
         ),
@@ -77,22 +76,21 @@ void main() {
       expect(find.text('No notifications match your current filter criteria.'), findsOneWidget);
     });
 
-    testWidgets('NotificationGroup renders section header and list items', (tester) async {
+    testWidgets('NotificationGroupView renders section header and list items', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           theme: AppTheme.lightTheme,
           home: Scaffold(
-            body: NotificationGroup(
-              title: 'Today',
+            body: NotificationGroupView(
               notifications: [sampleNotification],
-              onNotificationTap: (_) {},
-              onNotificationDismiss: (_) {},
+              onTap: (_) {},
+              onDelete: (_) {},
             ),
           ),
         ),
       );
 
-      expect(find.text('TODAY'), findsOneWidget);
+      expect(find.text('Today'), findsOneWidget);
       expect(find.text('New Expense Added 💸'), findsOneWidget);
     });
   });
