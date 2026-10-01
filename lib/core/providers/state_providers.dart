@@ -643,6 +643,15 @@ class FamilyNotifier extends StateNotifier<FamilyState> {
         );
         _ref.read(expenseProvider.notifier).loadExpenses();
         _ref.read(budgetProvider.notifier).loadBudget();
+
+        // Emit family member joined notification
+        _ref.read(notificationServiceProvider).notifyFamilyMemberJoined(
+          familyId: family.id,
+          memberName: displayName,
+          familyName: family.name,
+          joinedUserId: HiveService.settings.get('active_user_id') ?? '',
+        );
+
         return true;
       }
       state = state.copyWith(
@@ -684,8 +693,25 @@ class FamilyNotifier extends StateNotifier<FamilyState> {
 
   Future<bool> removeMember(String targetUserId) async {
     try {
+      final familyId = state.family?.id ?? '';
+      final familyName = state.family?.name ?? '';
+      final targetMember = state.members.firstWhere(
+        (m) => m.userId == targetUserId,
+        orElse: () => FamilyMember(id: '', familyId: familyId, userId: targetUserId, role: 'member', joinedAt: DateTime.now(), displayName: 'Member'),
+      );
+
       await _familyRepo.removeMember(targetUserId);
       await loadMembers(); // Reload members after removing
+
+      if (familyId.isNotEmpty) {
+        _ref.read(notificationServiceProvider).notifyFamilyMemberLeft(
+          familyId: familyId,
+          memberName: targetMember.displayName,
+          familyName: familyName,
+          leftUserId: targetUserId,
+        );
+      }
+
       return true;
     } catch (e) {
       state = state.copyWith(error: ErrorHelper.getReadableErrorMessage(e));
