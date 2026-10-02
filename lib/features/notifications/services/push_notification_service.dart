@@ -115,9 +115,8 @@ class PushNotificationService {
 
       await _repo.registerDeviceToken(
         userId: activeUserId,
-        deviceId: deviceId,
+        token: token,
         platform: platform,
-        pushToken: token,
       );
 
       debugPrint('[PushNotificationService] FCM token registered for user: $activeUserId');
