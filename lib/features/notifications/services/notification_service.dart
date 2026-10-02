@@ -10,11 +10,13 @@ import 'package:spendly/core/utils/currency_formatter.dart';
 import 'package:spendly/features/notifications/models/notification_model.dart';
 import 'package:spendly/features/notifications/repositories/notification_repository.dart';
 import 'package:spendly/features/notifications/services/local_notification_service.dart';
+import 'package:spendly/features/notifications/services/push_notification_service.dart';
 
 final notificationServiceProvider = Provider<NotificationService>((ref) {
   final repo = ref.watch(notificationRepositoryProvider);
   final localService = LocalNotificationService();
-  final service = NotificationService(ref, repo, localService);
+  final pushService = PushNotificationService(repo, localService);
+  final service = NotificationService(ref, repo, localService, pushService);
   service.initialize();
   ref.onDispose(() => service.dispose());
   return service;
@@ -24,13 +26,14 @@ class NotificationService {
   final Ref _ref;
   final NotificationRepository _repo;
   final LocalNotificationService _localService;
+  final PushNotificationService _pushService;
   final SupabaseClient _client = Supabase.instance.client;
 
   RealtimeChannel? _realtimeChannel;
   String? _subscribedFamilyId;
   String? _subscribedUserId;
 
-  NotificationService(this._ref, this._repo, this._localService);
+  NotificationService(this._ref, this._repo, this._localService, this._pushService);
 
   Future<void> initialize() async {
     await _localService.initialize(
@@ -39,6 +42,13 @@ class NotificationService {
       },
     );
     await _localService.requestPermission();
+
+    // Initialize Push Notifications (FCM)
+    await _pushService.initialize(
+      onNotificationOpen: (deepLink) {
+        _handleNotificationPayloadTap(deepLink);
+      },
+    );
 
     // Listen to user and family session changes to manage realtime subscriptions & reminders
     _ref.listen(authProvider, (prev, next) {
@@ -59,6 +69,7 @@ class NotificationService {
 
   void dispose() {
     _cleanupRealtime();
+    _pushService.dispose();
   }
 
   void _onAuthOrFamilyChanged() {
