@@ -89,7 +89,8 @@ create policy "Members can insert notifications for family"
 on public.notifications for insert
 to authenticated
 with check (
-  family_id in (select public.get_user_family_ids(auth.uid()))
+  created_by = auth.uid()
+  or family_id in (select public.get_user_family_ids(auth.uid()))
 );
 
 drop policy if exists "Users can update their notifications or family notifications" on public.notifications;
@@ -126,5 +127,15 @@ to authenticated
 using (auth.uid() = user_id)
 with check (auth.uid() = user_id);
 
--- Enable Realtime publication for notifications table
-alter publication supabase_realtime add table public.notifications;
+-- Enable full replication payload & Realtime publication for notifications table
+alter table public.notifications replica identity full;
+
+do $$
+begin
+  if not exists (
+    select 1 from pg_publication_tables 
+    where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'notifications'
+  ) then
+    alter publication supabase_realtime add table public.notifications;
+  end if;
+end $$;
