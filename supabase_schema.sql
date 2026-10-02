@@ -404,11 +404,18 @@ with check (auth.uid() = user_id);
 
 -- Preferences Policies
 drop policy if exists "Users can manage their own notification preferences" on public.notification_preferences;
-create policy "Users can manage their own notification preferences"
-on public.notification_preferences for all
-to authenticated
-using (auth.uid() = user_id)
-with check (auth.uid() = user_id);
+-- Enable full replication payload & Realtime publication for notifications table
+alter table public.notifications replica identity full;
+
+do $$
+begin
+  if not exists (
+    select 1 from pg_publication_tables 
+    where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'notifications'
+  ) then
+    alter publication supabase_realtime add table public.notifications;
+  end if;
+end $$;
 
 
 
