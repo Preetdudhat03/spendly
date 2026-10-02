@@ -37,8 +37,13 @@ class NotificationService {
         _handleNotificationPayloadTap(payload);
       },
     );
+    await _localService.requestPermission();
 
     // Listen to user and family session changes to manage realtime subscriptions & reminders
+    _ref.listen(authProvider, (prev, next) {
+      _onAuthOrFamilyChanged();
+    });
+
     _ref.listen(currentUserProvider, (prev, next) {
       _onAuthOrFamilyChanged();
     });
@@ -57,15 +62,16 @@ class NotificationService {
 
   void _onAuthOrFamilyChanged() {
     final user = _ref.read(currentUserProvider);
+    final authState = _ref.read(authProvider);
     final family = _ref.read(familyProvider).family;
 
-    final newUserId = user?.id;
+    final newUserId = user?.id ?? authState.userId ?? (HiveService.settings.get('active_user_id') as String?);
     final newFamilyId = family?.id;
 
     if (newUserId != _subscribedUserId || newFamilyId != _subscribedFamilyId) {
       _cleanupRealtime();
 
-      if (newUserId != null && newFamilyId != null) {
+      if (newUserId != null && newUserId.isNotEmpty && newFamilyId != null && newFamilyId.isNotEmpty) {
         _setupRealtime(newFamilyId, newUserId);
         _syncScheduledReminders(newUserId);
       }
@@ -83,19 +89,21 @@ class NotificationService {
       _realtimeChannel = _client
           .channel(channelName)
           .onPostgresChanges(
-            event: PostgresChangeEvent.insert,
+            event: PostgresChangeEvent.all,
             schema: 'public',
             table: 'notifications',
-            filter: PostgresChangeFilter(
-              type: PostgresChangeFilterType.eq,
-              column: 'family_id',
-              value: familyId,
-            ),
             callback: (payload) {
-              _handleIncomingRealtimeNotification(payload.newRecord);
+              if (payload.eventType == PostgresChangeEvent.insert && payload.newRecord.isNotEmpty) {
+                final record = payload.newRecord;
+                if (record['family_id'] == familyId) {
+                  _handleIncomingRealtimeNotification(record);
+                }
+              }
             },
           )
-          .subscribe();
+          .subscribe((status, [error]) {
+            debugPrint('[NotificationService] Realtime channel ($channelName) status: $status, error: $error');
+          });
 
       debugPrint('[NotificationService] Subscribed to realtime notifications for family: $familyId');
     } catch (e) {
@@ -120,7 +128,7 @@ class NotificationService {
   Future<void> _handleIncomingRealtimeNotification(Map<String, dynamic> record) async {
     try {
       final notification = SpendlyNotification.fromJson(record);
-      final currentUserId = _ref.read(authProvider).userId;
+      final currentUserId = _ref.read(authProvider).userId ?? (HiveService.settings.get('active_user_id') as String?);
 
       // Filter out if user-specific and not for this user
       if (notification.userId != null && notification.userId != currentUserId) {
@@ -131,7 +139,7 @@ class NotificationService {
       await _repo.saveLocalNotification(notification);
 
       // Check user preferences
-      if (currentUserId != null) {
+      if (currentUserId != null && currentUserId.isNotEmpty) {
         final prefs = await _repo.getPreferences(currentUserId);
         if (!_shouldNotifyForPreferences(notification.type, prefs)) {
           return;
@@ -139,9 +147,12 @@ class NotificationService {
       }
 
       // If notification was created by this user on this device, skip local pop alert to avoid echo
-      if (notification.createdBy == currentUserId) {
+      if (notification.createdBy != null && notification.createdBy == currentUserId) {
+        debugPrint('[NotificationService] Ignoring echo notification created by self (${notification.createdBy})');
         return;
       }
+
+      debugPrint('[NotificationService] Showing alert for incoming notification: ${notification.title}');
 
       // Show local notification pop
       await _localService.showNotification(
