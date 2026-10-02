@@ -5,6 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
 import 'package:spendly/core/providers/auth_providers.dart';
 import 'package:spendly/core/providers/state_providers.dart';
+import 'package:spendly/core/services/hive_service.dart';
 import 'package:spendly/core/utils/currency_formatter.dart';
 import 'package:spendly/features/notifications/models/notification_model.dart';
 import 'package:spendly/features/notifications/repositories/notification_repository.dart';
