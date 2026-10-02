@@ -129,7 +129,7 @@ class NotificationRepository {
             .from('notifications')
             .upsert(
               payload,
-              onConflict: 'family_id, notification_key',
+              onConflict: 'id',
             )
             .select()
             .maybeSingle();
@@ -137,6 +137,7 @@ class NotificationRepository {
         if (response != null) {
           final saved = SpendlyNotification.fromJson(response);
           await HiveService.notifications.put(saved.id, saved.toJson());
+          debugPrint('[NotificationRepository] Successfully inserted remote notification: ${saved.title}');
           return saved;
         }
       } catch (e) {
