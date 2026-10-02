@@ -124,8 +124,9 @@ class ConnectionListenerWidget extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Force SyncService to initialize and stay alive
+    // Force SyncService and NotificationService to initialize and stay alive
     ref.watch(syncServiceProvider);
+    ref.watch(notificationServiceProvider);
 
     // Listen to connection changes to show Toast Messages globally
     {/*ref.listen<ConnectionStatus>(connectionProvider, (previous, next) {
