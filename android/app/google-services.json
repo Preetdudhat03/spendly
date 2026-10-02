@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "123456789012",
-    "project_id": "spendly-app",
-    "storage_bucket": "spendly-app.appspot.com"
+    "project_number": "915741176292",
+    "project_id": "spendly-9e3fe",
+    "storage_bucket": "spendly-9e3fe.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:123456789012:android:abcdef1234567890",
+        "mobilesdk_app_id": "1:915741176292:android:6902f5afdbfd29b76a17f1",
         "android_client_info": {
           "package_name": "com.family.spendly.spendly"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyDummyKeyForSpendlyAppInit12345"
+          "current_key": "AIzaSyARfHgeD2DJvzz6sivq0hhJEGRyPylpmJw"
         }
       ],
       "services": {
