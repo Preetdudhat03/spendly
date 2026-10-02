@@ -22,6 +22,10 @@ class NotificationRepository {
         if (raw is Map) {
           final item = SpendlyNotification.fromJson(Map<String, dynamic>.from(raw));
           if (item.familyId == familyId && (item.userId == null || item.userId == userId)) {
+            // Do not show self-created expense actions to the author
+            if (userId != null && item.createdBy == userId && item.type.category == NotificationCategory.expense) {
+              continue;
+            }
             list.add(item);
           }
         }
@@ -101,6 +105,10 @@ class NotificationRepository {
 
       for (var json in response) {
         final notification = SpendlyNotification.fromJson(json);
+        // Do not add self-created expense actions to the author's list
+        if (userId != null && notification.createdBy == userId && notification.type.category == NotificationCategory.expense) {
+          continue;
+        }
         remoteList.add(notification);
         localUpdates[notification.id] = notification.toJson();
       }
@@ -118,10 +126,13 @@ class NotificationRepository {
   }
 
   Future<SpendlyNotification> createNotification(SpendlyNotification notification) async {
-    // 1. Save to local storage first (offline-first)
-    await saveLocalNotification(notification);
+    // 1. If not authored by current user (or personal reminder), save locally
+    final currentUserId = _client.auth.currentUser?.id;
+    if (notification.createdBy == null || notification.createdBy != currentUserId || notification.type.category != NotificationCategory.expense) {
+      await saveLocalNotification(notification);
+    }
 
-    // 2. If authenticated online, sync to Supabase
+    // 2. If authenticated online, sync to Supabase for other family members
     if (_client.auth.currentUser != null) {
       try {
         final payload = notification.toJson();
@@ -136,12 +147,11 @@ class NotificationRepository {
 
         if (response != null) {
           final saved = SpendlyNotification.fromJson(response);
-          await HiveService.notifications.put(saved.id, saved.toJson());
           debugPrint('[NotificationRepository] Successfully inserted remote notification: ${saved.title}');
           return saved;
         }
       } catch (e) {
-        debugPrint('[NotificationRepository] Remote insert error (persisted locally): $e');
+        debugPrint('[NotificationRepository] Remote insert error: $e');
       }
     }
 
