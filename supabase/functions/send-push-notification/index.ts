@@ -154,7 +154,15 @@ serve(async (req) => {
           body: JSON.stringify(fcmPayload),
         });
 
-        const result = await response.json();
+        const textResponse = await response.text();
+        let result: any;
+        try {
+          result = JSON.parse(textResponse);
+        } catch {
+          result = { raw: textResponse };
+        }
+
+        console.log(`[PushFunction] FCM response status: ${response.status} | body: ${JSON.stringify(result)}`);
 
         // Handle unregistered / stale tokens
         if (result.results?.[0]?.error === "NotRegistered" || result.results?.[0]?.error === "InvalidRegistration") {
@@ -165,7 +173,7 @@ serve(async (req) => {
           console.log(`[PushFunction] Deactivated stale device token ${device.id}`);
         }
 
-        return result;
+        return { status: response.status, result };
       } catch (err) {
         console.error(`[PushFunction] Error sending to token ${device.push_token}:`, err);
         return { error: String(err) };
