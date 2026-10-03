@@ -61,11 +61,10 @@ async function getGoogleAccessToken(serviceAccount: ServiceAccount): Promise<str
   const encodedClaimSet = encodeBase64Url(claimSet);
   const unsignedJwt = `${encodedHeader}.${encodedClaimSet}`;
 
-  // Clean PEM private key
+  // Clean PEM delimiters and whitespace
   const pem = serviceAccount.private_key
-    .replace(/-----BEGIN PRIVATE KEY-----/g, "")
-    .replace(/-----END PRIVATE KEY-----/g, "")
-    .replace(/\r?\n|\r/g, "")
+    .replace(/-----[^-]+-----/g, "")
+    .replace(/\s+/g, "")
     .trim();
 
   const binaryDer = Uint8Array.from(atob(pem), (c) => c.charCodeAt(0));
