@@ -86,40 +86,49 @@ class PushNotificationService {
     _messageOpenedSubscription?.cancel();
   }
 
-  Future<void> syncDeviceToken() async {
+  Future<String> syncDeviceToken() async {
     try {
       final token = await FirebaseMessaging.instance.getToken();
-      if (token != null && token.isNotEmpty) {
-        await _registerToken(token);
+      if (token == null || token.isEmpty) {
+        final msg = 'FCM returned empty token. Please check Google Play Services / Firebase setup.';
+        debugPrint('[PushNotificationService] $msg');
+        return msg;
       }
+      return await _registerToken(token);
     } catch (e) {
-      debugPrint('[PushNotificationService] Error fetching FCM token: $e');
+      final msg = 'Error fetching FCM token: $e';
+      debugPrint('[PushNotificationService] $msg');
+      return msg;
     }
   }
 
-  Future<void> _registerToken(String token) async {
+  Future<String> _registerToken(String token) async {
     try {
       final authUserId = _repo.currentAuthUserId;
       final activeUserId = authUserId ?? (HiveService.settings.get('active_user_id') as String?);
       if (activeUserId == null || activeUserId.isEmpty) {
-        debugPrint('[PushNotificationService] activeUserId is not set yet, deferring token registration');
-        return;
+        final msg = 'Cannot sync token: User is not authenticated. Please log in.';
+        debugPrint('[PushNotificationService] $msg');
+        return msg;
       }
 
       final platform = defaultTargetPlatform == TargetPlatform.iOS
           ? 'ios'
           : (defaultTargetPlatform == TargetPlatform.android ? 'android' : 'web');
 
-      await _repo.registerDeviceToken(
+      final result = await _repo.registerDeviceToken(
         userId: activeUserId,
         token: token,
         platform: platform,
       );
 
       final previewToken = token.length > 15 ? token.substring(0, 15) : token;
-      debugPrint('[PushNotificationService] FCM token registered for user: $activeUserId ($previewToken...)');
+      debugPrint('[PushNotificationService] FCM token ($previewToken...) register result: $result');
+      return result;
     } catch (e) {
-      debugPrint('[PushNotificationService] Error registering FCM token: $e');
+      final msg = 'Error registering FCM token: $e';
+      debugPrint('[PushNotificationService] $msg');
+      return msg;
     }
   }
 
