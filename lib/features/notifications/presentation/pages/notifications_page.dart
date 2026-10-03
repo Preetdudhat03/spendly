@@ -56,9 +56,28 @@ class NotificationsPage extends ConsumerWidget {
           icon: Icons.notifications_rounded,
         ),
         actions: [
+          IconButton(
+            tooltip: 'Sync Push Notifications',
+            onPressed: () async {
+              SpendlyToast.showInfo(context, 'Syncing push notification token...');
+              final result = await notifier.syncPushTokens();
+              if (context.mounted) {
+                if (result.contains('successfully')) {
+                  SpendlyToast.showSuccess(context, result);
+                } else {
+                  SpendlyToast.showWarning(context, result);
+                }
+              }
+            },
+            icon: Icon(
+              Icons.cloud_sync_rounded,
+              color: accentColor,
+              size: 22,
+            ),
+          ),
           if (state.unreadCount > 0)
             Padding(
-              padding: const EdgeInsets.only(right: 12),
+              padding: const EdgeInsets.only(right: 8),
               child: IconButton(
                 tooltip: 'Mark all as read',
                 onPressed: () async {
