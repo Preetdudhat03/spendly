@@ -198,6 +198,10 @@ class NotificationsNotifier extends StateNotifier<NotificationsState> {
   void toggleOnlyUnread() {
     state = state.copyWith(onlyUnread: !state.onlyUnread);
   }
+
+  Future<String> syncPushTokens() async {
+    return await _ref.read(notificationServiceProvider).syncPushToken();
+  }
 }
 
 final notificationsProvider =
