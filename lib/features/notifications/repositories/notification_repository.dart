@@ -305,6 +305,7 @@ class NotificationRepository {
       'device_id': deviceId,
       'platform': platform,
       'push_token': token,
+      'device_token': token,
       'is_active': true,
       'last_seen_at': DateTime.now().toIso8601String(),
       'updated_at': DateTime.now().toIso8601String(),
@@ -332,6 +333,7 @@ class NotificationRepository {
         if (existing != null && existing['id'] != null) {
           await _client.from('user_device_tokens').update({
             'push_token': token,
+            'device_token': token,
             'is_active': true,
             'last_seen_at': DateTime.now().toIso8601String(),
             'updated_at': DateTime.now().toIso8601String(),
