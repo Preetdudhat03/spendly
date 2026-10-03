@@ -106,6 +106,10 @@ class NotificationService {
     }
   }
 
+  Future<String> syncPushToken() async {
+    return await _pushService.syncDeviceToken();
+  }
+
   void _setupRealtime(String familyId, String userId) {
     if (_client.auth.currentUser == null) return;
 
