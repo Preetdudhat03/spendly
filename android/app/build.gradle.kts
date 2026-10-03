@@ -69,12 +69,21 @@ android {
 
     buildTypes {
         release {
+            ndk {
+                debugSymbolLevel = "none"
+            }
             val releaseSigningConfig = signingConfigs.getByName("release")
             signingConfig = if (releaseSigningConfig.storeFile != null && releaseSigningConfig.storeFile!!.exists()) {
                 releaseSigningConfig
             } else {
                 signingConfigs.getByName("debug")
             }
+        }
+    }
+
+    packaging {
+        resources {
+            excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
 }
