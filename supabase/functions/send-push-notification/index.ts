@@ -104,7 +104,7 @@ serve(async (req) => {
     // 3. Fetch active device tokens
     const { data: deviceTokens, error: tokenError } = await supabase
       .from("user_device_tokens")
-      .select("id, push_token, user_id, platform")
+      .select("id, push_token, device_token, user_id, platform")
       .in("user_id", allowedUserIds)
       .eq("is_active", true);
 
@@ -119,14 +119,20 @@ serve(async (req) => {
     console.log(`[PushFunction] Dispatching push to ${deviceTokens.length} devices`);
 
     // 4. Send FCM Push Notification
-    const pushPromises = deviceTokens.map(async (device) => {
+    const pushPromises = deviceTokens.map(async (device: any) => {
       if (!FCM_SERVER_KEY) {
         console.warn("[PushFunction] FCM_SERVER_KEY not configured in Supabase environment secrets");
         return { success: false, reason: "No FCM_SERVER_KEY" };
       }
 
+      const recipientToken = device.push_token || device.device_token;
+      if (!recipientToken) {
+        console.warn(`[PushFunction] Device ${device.id} has no valid token`);
+        return { success: false, reason: "Empty token" };
+      }
+
       const fcmPayload = {
-        to: device.push_token,
+        to: recipientToken,
         notification: {
           title: record.title,
           body: record.body,
