@@ -143,8 +143,12 @@ class PushNotificationService {
       final deepLink = data['deep_link'] as String?;
       final type = NotificationType.fromString(typeStr);
 
+      final notifKey = data['notification_id'] as String? ?? data['notification_key'] as String? ?? message.messageId ?? message.hashCode.toString();
+      final deterministicId = notifKey.hashCode;
+
       await _localService.showNotification(
-        id: message.hashCode,
+        id: deterministicId,
+        tag: notifKey,
         title: title,
         body: body,
         type: type,

@@ -160,14 +160,28 @@ class LocalNotificationService {
     return true;
   }
 
+  // Track recently shown notification keys to prevent duplicate banner popups
+  final Set<String> _recentlyShownKeys = {};
+
   Future<void> showNotification({
     required int id,
+    String? tag,
     required String title,
     required String body,
     required NotificationType type,
     String? deepLink,
     Map<String, dynamic>? payload,
   }) async {
+    final dedupeKey = tag ?? '$id';
+    if (_recentlyShownKeys.contains(dedupeKey)) {
+      debugPrint('[LocalNotificationService] Suppressing duplicate notification: $dedupeKey');
+      return;
+    }
+    _recentlyShownKeys.add(dedupeKey);
+    Future.delayed(const Duration(seconds: 8), () {
+      _recentlyShownKeys.remove(dedupeKey);
+    });
+
     if (!_isInitialized) {
       await initialize();
     }
@@ -222,6 +236,7 @@ class LocalNotificationService {
       importance: importance,
       priority: priority,
       icon: '@mipmap/launcher_icon',
+      tag: tag,
     );
 
     const iosDetails = DarwinNotificationDetails(
@@ -249,7 +264,7 @@ class LocalNotificationService {
         notificationDetails: details,
         payload: jsonEncode(payloadMap),
       );
-      debugPrint('[LocalNotificationService] Showed notification: $title');
+      debugPrint('[LocalNotificationService] Showed notification: $title ($dedupeKey)');
     } catch (e) {
       debugPrint('[LocalNotificationService] Failed to show notification: $e');
     }

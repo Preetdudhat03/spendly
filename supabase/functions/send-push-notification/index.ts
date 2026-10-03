@@ -3,7 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.0";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
-const FCM_SERVER_KEY = Deno.env.get("FCM_SERVER_KEY") ?? "";
+const FIREBASE_SERVICE_ACCOUNT_RAW = Deno.env.get("FIREBASE_SERVICE_ACCOUNT") ?? Deno.env.get("FCM_SERVER_KEY") ?? "";
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
@@ -24,6 +24,90 @@ interface WebhookPayload {
     created_by?: string | null;
     created_at: string;
   };
+}
+
+interface ServiceAccount {
+  project_id: string;
+  client_email: string;
+  private_key: string;
+}
+
+// Generate Google OAuth2 Access Token for FCM HTTP v1 API
+async function getGoogleAccessToken(serviceAccount: ServiceAccount): Promise<string> {
+  const iat = Math.floor(Date.now() / 1000);
+  const exp = iat + 3600;
+
+  const header = {
+    alg: "RS256",
+    typ: "JWT",
+  };
+
+  const claimSet = {
+    iss: serviceAccount.client_email,
+    scope: "https://www.googleapis.com/auth/firebase.messaging",
+    aud: "https://oauth2.googleapis.com/token",
+    exp: exp,
+    iat: iat,
+  };
+
+  const encodeBase64Url = (obj: Record<string, unknown>) => {
+    return btoa(JSON.stringify(obj))
+      .replace(/=/g, "")
+      .replace(/\+/g, "-")
+      .replace(/\//g, "_");
+  };
+
+  const encodedHeader = encodeBase64Url(header);
+  const encodedClaimSet = encodeBase64Url(claimSet);
+  const unsignedJwt = `${encodedHeader}.${encodedClaimSet}`;
+
+  // Clean PEM private key
+  const pem = serviceAccount.private_key
+    .replace(/-----BEGIN PRIVATE KEY-----/g, "")
+    .replace(/-----END PRIVATE KEY-----/g, "")
+    .replace(/\r?\n|\r/g, "")
+    .trim();
+
+  const binaryDer = Uint8Array.from(atob(pem), (c) => c.charCodeAt(0));
+
+  const cryptoKey = await crypto.subtle.importKey(
+    "pkcs8",
+    binaryDer.buffer,
+    {
+      name: "RSASSA-PKCS1-v1_5",
+      hash: "SHA-256",
+    },
+    false,
+    ["sign"]
+  );
+
+  const signature = await crypto.subtle.sign(
+    "RSASSA-PKCS1-v1_5",
+    cryptoKey,
+    new TextEncoder().encode(unsignedJwt)
+  );
+
+  const encodedSignature = btoa(String.fromCharCode(...new Uint8Array(signature)))
+    .replace(/=/g, "")
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_");
+
+  const signedJwt = `${unsignedJwt}.${encodedSignature}`;
+
+  const response = await fetch("https://oauth2.googleapis.com/token", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      grant_type: "urn:ietf:params:oauth:grant-type:jwt-bearer",
+      assertion: signedJwt,
+    }),
+  });
+
+  const data = await response.json();
+  if (!data.access_token) {
+    throw new Error(`Failed to obtain Google access token: ${JSON.stringify(data)}`);
+  }
+  return data.access_token;
 }
 
 serve(async (req) => {
@@ -116,22 +200,116 @@ serve(async (req) => {
       });
     }
 
-    console.log(`[PushFunction] Dispatching push to ${deviceTokens.length} devices`);
-
-    // 4. Send FCM Push Notification
-    const pushPromises = deviceTokens.map(async (device: any) => {
-      if (!FCM_SERVER_KEY) {
-        console.warn("[PushFunction] FCM_SERVER_KEY not configured in Supabase environment secrets");
-        return { success: false, reason: "No FCM_SERVER_KEY" };
+    // Deduplicate device tokens to ensure each physical token receives only one push
+    const uniqueTokensMap = new Map<string, any>();
+    for (const device of deviceTokens) {
+      const token = device.push_token || device.device_token;
+      if (token && !uniqueTokensMap.has(token)) {
+        uniqueTokensMap.set(token, device);
       }
+    }
+    const uniqueDevices = Array.from(uniqueTokensMap.values());
 
+    console.log(`[PushFunction] Dispatching push to ${uniqueDevices.length} unique devices`);
+
+    // Parse Service Account if provided
+    let serviceAccount: ServiceAccount | null = null;
+    let googleAccessToken: string | null = null;
+
+    if (FIREBASE_SERVICE_ACCOUNT_RAW.trim().startsWith("{")) {
+      try {
+        serviceAccount = JSON.parse(FIREBASE_SERVICE_ACCOUNT_RAW);
+        if (serviceAccount?.client_email && serviceAccount?.private_key) {
+          googleAccessToken = await getGoogleAccessToken(serviceAccount);
+          console.log("[PushFunction] Obtained Google OAuth2 token for FCM v1 API");
+        }
+      } catch (saError) {
+        console.error("[PushFunction] Failed to parse service account or get token:", saError);
+      }
+    }
+
+    // 4. Send FCM Push Notification (HTTP v1 or Legacy)
+    const pushPromises = uniqueDevices.map(async (device: any) => {
       const recipientToken = device.push_token || device.device_token;
       if (!recipientToken) {
-        console.warn(`[PushFunction] Device ${device.id} has no valid token`);
         return { success: false, reason: "Empty token" };
       }
 
-      const fcmPayload = {
+      // Approach A: Modern FCM HTTP v1 API
+      if (googleAccessToken && serviceAccount) {
+        const projectId = serviceAccount.project_id || "spendly-9e3fe";
+        const fcmV1Url = `https://fcm.googleapis.com/v1/projects/${projectId}/messages:send`;
+
+        // Flatten payload data to strings (FCM requirement)
+        const customData: Record<string, string> = {
+          notification_id: String(record.id),
+          family_id: String(record.family_id),
+          type: String(record.type),
+          deep_link: String(record.deep_link || "/expenses"),
+          created_at: String(record.created_at),
+        };
+
+        if (record.payload) {
+          for (const [k, v] of Object.entries(record.payload)) {
+            customData[k] = typeof v === "object" ? JSON.stringify(v) : String(v);
+          }
+        }
+
+        const v1Payload = {
+          message: {
+            token: recipientToken,
+            notification: {
+              title: record.title,
+              body: record.body,
+            },
+            data: customData,
+            android: {
+              priority: "high",
+              collapse_key: String(record.id),
+              notification: {
+                channel_id: "spendly_alerts",
+                sound: "default",
+                default_vibrate_timings: true,
+                notification_priority: "priority_high",
+                tag: String(record.id),
+              },
+            },
+          },
+        };
+
+        try {
+          const response = await fetch(fcmV1Url, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${googleAccessToken}`,
+            },
+            body: JSON.stringify(v1Payload),
+          });
+
+          const result = await response.json();
+          console.log(`[PushFunction] FCM v1 response status: ${response.status} | body: ${JSON.stringify(result)}`);
+
+          if (response.status === 404 || result.error?.code === 404 || result.error?.message?.includes("UNREGISTERED")) {
+            await supabase.from("user_device_tokens").update({ is_active: false }).eq("id", device.id);
+            console.log(`[PushFunction] Deactivated stale token ${device.id}`);
+          }
+
+          return { status: response.status, result };
+        } catch (v1Err) {
+          console.error(`[PushFunction] FCM v1 Error sending to ${recipientToken}:`, v1Err);
+          return { error: String(v1Err) };
+        }
+      }
+
+      // Approach B: Fallback to Legacy HTTP endpoint
+      const legacyKey = FIREBASE_SERVICE_ACCOUNT_RAW;
+      if (!legacyKey) {
+        console.warn("[PushFunction] No FCM credentials configured in Supabase environment secrets");
+        return { success: false, reason: "No credentials" };
+      }
+
+      const legacyPayload = {
         to: recipientToken,
         notification: {
           title: record.title,
@@ -155,9 +333,9 @@ serve(async (req) => {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `key=${FCM_SERVER_KEY}`,
+            Authorization: `key=${legacyKey}`,
           },
-          body: JSON.stringify(fcmPayload),
+          body: JSON.stringify(legacyPayload),
         });
 
         const textResponse = await response.text();
@@ -168,27 +346,23 @@ serve(async (req) => {
           result = { raw: textResponse };
         }
 
-        console.log(`[PushFunction] FCM response status: ${response.status} | body: ${JSON.stringify(result)}`);
+        console.log(`[PushFunction] FCM legacy response status: ${response.status} | body: ${JSON.stringify(result)}`);
 
-        // Handle unregistered / stale tokens
         if (result.results?.[0]?.error === "NotRegistered" || result.results?.[0]?.error === "InvalidRegistration") {
-          await supabase
-            .from("user_device_tokens")
-            .update({ is_active: false })
-            .eq("id", device.id);
+          await supabase.from("user_device_tokens").update({ is_active: false }).eq("id", device.id);
           console.log(`[PushFunction] Deactivated stale device token ${device.id}`);
         }
 
         return { status: response.status, result };
       } catch (err) {
-        console.error(`[PushFunction] Error sending to token ${device.push_token}:`, err);
+        console.error(`[PushFunction] Error sending to legacy token ${recipientToken}:`, err);
         return { error: String(err) };
       }
     });
 
     const results = await Promise.all(pushPromises);
 
-    return new Response(JSON.stringify({ success: true, count: results.length }), {
+    return new Response(JSON.stringify({ success: true, count: results.length, results }), {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });

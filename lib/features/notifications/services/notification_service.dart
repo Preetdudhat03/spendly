@@ -189,6 +189,7 @@ class NotificationService {
       // Show local notification pop
       await _localService.showNotification(
         id: notification.id.hashCode,
+        tag: notification.id,
         title: notification.title,
         body: notification.body,
         type: notification.type,
