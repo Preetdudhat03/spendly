@@ -287,15 +287,16 @@ class NotificationRepository {
 
   // --- Multi-Device Push Tokens ---
 
-  Future<void> registerDeviceToken({
+  Future<String> registerDeviceToken({
     required String userId,
     required String token,
     required String platform,
   }) async {
     final effectiveUserId = _client.auth.currentUser?.id ?? (userId.isNotEmpty ? userId : null);
     if (effectiveUserId == null || effectiveUserId.isEmpty) {
-      debugPrint('[NotificationRepository] Cannot register device token: no active user id');
-      return;
+      final msg = 'Cannot register token: User is not logged in.';
+      debugPrint('[NotificationRepository] $msg');
+      return msg;
     }
 
     final deviceId = HiveService.deviceId;
@@ -315,7 +316,9 @@ class NotificationRepository {
         onConflict: 'user_id,device_id',
       );
 
-      debugPrint('[NotificationRepository] Successfully registered device token for device $deviceId and user $effectiveUserId');
+      final msg = 'Device token registered successfully for user $effectiveUserId';
+      debugPrint('[NotificationRepository] $msg');
+      return msg;
     } catch (e) {
       debugPrint('[NotificationRepository] Upsert error (trying fallback): $e');
       try {
@@ -336,9 +339,13 @@ class NotificationRepository {
         } else {
           await _client.from('user_device_tokens').insert(payload);
         }
-        debugPrint('[NotificationRepository] Fallback registered device token successfully!');
+        final msg = 'Device token registered via fallback for user $effectiveUserId';
+        debugPrint('[NotificationRepository] $msg');
+        return msg;
       } catch (fallbackError) {
-        debugPrint('[NotificationRepository] Fallback token registration failed: $fallbackError');
+        final msg = 'Failed to register token in Supabase: $fallbackError';
+        debugPrint('[NotificationRepository] $msg');
+        return msg;
       }
     }
   }
