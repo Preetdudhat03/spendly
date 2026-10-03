@@ -80,6 +80,10 @@ class NotificationService {
     final newUserId = user?.id ?? authState.userId ?? (HiveService.settings.get('active_user_id') as String?);
     final newFamilyId = family?.id;
 
+    if (newUserId != null && newUserId.isNotEmpty) {
+      _pushService.syncDeviceToken();
+    }
+
     if (newUserId != _subscribedUserId || newFamilyId != _subscribedFamilyId) {
       _cleanupRealtime();
 
