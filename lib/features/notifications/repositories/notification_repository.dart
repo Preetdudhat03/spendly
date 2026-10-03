@@ -283,6 +283,8 @@ class NotificationRepository {
     }
   }
 
+  String? get currentAuthUserId => _client.auth.currentUser?.id;
+
   // --- Multi-Device Push Tokens ---
 
   Future<void> registerDeviceToken({
@@ -290,12 +292,16 @@ class NotificationRepository {
     required String token,
     required String platform,
   }) async {
-    if (_client.auth.currentUser == null) return;
+    final effectiveUserId = _client.auth.currentUser?.id ?? (userId.isNotEmpty ? userId : null);
+    if (effectiveUserId == null || effectiveUserId.isEmpty) {
+      debugPrint('[NotificationRepository] Cannot register device token: no active user id');
+      return;
+    }
 
     try {
       final deviceId = HiveService.deviceId;
       await _client.from('user_device_tokens').upsert({
-        'user_id': userId,
+        'user_id': effectiveUserId,
         'device_id': deviceId,
         'platform': platform,
         'push_token': token,
@@ -304,7 +310,7 @@ class NotificationRepository {
         'updated_at': DateTime.now().toIso8601String(),
       }, onConflict: 'user_id, device_id');
 
-      debugPrint('[NotificationRepository] Registered device token for $deviceId');
+      debugPrint('[NotificationRepository] Successfully registered device token for device $deviceId and user $effectiveUserId');
     } catch (e) {
       debugPrint('[NotificationRepository] Error registering device token: $e');
     }

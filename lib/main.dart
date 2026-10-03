@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:spendly/core/constants/config.dart';
@@ -70,6 +71,14 @@ void main() async {
 
   // Run Migration
   await MigrationService.runMigration(sharedPreferences);
+
+  // Initialize Firebase only on supported mobile/web platforms
+  try {
+    await Firebase.initializeApp();
+    debugPrint('Firebase initialized successfully!');
+  } catch (e) {
+    debugPrint('Firebase initialization warning: $e');
+  }
 
   // Initialize Supabase only if it is configured
   if (AppConfig.isSupabaseConfigured) {

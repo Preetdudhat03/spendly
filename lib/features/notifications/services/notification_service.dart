@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
 import 'package:spendly/core/providers/auth_providers.dart';
-import 'package:spendly/core/providers/state_providers.dart';
+import 'package:spendly/core/providers/state_providers.dart' hide AuthState;
 import 'package:spendly/core/services/hive_service.dart';
 import 'package:spendly/core/utils/currency_formatter.dart';
 import 'package:spendly/features/notifications/models/notification_model.dart';
@@ -30,6 +30,7 @@ class NotificationService {
   final SupabaseClient _client = Supabase.instance.client;
 
   RealtimeChannel? _realtimeChannel;
+  StreamSubscription<AuthState>? _authStateSubscription;
   String? _subscribedFamilyId;
   String? _subscribedUserId;
 
@@ -50,6 +51,15 @@ class NotificationService {
       },
     );
 
+    // Listen to Supabase Auth State Changes directly
+    _authStateSubscription = _client.auth.onAuthStateChange.listen((data) {
+      debugPrint('[NotificationService] Supabase Auth event: ${data.event}');
+      if (data.session?.user != null) {
+        _pushService.syncDeviceToken();
+        _onAuthOrFamilyChanged();
+      }
+    });
+
     // Listen to user and family session changes to manage realtime subscriptions & reminders
     _ref.listen(authProvider, (prev, next) {
       _onAuthOrFamilyChanged();
@@ -68,6 +78,7 @@ class NotificationService {
   }
 
   void dispose() {
+    _authStateSubscription?.cancel();
     _cleanupRealtime();
     _pushService.dispose();
   }
@@ -76,8 +87,9 @@ class NotificationService {
     final user = _ref.read(currentUserProvider);
     final authState = _ref.read(authProvider);
     final family = _ref.read(familyProvider).family;
+    final supabaseUser = _client.auth.currentUser;
 
-    final newUserId = user?.id ?? authState.userId ?? (HiveService.settings.get('active_user_id') as String?);
+    final newUserId = supabaseUser?.id ?? user?.id ?? authState.userId ?? (HiveService.settings.get('active_user_id') as String?);
     final newFamilyId = family?.id;
 
     if (newUserId != null && newUserId.isNotEmpty) {

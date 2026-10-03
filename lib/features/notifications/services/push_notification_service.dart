@@ -99,19 +99,16 @@ class PushNotificationService {
 
   Future<void> _registerToken(String token) async {
     try {
-      final activeUserId = HiveService.settings.get('active_user_id') as String?;
-      if (activeUserId == null || activeUserId.isEmpty) return;
+      final authUserId = _repo.currentAuthUserId;
+      final activeUserId = authUserId ?? (HiveService.settings.get('active_user_id') as String?);
+      if (activeUserId == null || activeUserId.isEmpty) {
+        debugPrint('[PushNotificationService] activeUserId is not set yet, deferring token registration');
+        return;
+      }
 
       final platform = defaultTargetPlatform == TargetPlatform.iOS
           ? 'ios'
           : (defaultTargetPlatform == TargetPlatform.android ? 'android' : 'web');
-
-      // Unique device identifier stored locally
-      String? deviceId = HiveService.settings.get('device_id') as String?;
-      if (deviceId == null || deviceId.isEmpty) {
-        deviceId = 'dev_${DateTime.now().millisecondsSinceEpoch}_${token.hashCode.abs()}';
-        await HiveService.settings.put('device_id', deviceId);
-      }
 
       await _repo.registerDeviceToken(
         userId: activeUserId,
@@ -119,7 +116,8 @@ class PushNotificationService {
         platform: platform,
       );
 
-      debugPrint('[PushNotificationService] FCM token registered for user: $activeUserId');
+      final previewToken = token.length > 15 ? token.substring(0, 15) : token;
+      debugPrint('[PushNotificationService] FCM token registered for user: $activeUserId ($previewToken...)');
     } catch (e) {
       debugPrint('[PushNotificationService] Error registering FCM token: $e');
     }
