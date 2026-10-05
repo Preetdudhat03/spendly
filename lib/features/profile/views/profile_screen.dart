@@ -15,6 +15,8 @@ import 'package:spendly/core/services/report_service.dart';
 import 'package:spendly/core/services/hive_service.dart';
 import 'package:spendly/core/utils/currency_formatter.dart';
 import 'package:spendly/core/widgets/spendly_toast.dart';
+import 'package:spendly/core/providers/app_update_provider.dart';
+import 'package:spendly/core/widgets/spendly/app_update_dialog.dart';
 import 'package:spendly/features/notifications/providers/notification_providers.dart';
 import 'package:spendly/features/notifications/services/local_notification_service.dart';
 
