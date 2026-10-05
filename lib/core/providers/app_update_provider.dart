@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spendly/core/models/app_update_info.dart';
 import 'package:spendly/core/providers/state_providers.dart';
+import 'package:spendly/core/services/db_provider.dart';
 import 'package:spendly/core/services/app_update_service.dart';
 
 @immutable
