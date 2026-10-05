@@ -4,12 +4,18 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:spendly/core/models/app_update_info.dart';
 import 'package:spendly/core/providers/app_update_provider.dart';
-import 'package:spendly/core/providers/state_providers.dart';
+import 'package:spendly/core/services/db_provider.dart';
 import 'package:spendly/core/theme/app_theme.dart';
 import 'package:spendly/core/widgets/spendly/app_update_dialog.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+  late SharedPreferences prefs;
+
+  setUp(() async {
+    SharedPreferences.setMockInitialValues({});
+    prefs = await SharedPreferences.getInstance();
+  });
 
   const mockInfo = AppUpdateInfo(
     currentVersion: '5.7.11',
@@ -28,15 +34,9 @@ void main() {
     required AppUpdateInfo info,
     bool isDark = false,
   }) {
-    SharedPreferences.setMockInitialValues({});
     return ProviderScope(
       overrides: [
-        sharedPreferencesProvider.overrideWithValue(
-          // ignore: invalid_use_of_visible_for_testing_member
-          SharedPreferencesAsyncPlatform.instance == null
-              ? null as dynamic
-              : null as dynamic,
-        ),
+        sharedPreferencesProvider.overrideWithValue(prefs),
       ],
       child: MaterialApp(
         theme: isDark ? AppTheme.darkTheme : AppTheme.lightTheme,
