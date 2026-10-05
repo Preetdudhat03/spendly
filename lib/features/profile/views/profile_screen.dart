@@ -1991,6 +1991,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     error: (e, s) => 'Version unknown',
                   );
 
+                  final updateState = ref.watch(appUpdateStateProvider);
+
                   Widget versionFooter = Padding(
                     padding: const EdgeInsets.symmetric(vertical: 24.0),
                     child: Column(
@@ -2004,7 +2006,68 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                             fontWeight: FontWeight.w500,
                           ),
                         ),
-                        const SizedBox(height: 4),
+                        const SizedBox(height: 10),
+                        OutlinedButton.icon(
+                          onPressed: updateState.isChecking
+                              ? null
+                              : () async {
+                                  final info = await ref
+                                      .read(appUpdateStateProvider.notifier)
+                                      .checkForUpdate(isManual: true);
+
+                                  if (!context.mounted) return;
+
+                                  if (info == null) {
+                                    SpendlyToast.showError(
+                                      context,
+                                      "Couldn't check for updates. Please try again later.",
+                                    );
+                                  } else if (info.hasUpdate) {
+                                    AppUpdateDialog.show(context, info, ref);
+                                  } else {
+                                    SpendlyToast.showSuccess(
+                                      context,
+                                      "Spendly v${info.currentVersion} is up to date.",
+                                    );
+                                  }
+                                },
+                          icon: updateState.isChecking
+                              ? SizedBox(
+                                  width: 14,
+                                  height: 14,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Theme.of(context).colorScheme.primary,
+                                  ),
+                                )
+                              : const Icon(Icons.refresh_rounded, size: 16),
+                          label: Text(
+                            updateState.isChecking
+                                ? 'Checking for updates...'
+                                : 'Check for Updates',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: Theme.of(context).colorScheme.onSurface,
+                            side: BorderSide(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .outline
+                                  .withValues(alpha: 0.3),
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 8,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
                         Text(
                           'Developed by Preet Dudhat',
                           style: TextStyle(
