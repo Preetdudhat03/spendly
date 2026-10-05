@@ -118,6 +118,42 @@ void main() {
       final newerInfo = info.copyWith(latestVersion: '5.8.1');
       expect(service.shouldShowAutomaticDialog(newerInfo), isTrue);
     });
+
+    test('manual check (isManualCheck: true) bypasses the 6-hour throttle', () async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+      
+      // Mark as checked 5 minutes ago
+      final fiveMinAgo = DateTime.now().subtract(const Duration(minutes: 5)).millisecondsSinceEpoch;
+      await prefs.setInt(AppUpdateService.keyLastCheckTime, fiveMinAgo);
+
+      var networkCallCount = 0;
+      final mockClient = MockClient((request) async {
+        networkCallCount++;
+        return http.Response(
+          jsonEncode({
+            'tag_name': 'v5.8.0',
+            'draft': false,
+            'prerelease': false,
+            'html_url': 'https://github.com/Preetdudhat03/spendly/releases/tag/v5.8.0',
+          }),
+          200,
+        );
+      });
+
+      final service = AppUpdateService(prefs, mockClient);
+
+      // Automatic check should be throttled
+      final autoResult = await service.checkForUpdate(isManualCheck: false);
+      expect(networkCallCount, 0, reason: 'Automatic check within 6h should NOT hit network');
+      expect(autoResult, isNull);
+
+      // Manual check MUST bypass throttle and hit network
+      final manualResult = await service.checkForUpdate(isManualCheck: true);
+      expect(networkCallCount, 1, reason: 'Manual check MUST hit network');
+      expect(manualResult, isNotNull);
+      expect(manualResult!.latestVersion, '5.8.0');
+    });
   });
 
   group('AppUpdateService API Request & Response Parsing', () {
