@@ -15,7 +15,7 @@ class MainLayout extends ConsumerStatefulWidget {
 }
 
 class _MainLayoutState extends ConsumerState<MainLayout> {
-  static bool _hasPerformedInitialCheck = false;
+  bool _hasPerformedInitialCheck = false;
 
   @override
   void initState() {
