@@ -1,20 +1,61 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:spendly/core/providers/app_update_provider.dart';
+import 'package:spendly/core/widgets/spendly/app_update_dialog.dart';
 import 'package:spendly/features/navigation/views/widgets/floating_spendly_navigation_bar.dart';
 
-class MainLayout extends ConsumerWidget {
+class MainLayout extends ConsumerStatefulWidget {
   final StatefulNavigationShell navigationShell;
 
   const MainLayout({super.key, required this.navigationShell});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<MainLayout> createState() => _MainLayoutState();
+}
+
+class _MainLayoutState extends ConsumerState<MainLayout> {
+  static bool _hasPerformedInitialCheck = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (!_hasPerformedInitialCheck) {
+      _hasPerformedInitialCheck = true;
+      _scheduleUpdateCheck();
+    }
+  }
+
+  void _scheduleUpdateCheck() {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      // 2-second grace period ensuring startup/hive/auth rendering is fully settled
+      await Future<void>.delayed(const Duration(seconds: 2));
+      if (!mounted) return;
+
+      try {
+        final updateNotifier = ref.read(appUpdateStateProvider.notifier);
+        final info = await updateNotifier.checkForUpdate(isManual: false);
+
+        if (!mounted || info == null || !info.hasUpdate) return;
+
+        if (updateNotifier.shouldShowAutomaticDialog(info)) {
+          if (mounted) {
+            await AppUpdateDialog.show(context, info, ref);
+          }
+        }
+      } catch (e) {
+        debugPrint('MainLayout: Silent update check error: $e');
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       body: Stack(
         children: [
           // 1. The main content screens provided by GoRouter's StatefulShellRoute
-          navigationShell,
+          widget.navigationShell,
           
           // 2. The Floating Navigation Bar (Now shows unconditionally on all screen sizes)
           Positioned(
@@ -26,19 +67,19 @@ class MainLayout extends ConsumerWidget {
               child: Padding(
                 padding: const EdgeInsets.only(bottom: 24), // Added a bit more padding so it floats nicely
                 child: FloatingSpendlyNavigationBar(
-                  currentTab: navigationShell.currentIndex,
+                  currentTab: widget.navigationShell.currentIndex,
                   onTabSelected: (index) {
                     // Navigate to the branch for the selected index
-                    navigationShell.goBranch(
+                    widget.navigationShell.goBranch(
                       index,
-                      initialLocation: index == navigationShell.currentIndex,
+                      initialLocation: index == widget.navigationShell.currentIndex,
                     );
                   },
                   onAddTap: () {
                     // Navigate to the add expense branch (index 1)
-                    navigationShell.goBranch(
+                    widget.navigationShell.goBranch(
                       1,
-                      initialLocation: 1 == navigationShell.currentIndex,
+                      initialLocation: 1 == widget.navigationShell.currentIndex,
                     );
                   },
                 ),
