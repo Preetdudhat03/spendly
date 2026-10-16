@@ -9,7 +9,18 @@ final notificationRepositoryProvider = Provider<NotificationRepository>((ref) {
 });
 
 class NotificationRepository {
-  final SupabaseClient _client = Supabase.instance.client;
+  final SupabaseClient? _clientOverride;
+
+  NotificationRepository({SupabaseClient? client}) : _clientOverride = client;
+
+  SupabaseClient? get _client {
+    if (_clientOverride != null) return _clientOverride;
+    try {
+      return Supabase.instance.client;
+    } catch (_) {
+      return null;
+    }
+  }
 
   // --- Local Hive Access ---
 
