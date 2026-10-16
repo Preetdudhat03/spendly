@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:spendly/core/models/app_update_info.dart';
 import 'package:spendly/core/providers/app_update_provider.dart';
+import 'package:spendly/core/services/router_service.dart';
 import 'package:spendly/core/services/update_url_validator.dart';
 import 'package:spendly/core/widgets/spendly/release_notes_view.dart';
 import 'package:spendly/core/widgets/spendly_toast.dart';
@@ -24,7 +25,16 @@ class AppUpdateDialog extends ConsumerWidget {
     WidgetRef ref,
   ) async {
     final updateState = ref.read(appUpdateStateProvider);
-    if (updateState.isDialogVisible || !context.mounted) {
+    if (updateState.isDialogVisible) {
+      return;
+    }
+
+    final targetContext = (rootNavigatorKey.currentContext != null &&
+            rootNavigatorKey.currentContext!.mounted)
+        ? rootNavigatorKey.currentContext!
+        : context;
+
+    if (!targetContext.mounted) {
       return;
     }
 
@@ -32,7 +42,7 @@ class AppUpdateDialog extends ConsumerWidget {
 
     try {
       await showDialog<void>(
-        context: context,
+        context: targetContext,
         useRootNavigator: true,
         barrierDismissible: !info.isMandatory,
         builder: (dialogContext) => PopScope(
