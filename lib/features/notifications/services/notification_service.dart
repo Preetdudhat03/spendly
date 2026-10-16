@@ -27,14 +27,29 @@ class NotificationService {
   final NotificationRepository _repo;
   final LocalNotificationService _localService;
   final PushNotificationService _pushService;
-  final SupabaseClient _client = Supabase.instance.client;
+  final SupabaseClient? _clientOverride;
+
+  SupabaseClient? get _client {
+    if (_clientOverride != null) return _clientOverride;
+    try {
+      return Supabase.instance.client;
+    } catch (_) {
+      return null;
+    }
+  }
 
   RealtimeChannel? _realtimeChannel;
   StreamSubscription<AuthState>? _authStateSubscription;
   String? _subscribedFamilyId;
   String? _subscribedUserId;
 
-  NotificationService(this._ref, this._repo, this._localService, this._pushService);
+  NotificationService(
+    this._ref,
+    this._repo,
+    this._localService,
+    this._pushService, {
+    SupabaseClient? client,
+  }) : _clientOverride = client;
 
   Future<void> initialize() async {
     await _localService.initialize(
@@ -52,13 +67,16 @@ class NotificationService {
     );
 
     // Listen to Supabase Auth State Changes directly
-    _authStateSubscription = _client.auth.onAuthStateChange.listen((data) {
-      debugPrint('[NotificationService] Supabase Auth event: ${data.event}');
-      if (data.session?.user != null) {
-        _pushService.syncDeviceToken();
-        _onAuthOrFamilyChanged();
-      }
-    });
+    final client = _client;
+    if (client != null) {
+      _authStateSubscription = client.auth.onAuthStateChange.listen((data) {
+        debugPrint('[NotificationService] Supabase Auth event: ${data.event}');
+        if (data.session?.user != null) {
+          _pushService.syncDeviceToken();
+          _onAuthOrFamilyChanged();
+        }
+      });
+    }
 
     // Listen to user and family session changes to manage realtime subscriptions & reminders
     _ref.listen(authProvider, (prev, next) {
