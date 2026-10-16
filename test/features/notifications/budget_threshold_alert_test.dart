@@ -276,5 +276,29 @@ void main() {
       // The sent flag for 80% must be reset (cleared)
       expect(HiveService.settings.get('budget_alert_sent:$familyId:${year}_$month:80'), isNull);
     });
+
+    test('clearAllNotifications deletes all notifications from phone storage', () async {
+      await service.checkBudgetThresholds(
+        familyId: familyId,
+        totalSpent: 8000.0,
+        budgetLimit: budgetLimit,
+        month: month,
+        year: year,
+      );
+      await service.checkBudgetThresholds(
+        familyId: familyId,
+        totalSpent: 9500.0,
+        budgetLimit: budgetLimit,
+        month: month,
+        year: year,
+      );
+      expect(repo.getLocalNotifications(familyId).length, 2);
+
+      // Right tick action: delete all notifications from phone
+      await repo.clearAllNotifications(familyId);
+
+      final remaining = repo.getLocalNotifications(familyId);
+      expect(remaining, isEmpty);
+    });
   });
 }
