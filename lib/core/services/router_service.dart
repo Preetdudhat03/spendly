@@ -17,8 +17,12 @@ import 'package:spendly/features/profile/views/profile_screen.dart';
 import 'package:spendly/features/profile/views/account_security_screen.dart';
 import 'package:spendly/features/notifications/presentation/pages/notifications_page.dart';
 
+final GlobalKey<NavigatorState> rootNavigatorKey =
+    GlobalKey<NavigatorState>(debugLabel: 'spendlyRootNav');
+
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
+    navigatorKey: rootNavigatorKey,
     initialLocation: '/home',
     // Listen to changes to run redirect
     refreshListenable: _ProviderListenable(ref),
