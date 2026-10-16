@@ -75,5 +75,37 @@ void main() {
       expect(find.text('Remind Me Later'), findsNothing);
       expect(find.text('Download APK Update'), findsOneWidget);
     });
+
+    testWidgets('AppUpdateDialog.show displays dialog on screen', (tester) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            sharedPreferencesProvider.overrideWithValue(prefs),
+          ],
+          child: MaterialApp(
+            home: Consumer(
+              builder: (context, ref, _) {
+                return Scaffold(
+                  body: ElevatedButton(
+                    onPressed: () => AppUpdateDialog.show(context, mockInfo, ref),
+                    child: const Text('Trigger Update Dialog'),
+                  ),
+                );
+              },
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('New Version Available'), findsNothing);
+
+      await tester.tap(find.text('Trigger Update Dialog'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('New Version Available'), findsOneWidget);
+      expect(find.text('v5.7.11 → v5.8.0'), findsOneWidget);
+    });
   });
 }
+
