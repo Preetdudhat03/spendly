@@ -100,5 +100,18 @@ void main() {
       final clearedCategory = updated.copyWith(clearCategory: true);
       expect(clearedCategory.selectedCategory, isNull);
     });
+
+    test('clearAllNotifications empties notifications and unreadCount', () {
+      final state = NotificationsState(
+        isLoading: false,
+        notifications: [notif1, notif2, notif3],
+      );
+      expect(state.notifications.length, 3);
+      expect(state.unreadCount, 2);
+
+      final cleared = state.copyWith(notifications: []);
+      expect(cleared.notifications, isEmpty);
+      expect(cleared.unreadCount, 0);
+    });
   });
 }
