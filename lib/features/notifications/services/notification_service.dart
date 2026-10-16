@@ -353,7 +353,7 @@ class NotificationService {
     await _repo.createNotification(notification);
   }
 
-  /// Check and emit budget threshold alerts (50%, 80%, 95%, 100%)
+  /// Check and emit budget threshold alerts strictly at 80%, 95%, and 100%
   Future<void> checkBudgetThresholds({
     required String familyId,
     required double totalSpent,
@@ -366,57 +366,98 @@ class NotificationService {
     final ratio = totalSpent / budgetLimit;
     final int percentage = (ratio * 100).toInt();
 
-    // Defined threshold checkpoints
-    final thresholds = [80, 95, 100];
+    // Strictly 3 alert thresholds: 80%, 95%, and 100%
+    const thresholds = [80, 95, 100];
 
+    // 1. For any threshold that spending is currently below, clear the sent flag
+    // (e.g. if an expense was deleted or monthly budget was increased)
     for (final threshold in thresholds) {
-      if (percentage >= threshold) {
-        final notificationKey = 'budget_alert:$familyId:${year}_$month:$threshold';
-        
-        NotificationType type;
-        String title;
-        String body;
-        NotificationPriority priority;
-
-        if (threshold >= 100) {
-          type = NotificationType.budgetExceeded;
-          title = 'Budget Exceeded 🚨';
-          body = 'Your monthly family spending (${CurrencyFormatter.format(totalSpent)}) has exceeded the budget of ${CurrencyFormatter.format(budgetLimit)}.';
-          priority = NotificationPriority.urgent;
-        } else if (threshold >= 95) {
-          type = NotificationType.budgetCritical;
-          title = 'Critical Budget Alert ⚠️';
-          body = "You've used $percentage% of your monthly family budget (${CurrencyFormatter.format(totalSpent)} / ${CurrencyFormatter.format(budgetLimit)}).";
-          priority = NotificationPriority.high;
-        } else {
-          type = NotificationType.budgetWarning;
-          title = 'Budget Alert 💰';
-          body = "You've used $percentage% of your monthly family budget.";
-          priority = NotificationPriority.normal;
-        }
-
-        final notification = SpendlyNotification(
-          id: const Uuid().v4(),
-          familyId: familyId,
-          type: type,
-          title: title,
-          body: body,
-          priority: priority,
-          payload: {
-            'spent': totalSpent,
-            'limit': budgetLimit,
-            'percentage': percentage,
-            'month': month,
-            'year': year,
-          },
-          deepLink: '/home',
-          notificationKey: notificationKey,
-          createdAt: DateTime.now(),
-        );
-
-        await _repo.createNotification(notification);
+      if (percentage < threshold) {
+        final alertSentKey = 'budget_alert_sent:$familyId:${year}_$month:$threshold';
+        await HiveService.settings.delete(alertSentKey);
       }
     }
+
+    // 2. Identify which reached thresholds have not been alerted yet
+    final unnotifiedThresholds = <int>[];
+    for (final threshold in thresholds) {
+      if (percentage >= threshold) {
+        final alertSentKey = 'budget_alert_sent:$familyId:${year}_$month:$threshold';
+        final notificationKey = 'budget_alert:$familyId:${year}_$month:$threshold';
+
+        final isMarked = HiveService.settings.get(alertSentKey) == true;
+        if (isMarked) continue;
+
+        final alreadyInRepo = await _repo.hasNotificationKey(familyId, notificationKey);
+        if (alreadyInRepo) {
+          await HiveService.settings.put(alertSentKey, true);
+          continue;
+        }
+
+        unnotifiedThresholds.add(threshold);
+      }
+    }
+
+    if (unnotifiedThresholds.isEmpty) {
+      return; // All reached thresholds have already been alerted!
+    }
+
+    // 3. Pick the highest reached unnotified threshold to alert
+    // and mark all reached unnotified thresholds as sent so no spam occurs
+    final targetThreshold = unnotifiedThresholds.last;
+    for (final threshold in unnotifiedThresholds) {
+      final alertSentKey = 'budget_alert_sent:$familyId:${year}_$month:$threshold';
+      await HiveService.settings.put(alertSentKey, true);
+    }
+
+    final notificationKey = 'budget_alert:$familyId:${year}_$month:$targetThreshold';
+
+    final NotificationType type;
+    final String title;
+    final String body;
+    final NotificationPriority priority;
+
+    if (targetThreshold == 100) {
+      type = NotificationType.budgetExceeded;
+      title = 'Budget Exceeded 🚨';
+      body =
+          'Your monthly family spending (${CurrencyFormatter.format(totalSpent)}) has reached 100% of the budget (${CurrencyFormatter.format(budgetLimit)}).';
+      priority = NotificationPriority.urgent;
+    } else if (targetThreshold == 95) {
+      type = NotificationType.budgetCritical;
+      title = 'Critical Budget Alert ⚠️';
+      body =
+          "You've used 95% of your monthly family budget (${CurrencyFormatter.format(totalSpent)} / ${CurrencyFormatter.format(budgetLimit)}).";
+      priority = NotificationPriority.high;
+    } else {
+      type = NotificationType.budgetWarning;
+      title = 'Budget Alert 💰';
+      body =
+          "You've used 80% of your monthly family budget (${CurrencyFormatter.format(totalSpent)} / ${CurrencyFormatter.format(budgetLimit)}).";
+      priority = NotificationPriority.normal;
+    }
+
+    final notification = SpendlyNotification(
+      id: const Uuid().v4(),
+      familyId: familyId,
+      type: type,
+      title: title,
+      body: body,
+      priority: priority,
+      payload: {
+        'spent': totalSpent,
+        'limit': budgetLimit,
+        'percentage': percentage,
+        'threshold': targetThreshold,
+        'month': month,
+        'year': year,
+      },
+      deepLink: '/home',
+      notificationKey: notificationKey,
+      createdAt: DateTime.now(),
+    );
+
+    await _repo.createNotification(notification);
   }
 
   /// Emitted when a new member joins family
