@@ -83,9 +83,10 @@ class NotificationRepository {
       return true;
     }
 
-    if (_client.auth.currentUser != null) {
+    final client = _client;
+    if (client != null && client.auth.currentUser != null) {
       try {
-        final response = await _client
+        final response = await client
             .from('notifications')
             .select('id')
             .eq('family_id', familyId)
@@ -128,12 +129,13 @@ class NotificationRepository {
     int limit = 40,
     int offset = 0,
   }) async {
-    if (_client.auth.currentUser == null) {
+    final client = _client;
+    if (client == null || client.auth.currentUser == null) {
       return getLocalNotifications(familyId, userId);
     }
 
     try {
-      var query = _client
+      var query = client
           .from('notifications')
           .select()
           .eq('family_id', familyId);
