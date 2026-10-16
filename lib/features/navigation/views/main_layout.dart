@@ -28,13 +28,13 @@ class _MainLayoutState extends ConsumerState<MainLayout> {
 
   void _scheduleUpdateCheck() {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      // 2-second grace period ensuring startup/hive/auth rendering is fully settled
-      await Future<void>.delayed(const Duration(seconds: 2));
+      // Grace period ensuring startup/hive/auth rendering is fully settled
+      await Future<void>.delayed(const Duration(milliseconds: 600));
       if (!mounted) return;
 
       try {
         final updateNotifier = ref.read(appUpdateStateProvider.notifier);
-        final info = await updateNotifier.checkForUpdate(isManual: false);
+        final info = await updateNotifier.checkForUpdate(isManual: false, forceNetwork: true);
 
         if (!mounted || info == null || !info.hasUpdate) return;
 
