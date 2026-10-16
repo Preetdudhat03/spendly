@@ -14,19 +14,33 @@ class MainLayout extends ConsumerStatefulWidget {
   ConsumerState<MainLayout> createState() => _MainLayoutState();
 }
 
-class _MainLayoutState extends ConsumerState<MainLayout> {
+class _MainLayoutState extends ConsumerState<MainLayout> with WidgetsBindingObserver {
   bool _hasPerformedInitialCheck = false;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     if (!_hasPerformedInitialCheck) {
       _hasPerformedInitialCheck = true;
-      _scheduleUpdateCheck();
+      _scheduleUpdateCheck(forceNetwork: true);
     }
   }
 
-  void _scheduleUpdateCheck() {
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _scheduleUpdateCheck(forceNetwork: false);
+    }
+  }
+
+  void _scheduleUpdateCheck({bool forceNetwork = true}) {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       // Grace period ensuring startup/hive/auth rendering is fully settled
       await Future<void>.delayed(const Duration(milliseconds: 600));
@@ -34,7 +48,10 @@ class _MainLayoutState extends ConsumerState<MainLayout> {
 
       try {
         final updateNotifier = ref.read(appUpdateStateProvider.notifier);
-        final info = await updateNotifier.checkForUpdate(isManual: false, forceNetwork: true);
+        final info = await updateNotifier.checkForUpdate(
+          isManual: false,
+          forceNetwork: forceNetwork,
+        );
 
         if (!mounted || info == null || !info.hasUpdate) return;
 
@@ -48,6 +65,7 @@ class _MainLayoutState extends ConsumerState<MainLayout> {
       }
     });
   }
+
 
   @override
   Widget build(BuildContext context) {
