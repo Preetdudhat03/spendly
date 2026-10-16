@@ -188,6 +188,20 @@ class NotificationsNotifier extends StateNotifier<NotificationsState> {
     _reloadFromLocalCache();
   }
 
+  Future<void> clearAllNotifications() async {
+    final family = _ref.read(familyProvider).family;
+    final user = _ref.read(authProvider).userId;
+    if (family == null) return;
+
+    await _repo.clearAllNotifications(family.id, user);
+    try {
+      await LocalNotificationService().cancelAll();
+    } catch (e) {
+      debugPrint('[NotificationsNotifier] Error cancelling system notifications: $e');
+    }
+    state = state.copyWith(notifications: []);
+  }
+
   void selectCategory(NotificationCategory? category) {
     if (state.selectedCategory == category) {
       state = state.copyWith(clearCategory: true);
