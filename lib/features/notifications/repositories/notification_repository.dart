@@ -48,28 +48,64 @@ class NotificationRepository {
     }
   }
 
-  Future<void> saveLocalNotification(SpendlyNotification notification) async {
+  bool hasLocalNotificationKey(String familyId, String notificationKey) {
+    try {
+      final box = HiveService.notifications;
+      for (var key in box.keys) {
+        final raw = box.get(key);
+        if (raw is Map) {
+          final existing = SpendlyNotification.fromJson(Map<String, dynamic>.from(raw));
+          if (existing.familyId == familyId &&
+              existing.notificationKey == notificationKey) {
+            return true;
+          }
+        }
+      }
+      return false;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<bool> hasNotificationKey(String familyId, String notificationKey) async {
+    if (hasLocalNotificationKey(familyId, notificationKey)) {
+      return true;
+    }
+
+    if (_client.auth.currentUser != null) {
+      try {
+        final response = await _client
+            .from('notifications')
+            .select('id')
+            .eq('family_id', familyId)
+            .eq('notification_key', notificationKey)
+            .limit(1)
+            .maybeSingle();
+        return response != null;
+      } catch (e) {
+        debugPrint('[NotificationRepository] Remote key check error: $e');
+      }
+    }
+
+    return false;
+  }
+
+  Future<bool> saveLocalNotification(SpendlyNotification notification) async {
     try {
       final box = HiveService.notifications;
       // Idempotency check: if notificationKey is present, check if already stored
       if (notification.notificationKey != null && notification.notificationKey!.isNotEmpty) {
-        for (var key in box.keys) {
-          final raw = box.get(key);
-          if (raw is Map) {
-            final existing = SpendlyNotification.fromJson(Map<String, dynamic>.from(raw));
-            if (existing.familyId == notification.familyId &&
-                existing.notificationKey == notification.notificationKey) {
-              // Existing duplicate event found - do not re-add
-              debugPrint('[NotificationRepository] Duplicate local notification ignored: ${notification.notificationKey}');
-              return;
-            }
-          }
+        if (hasLocalNotificationKey(notification.familyId, notification.notificationKey!)) {
+          debugPrint('[NotificationRepository] Duplicate local notification ignored: ${notification.notificationKey}');
+          return false;
         }
       }
 
       await box.put(notification.id, notification.toJson());
+      return true;
     } catch (e) {
       debugPrint('[NotificationRepository] Error saving local notification: $e');
+      return false;
     }
   }
 
@@ -125,7 +161,16 @@ class NotificationRepository {
     }
   }
 
-  Future<SpendlyNotification> createNotification(SpendlyNotification notification) async {
+  Future<SpendlyNotification?> createNotification(SpendlyNotification notification) async {
+    // 0. Idempotency check: if notificationKey is present, check if already stored anywhere
+    if (notification.notificationKey != null && notification.notificationKey!.isNotEmpty) {
+      final exists = await hasNotificationKey(notification.familyId, notification.notificationKey!);
+      if (exists) {
+        debugPrint('[NotificationRepository] Duplicate notification key ignored: ${notification.notificationKey}');
+        return null;
+      }
+    }
+
     // 1. If not authored by current user (or personal reminder), save locally
     final currentUserId = _client.auth.currentUser?.id;
     if (notification.createdBy == null || notification.createdBy != currentUserId || notification.type.category != NotificationCategory.expense) {
