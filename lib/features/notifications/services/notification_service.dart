@@ -105,7 +105,7 @@ class NotificationService {
     final user = _ref.read(currentUserProvider);
     final authState = _ref.read(authProvider);
     final family = _ref.read(familyProvider).family;
-    final supabaseUser = _client.auth.currentUser;
+    final supabaseUser = _client?.auth.currentUser;
 
     final newUserId = supabaseUser?.id ?? user?.id ?? authState.userId ?? (HiveService.settings.get('active_user_id') as String?);
     final newFamilyId = family?.id;
@@ -129,14 +129,15 @@ class NotificationService {
   }
 
   void _setupRealtime(String familyId, String userId) {
-    if (_client.auth.currentUser == null) return;
+    final client = _client;
+    if (client == null || client.auth.currentUser == null) return;
 
     try {
       _subscribedFamilyId = familyId;
       _subscribedUserId = userId;
 
       final channelName = 'public:notifications:$familyId';
-      _realtimeChannel = _client
+      _realtimeChannel = client
           .channel(channelName)
           .onPostgresChanges(
             event: PostgresChangeEvent.all,
@@ -164,7 +165,7 @@ class NotificationService {
   void _cleanupRealtime() {
     if (_realtimeChannel != null) {
       try {
-        _client.removeChannel(_realtimeChannel!);
+        _client?.removeChannel(_realtimeChannel!);
         debugPrint('[NotificationService] Cleaned up realtime channel for family: $_subscribedFamilyId');
       } catch (e) {
         debugPrint('[NotificationService] Error removing channel: $e');
