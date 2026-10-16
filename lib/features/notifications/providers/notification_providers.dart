@@ -5,6 +5,7 @@ import 'package:spendly/core/providers/state_providers.dart';
 import 'package:spendly/core/services/hive_service.dart';
 import 'package:spendly/features/notifications/models/notification_model.dart';
 import 'package:spendly/features/notifications/repositories/notification_repository.dart';
+import 'package:spendly/features/notifications/services/local_notification_service.dart';
 import 'package:spendly/features/notifications/services/notification_service.dart';
 
 class NotificationsState {
