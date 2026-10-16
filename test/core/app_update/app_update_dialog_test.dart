@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:spendly/core/models/app_update_info.dart';
-import 'package:spendly/core/providers/app_update_provider.dart';
 import 'package:spendly/core/services/db_provider.dart';
 import 'package:spendly/core/theme/app_theme.dart';
 import 'package:spendly/core/widgets/spendly/app_update_dialog.dart';
