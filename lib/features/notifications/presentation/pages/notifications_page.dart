@@ -75,15 +75,15 @@ class NotificationsPage extends ConsumerWidget {
               size: 22,
             ),
           ),
-          if (state.unreadCount > 0)
+          if (state.notifications.isNotEmpty)
             Padding(
               padding: const EdgeInsets.only(right: 8),
               child: IconButton(
-                tooltip: 'Mark all as read',
+                tooltip: 'Clear all notifications',
                 onPressed: () async {
-                  await notifier.markAllAsRead();
+                  await notifier.clearAllNotifications();
                   if (context.mounted) {
-                    SpendlyToast.showSuccess(context, 'All notifications marked as read');
+                    SpendlyToast.showSuccess(context, 'All notifications deleted');
                   }
                 },
                 icon: Icon(
