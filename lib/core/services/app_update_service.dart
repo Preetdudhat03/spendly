@@ -129,14 +129,16 @@ class AppUpdateService {
 
   /// Performs an update check against GitHub Releases.
   ///
-  /// Set [isManualCheck] to `true` to bypass the 6-hour throttle.
+  /// Set [isManualCheck] to `true` to bypass the throttle for user actions.
+  /// Set [forceNetwork] to `true` on app startup to query GitHub with ETag while still failing silently.
   Future<AppUpdateInfo?> checkForUpdate({
     bool isManualCheck = false,
+    bool forceNetwork = false,
     ReleaseChannel channel = ReleaseChannel.stable,
   }) async {
-    // 1. Check throttle for automatic checks
-    if (!isManualCheck && !shouldPerformAutomaticCheck()) {
-      debugPrint('AppUpdateService: Automatic check skipped (within 6h window).');
+    // 1. Check throttle for automatic checks (bypassed if isManualCheck or forceNetwork)
+    if (!isManualCheck && !forceNetwork && !shouldPerformAutomaticCheck()) {
+      debugPrint('AppUpdateService: Automatic check skipped (within throttle window).');
       return _getCachedUpdateInfo(channel: channel);
     }
 
