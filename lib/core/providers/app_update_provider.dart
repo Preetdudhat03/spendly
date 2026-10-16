@@ -59,8 +59,10 @@ class AppUpdateNotifier extends StateNotifier<AppUpdateState> {
   /// Checks for updates.
   ///
   /// Set [isManual] to true for user-initiated checks (from Profile screen).
+  /// Set [forceNetwork] to true on app startup to query GitHub with ETag while failing silently.
   Future<AppUpdateInfo?> checkForUpdate({
     bool isManual = false,
+    bool forceNetwork = false,
     ReleaseChannel channel = ReleaseChannel.stable,
   }) async {
     // Prevent duplicate simultaneous checks
@@ -78,6 +80,7 @@ class AppUpdateNotifier extends StateNotifier<AppUpdateState> {
     try {
       final info = await _service.checkForUpdate(
         isManualCheck: isManual,
+        forceNetwork: forceNetwork,
         channel: channel,
       );
 
