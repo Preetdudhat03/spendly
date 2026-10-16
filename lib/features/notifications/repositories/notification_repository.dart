@@ -185,16 +185,17 @@ class NotificationRepository {
     }
 
     // 1. If not authored by current user (or personal reminder), save locally
-    final currentUserId = _client.auth.currentUser?.id;
+    final client = _client;
+    final currentUserId = client?.auth.currentUser?.id;
     if (notification.createdBy == null || notification.createdBy != currentUserId || notification.type.category != NotificationCategory.expense) {
       await saveLocalNotification(notification);
     }
 
     // 2. If authenticated online, sync to Supabase for other family members
-    if (_client.auth.currentUser != null) {
+    if (client != null && client.auth.currentUser != null) {
       try {
         final payload = notification.toJson();
-        final response = await _client
+        final response = await client
             .from('notifications')
             .upsert(
               payload,
@@ -228,8 +229,9 @@ class NotificationRepository {
       }
 
       // 2. Remote update
-      if (_client.auth.currentUser != null && !notificationId.startsWith('local_')) {
-        await _client
+      final client = _client;
+      if (client != null && client.auth.currentUser != null && !notificationId.startsWith('local_')) {
+        await client
             .from('notifications')
             .update({
               'is_read': true,
@@ -259,8 +261,9 @@ class NotificationRepository {
       }
 
       // 2. Remote update
-      if (_client.auth.currentUser != null) {
-        var query = _client.from('notifications').update({
+      final client = _client;
+      if (client != null && client.auth.currentUser != null) {
+        var query = client.from('notifications').update({
           'is_read': true,
           'read_at': now.toIso8601String(),
         }).eq('family_id', familyId).eq('is_read', false);
@@ -282,8 +285,9 @@ class NotificationRepository {
       await HiveService.notifications.delete(notificationId);
 
       // 2. Remote removal
-      if (_client.auth.currentUser != null && !notificationId.startsWith('local_')) {
-        await _client.from('notifications').delete().eq('id', notificationId);
+      final client = _client;
+      if (client != null && client.auth.currentUser != null && !notificationId.startsWith('local_')) {
+        await client.from('notifications').delete().eq('id', notificationId);
       }
     } catch (e) {
       debugPrint('[NotificationRepository] Error deleting notification: $e');
@@ -302,8 +306,9 @@ class NotificationRepository {
       }
 
       // 2. Fallback to Supabase remote preferences
-      if (_client.auth.currentUser != null) {
-        final remote = await _client
+      final client = _client;
+      if (client != null && client.auth.currentUser != null) {
+        final remote = await client
             .from('notification_preferences')
             .select()
             .eq('user_id', userId)
@@ -329,8 +334,9 @@ class NotificationRepository {
       await box.put(userId, preferences.toJson());
 
       // 2. Remote save
-      if (_client.auth.currentUser != null) {
-        await _client.from('notification_preferences').upsert({
+      final client = _client;
+      if (client != null && client.auth.currentUser != null) {
+        await client.from('notification_preferences').upsert({
           'user_id': userId,
           ...preferences.toJson(),
           'updated_at': DateTime.now().toIso8601String(),
@@ -341,7 +347,7 @@ class NotificationRepository {
     }
   }
 
-  String? get currentAuthUserId => _client.auth.currentUser?.id;
+  String? get currentAuthUserId => _client?.auth.currentUser?.id;
 
   // --- Multi-Device Push Tokens ---
 
@@ -350,8 +356,9 @@ class NotificationRepository {
     required String token,
     required String platform,
   }) async {
-    final effectiveUserId = _client.auth.currentUser?.id ?? (userId.isNotEmpty ? userId : null);
-    if (effectiveUserId == null || effectiveUserId.isEmpty) {
+    final client = _client;
+    final effectiveUserId = client?.auth.currentUser?.id ?? (userId.isNotEmpty ? userId : null);
+    if (client == null || effectiveUserId == null || effectiveUserId.isEmpty) {
       final msg = 'Cannot register token: User is not logged in.';
       debugPrint('[NotificationRepository] $msg');
       return msg;
@@ -370,7 +377,7 @@ class NotificationRepository {
     };
 
     try {
-      await _client.from('user_device_tokens').upsert(
+      await client.from('user_device_tokens').upsert(
         payload,
         onConflict: 'user_id,device_id',
       );
@@ -381,7 +388,7 @@ class NotificationRepository {
     } catch (e) {
       debugPrint('[NotificationRepository] Upsert error (trying fallback): $e');
       try {
-        final existing = await _client
+        final existing = await client
             .from('user_device_tokens')
             .select('id')
             .eq('user_id', effectiveUserId)
@@ -389,7 +396,7 @@ class NotificationRepository {
             .maybeSingle();
 
         if (existing != null && existing['id'] != null) {
-          await _client.from('user_device_tokens').update({
+          await client.from('user_device_tokens').update({
             'push_token': token,
             'device_token': token,
             'is_active': true,
@@ -397,7 +404,7 @@ class NotificationRepository {
             'updated_at': DateTime.now().toIso8601String(),
           }).eq('id', existing['id']);
         } else {
-          await _client.from('user_device_tokens').insert(payload);
+          await client.from('user_device_tokens').insert(payload);
         }
         final msg = 'Device token registered via fallback for user $effectiveUserId';
         debugPrint('[NotificationRepository] $msg');
