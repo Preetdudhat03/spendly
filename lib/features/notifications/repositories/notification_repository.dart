@@ -294,6 +294,44 @@ class NotificationRepository {
     }
   }
 
+  Future<void> clearAllNotifications(String familyId, [String? userId]) async {
+    try {
+      // 1. Local removal from Hive box
+      final box = HiveService.notifications;
+      final keysToDelete = <dynamic>[];
+      for (var key in box.keys) {
+        final raw = box.get(key);
+        if (raw is Map) {
+          try {
+            final n = SpendlyNotification.fromJson(Map<String, dynamic>.from(raw));
+            if (n.familyId == familyId && (userId == null || n.userId == null || n.userId == userId)) {
+              keysToDelete.add(key);
+            }
+          } catch (_) {
+            keysToDelete.add(key);
+          }
+        } else {
+          keysToDelete.add(key);
+        }
+      }
+      for (var key in keysToDelete) {
+        await box.delete(key);
+      }
+
+      // 2. Remote removal from Supabase
+      final client = _client;
+      if (client != null && client.auth.currentUser != null) {
+        var query = client.from('notifications').delete().eq('family_id', familyId);
+        if (userId != null && userId.isNotEmpty) {
+          query = query.or('user_id.is.null,user_id.eq.$userId');
+        }
+        await query;
+      }
+    } catch (e) {
+      debugPrint('[NotificationRepository] Error clearing all notifications: $e');
+    }
+  }
+
   // --- Preferences ---
 
   Future<NotificationPreferences> getPreferences(String userId) async {
