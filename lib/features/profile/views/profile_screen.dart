@@ -1933,7 +1933,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                 await notifNotifier.toggleExpenseReminders(val);
                               },
                             ),
-                            if (notifPrefs.expenseReminders)
+                            if (notifPrefs.expenseReminders) ...[
                               ListTile(
                                 contentPadding: EdgeInsets.zero,
                                 title: const Text('Reminder Time', style: TextStyle(fontWeight: FontWeight.w600)),
@@ -1961,6 +1961,27 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                   ),
                                 ),
                               ),
+                              Align(
+                                alignment: Alignment.centerLeft,
+                                child: TextButton.icon(
+                                  style: TextButton.styleFrom(
+                                    padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 0),
+                                    visualDensity: VisualDensity.compact,
+                                  ),
+                                  onPressed: () async {
+                                    await notifNotifier.sendTestReminder();
+                                    if (context.mounted) {
+                                      SpendlyToast.showSuccess(context, 'Test reminder sent! Check your notifications.');
+                                    }
+                                  },
+                                  icon: Icon(Icons.notifications_active_outlined, size: 16, color: accentColor),
+                                  label: Text(
+                                    'Send Test Reminder Now',
+                                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: accentColor),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ],
                         ],
                       ),
