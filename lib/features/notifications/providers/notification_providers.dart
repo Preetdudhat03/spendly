@@ -184,7 +184,9 @@ class NotificationsNotifier extends StateNotifier<NotificationsState> {
   }
 
   Future<void> deleteNotification(String id) async {
-    await _repo.deleteNotification(id);
+    final family = _ref.read(familyProvider).family;
+    final user = _ref.read(authProvider).userId;
+    await _repo.deleteNotification(id, family?.id, user);
     _reloadFromLocalCache();
   }
 

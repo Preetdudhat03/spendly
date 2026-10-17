@@ -1,6 +1,10 @@
+import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:hive/hive.dart';
+import 'package:spendly/core/services/hive_service.dart';
 import 'package:spendly/features/notifications/models/notification_model.dart';
 import 'package:spendly/features/notifications/providers/notification_providers.dart';
+import 'package:spendly/features/notifications/repositories/notification_repository.dart';
 
 void main() {
   group('NotificationsState Logic Tests', () {
@@ -112,6 +116,89 @@ void main() {
       final cleared = state.copyWith(notifications: []);
       expect(cleared.notifications, isEmpty);
       expect(cleared.unreadCount, 0);
+    });
+  });
+
+  group('NotificationRepository Clear & Delete Persistence Tests', () {
+    late Directory tempDir;
+    late NotificationRepository repo;
+
+    setUp(() async {
+      tempDir = await Directory.systemTemp.createTemp('spendly_notif_repo_test_');
+      Hive.init(tempDir.path);
+      await Hive.openBox<dynamic>(HiveService.settingsBox);
+      await Hive.openBox<dynamic>(HiveService.notificationsBox);
+      repo = NotificationRepository();
+    });
+
+    tearDown(() async {
+      await Hive.close();
+      if (tempDir.existsSync()) {
+        await tempDir.delete(recursive: true);
+      }
+    });
+
+    test('clearAllNotifications prevents older notifications from being returned', () async {
+      final oldNotif = SpendlyNotification(
+        id: 'old_1',
+        familyId: 'fam_test',
+        userId: 'user_test',
+        type: NotificationType.expenseAdded,
+        title: 'Old Expense',
+        body: 'Old body',
+        createdAt: DateTime.now().subtract(const Duration(minutes: 5)),
+      );
+
+      await repo.saveLocalNotification(oldNotif);
+      expect(repo.getLocalNotifications('fam_test', 'user_test').length, 1);
+
+      // User clears all notifications
+      await repo.clearAllNotifications('fam_test', 'user_test');
+      expect(repo.getLocalNotifications('fam_test', 'user_test'), isEmpty);
+
+      // Simulating a reopen/re-fetch where old notification attempts to be saved
+      final savedOld = await repo.saveLocalNotification(oldNotif);
+      expect(savedOld, isFalse);
+      expect(repo.getLocalNotifications('fam_test', 'user_test'), isEmpty);
+
+      // A brand new notification created AFTER the clear arrives
+      final newNotif = SpendlyNotification(
+        id: 'new_1',
+        familyId: 'fam_test',
+        userId: 'user_test',
+        type: NotificationType.budgetWarning,
+        title: 'New Budget Alert',
+        body: 'New body',
+        createdAt: DateTime.now().add(const Duration(seconds: 1)),
+      );
+
+      final savedNew = await repo.saveLocalNotification(newNotif);
+      expect(savedNew, isTrue);
+      expect(repo.getLocalNotifications('fam_test', 'user_test').length, 1);
+      expect(repo.getLocalNotifications('fam_test', 'user_test').first.id, 'new_1');
+    });
+
+    test('deleteNotification prevents that notification from returning', () async {
+      final notif = SpendlyNotification(
+        id: 'del_1',
+        familyId: 'fam_test',
+        userId: 'user_test',
+        type: NotificationType.expenseAdded,
+        title: 'Expense to delete',
+        body: 'body',
+        createdAt: DateTime.now(),
+      );
+
+      await repo.saveLocalNotification(notif);
+      expect(repo.getLocalNotifications('fam_test', 'user_test').length, 1);
+
+      await repo.deleteNotification('del_1', 'fam_test', 'user_test');
+      expect(repo.getLocalNotifications('fam_test', 'user_test'), isEmpty);
+
+      // Cannot be re-saved
+      final reSaved = await repo.saveLocalNotification(notif);
+      expect(reSaved, isFalse);
+      expect(repo.getLocalNotifications('fam_test', 'user_test'), isEmpty);
     });
   });
 }

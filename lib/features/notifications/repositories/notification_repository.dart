@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hive/hive.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:spendly/core/services/hive_service.dart';
 import 'package:spendly/features/notifications/models/notification_model.dart';
@@ -22,24 +23,89 @@ class NotificationRepository {
     }
   }
 
+  Box<dynamic>? get _settingsBox {
+    try {
+      return HiveService.settings;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  String? get _currentUserId {
+    try {
+      return _client?.auth.currentUser?.id ?? (HiveService.settings.get('active_user_id') as String?);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  String _resolveUserId([String? userId]) {
+    if (userId != null && userId.isNotEmpty) return userId;
+    return _currentUserId ?? 'default';
+  }
+
+  String _clearedAtKey(String familyId, [String? userId]) =>
+      'notifications_cleared_at_${familyId}_${_resolveUserId(userId)}';
+
+  String _deletedIdsKey(String familyId, [String? userId]) =>
+      'notifications_deleted_ids_${familyId}_${_resolveUserId(userId)}';
+
+  DateTime? getClearedAt(String familyId, [String? userId]) {
+    try {
+      final box = _settingsBox;
+      if (box == null) return null;
+      final raw = box.get(_clearedAtKey(familyId, userId)) as String?;
+      return raw != null ? DateTime.tryParse(raw) : null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Set<String> getDeletedIds(String familyId, [String? userId]) {
+    try {
+      final box = _settingsBox;
+      if (box == null) return {};
+      final raw = box.get(_deletedIdsKey(familyId, userId));
+      if (raw is List) {
+        return Set<String>.from(raw.map((e) => e.toString()));
+      }
+      return {};
+    } catch (_) {
+      return {};
+    }
+  }
+
   // --- Local Hive Access ---
 
   List<SpendlyNotification> getLocalNotifications(String familyId, [String? userId]) {
     try {
       final box = HiveService.notifications;
       final list = <SpendlyNotification>[];
+      final effectiveUserId = _resolveUserId(userId);
+      final clearedAt = getClearedAt(familyId, effectiveUserId);
+      final deletedIds = getDeletedIds(familyId, effectiveUserId);
+      final keysToDelete = <dynamic>[];
 
-      for (var raw in box.values) {
+      for (var key in box.keys) {
+        final raw = box.get(key);
         if (raw is Map) {
           final item = SpendlyNotification.fromJson(Map<String, dynamic>.from(raw));
-          if (item.familyId == familyId && (item.userId == null || item.userId == userId)) {
+          if (item.familyId == familyId && (item.userId == null || item.userId == userId || item.userId == effectiveUserId)) {
             // Do not show self-created expense actions to the author
             if (userId != null && item.createdBy == userId && item.type.category == NotificationCategory.expense) {
+              continue;
+            }
+            if (deletedIds.contains(item.id) || (clearedAt != null && !item.createdAt.isAfter(clearedAt))) {
+              keysToDelete.add(key);
               continue;
             }
             list.add(item);
           }
         }
+      }
+
+      for (var k in keysToDelete) {
+        box.delete(k);
       }
 
       list.sort((a, b) => b.createdAt.compareTo(a.createdAt));
@@ -104,6 +170,19 @@ class NotificationRepository {
 
   Future<bool> saveLocalNotification(SpendlyNotification notification) async {
     try {
+      final effectiveUserId = _resolveUserId(notification.userId);
+      final clearedAt = getClearedAt(notification.familyId, effectiveUserId);
+      if (clearedAt != null && !notification.createdAt.isAfter(clearedAt)) {
+        debugPrint('[NotificationRepository] Notification arrived before clearedAt timestamp, ignoring: ${notification.title}');
+        return false;
+      }
+
+      final deletedIds = getDeletedIds(notification.familyId, effectiveUserId);
+      if (deletedIds.contains(notification.id)) {
+        debugPrint('[NotificationRepository] Notification was deleted by user, ignoring: ${notification.id}');
+        return false;
+      }
+
       final box = HiveService.notifications;
       // Idempotency check: if notificationKey is present, check if already stored
       if (notification.notificationKey != null && notification.notificationKey!.isNotEmpty) {
@@ -148,6 +227,10 @@ class NotificationRepository {
           .order('created_at', ascending: false)
           .range(offset, offset + limit - 1);
 
+      final effectiveUserId = _resolveUserId(userId);
+      final clearedAt = getClearedAt(familyId, effectiveUserId);
+      final deletedIds = getDeletedIds(familyId, effectiveUserId);
+
       final List<SpendlyNotification> remoteList = [];
       final box = HiveService.notifications;
       final Map<String, dynamic> localUpdates = {};
@@ -158,8 +241,29 @@ class NotificationRepository {
         if (userId != null && notification.createdBy == userId && notification.type.category == NotificationCategory.expense) {
           continue;
         }
-        remoteList.add(notification);
-        localUpdates[notification.id] = notification.toJson();
+
+        // Filter out individually deleted notifications
+        if (deletedIds.contains(notification.id)) {
+          continue;
+        }
+
+        // Filter out notifications created at or before user cleared all notifications
+        if (clearedAt != null && !notification.createdAt.isAfter(clearedAt)) {
+          continue;
+        }
+
+        // Preserve local isRead status if already read on device
+        final existingRaw = box.get(notification.id);
+        SpendlyNotification effective = notification;
+        if (existingRaw is Map && existingRaw['is_read'] == true && !notification.isRead) {
+          effective = notification.copyWith(
+            isRead: true,
+            readAt: DateTime.tryParse(existingRaw['read_at']?.toString() ?? ''),
+          );
+        }
+
+        remoteList.add(effective);
+        localUpdates[effective.id] = effective.toJson();
       }
 
       // Sync into Hive cache
@@ -279,12 +383,27 @@ class NotificationRepository {
     }
   }
 
-  Future<void> deleteNotification(String notificationId) async {
+  Future<void> deleteNotification(String notificationId, [String? familyId, String? userId]) async {
     try {
-      // 1. Local removal
+      // 1. Record in persistent deletedIds so it is never re-fetched from remote
+      if (familyId != null) {
+        final box = _settingsBox;
+        if (box != null) {
+          final effectiveUserId = _resolveUserId(userId);
+          final deletedSet = getDeletedIds(familyId, effectiveUserId);
+          deletedSet.add(notificationId);
+          final list = deletedSet.toList();
+          if (list.length > 500) {
+            list.removeRange(0, list.length - 500);
+          }
+          await box.put(_deletedIdsKey(familyId, effectiveUserId), list);
+        }
+      }
+
+      // 2. Local removal from Hive box
       await HiveService.notifications.delete(notificationId);
 
-      // 2. Remote removal
+      // 3. Remote removal from Supabase
       final client = _client;
       if (client != null && client.auth.currentUser != null && !notificationId.startsWith('local_')) {
         await client.from('notifications').delete().eq('id', notificationId);
@@ -296,7 +415,16 @@ class NotificationRepository {
 
   Future<void> clearAllNotifications(String familyId, [String? userId]) async {
     try {
-      // 1. Local removal from Hive box
+      final now = DateTime.now();
+      final effectiveUserId = _resolveUserId(userId);
+
+      // 1. Persist cleared_at timestamp so subsequent remote fetches skip older notifications
+      final settings = _settingsBox;
+      if (settings != null) {
+        await settings.put(_clearedAtKey(familyId, effectiveUserId), now.toIso8601String());
+      }
+
+      // 2. Local removal from Hive box
       final box = HiveService.notifications;
       final keysToDelete = <dynamic>[];
       for (var key in box.keys) {
@@ -304,7 +432,7 @@ class NotificationRepository {
         if (raw is Map) {
           try {
             final n = SpendlyNotification.fromJson(Map<String, dynamic>.from(raw));
-            if (n.familyId == familyId && (userId == null || n.userId == null || n.userId == userId)) {
+            if (n.familyId == familyId && (userId == null || n.userId == null || n.userId == userId || n.userId == effectiveUserId)) {
               keysToDelete.add(key);
             }
           } catch (_) {
@@ -318,14 +446,20 @@ class NotificationRepository {
         await box.delete(key);
       }
 
-      // 2. Remote removal from Supabase
+      // 3. Remote removal from Supabase
       final client = _client;
       if (client != null && client.auth.currentUser != null) {
-        var query = client.from('notifications').delete().eq('family_id', familyId);
-        if (userId != null && userId.isNotEmpty) {
-          query = query.or('user_id.is.null,user_id.eq.$userId');
+        try {
+          if (userId != null && userId.isNotEmpty) {
+            await client.from('notifications').delete().eq('family_id', familyId).eq('user_id', userId);
+          }
+          final currentUid = client.auth.currentUser?.id;
+          if (currentUid != null) {
+            await client.from('notifications').delete().eq('family_id', familyId).eq('created_by', currentUid);
+          }
+        } catch (e) {
+          debugPrint('[NotificationRepository] Remote delete on clear all error: $e');
         }
-        await query;
       }
     } catch (e) {
       debugPrint('[NotificationRepository] Error clearing all notifications: $e');

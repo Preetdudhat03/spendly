@@ -186,8 +186,19 @@ class NotificationService {
         return;
       }
 
+      // Filter out if created before clearedAt or in deletedIds
+      final clearedAt = _repo.getClearedAt(notification.familyId, currentUserId);
+      if (clearedAt != null && !notification.createdAt.isAfter(clearedAt)) {
+        return;
+      }
+      final deletedIds = _repo.getDeletedIds(notification.familyId, currentUserId);
+      if (deletedIds.contains(notification.id)) {
+        return;
+      }
+
       // Save locally (idempotent)
-      await _repo.saveLocalNotification(notification);
+      final saved = await _repo.saveLocalNotification(notification);
+      if (!saved) return;
 
       // Check user preferences
       if (currentUserId != null && currentUserId.isNotEmpty) {
