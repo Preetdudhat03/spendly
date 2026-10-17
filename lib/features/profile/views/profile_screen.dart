@@ -2007,14 +2007,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
                   final packageInfoAsync = ref.watch(packageInfoProvider);
                   final versionStr = packageInfoAsync.when(
-                    data: (info) {
-                      final rawBuild = int.tryParse(info.buildNumber);
-                      // Normalizes Flutter's split-per-abi architecture prefix (e.g. 2265 -> 265)
-                      final displayBuild = (rawBuild != null && rawBuild >= 1000 && rawBuild < 5000)
-                          ? (rawBuild % 1000).toString()
-                          : info.buildNumber;
-                      return 'Version ${info.version}+$displayBuild';
-                    },
+                    data: (info) => 'Version ${info.version}+${info.buildNumber}',
                     loading: () => 'Version loading...',
                     error: (e, s) => 'Version unknown',
                   );
