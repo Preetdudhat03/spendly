@@ -89,8 +89,9 @@ jobs:
 
       - name: Build Production APKs (Split per ABI & Universal)
         run: |
-          flutter build apk --release --split-per-abi
-          flutter build apk --release
+          mkdir -p symbols
+          flutter build apk --release --split-per-abi --obfuscate --split-debug-info=symbols
+          flutter build apk --release --obfuscate --split-debug-info=symbols
 
       - name: Prepare Named APK Assets
         run: |

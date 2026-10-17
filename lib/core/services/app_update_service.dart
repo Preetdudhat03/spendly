@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:spendly/core/models/app_update_info.dart';
+import 'package:spendly/core/services/apk_installer_service.dart';
 import 'package:spendly/core/services/version_comparator.dart';
 import 'package:spendly/core/services/update_url_validator.dart';
 
@@ -15,6 +16,7 @@ class ApkAssetSelector {
     RegExp(r'^app-release\.apk$', caseSensitive: false),
     RegExp(r'^spendly-release\.apk$', caseSensitive: false),
     RegExp(r'^spendly\.apk$', caseSensitive: false),
+    RegExp(r'^spendly-[v0-9\.\+\-]+\.apk$', caseSensitive: false),
     RegExp(r'spendly.*\.apk$', caseSensitive: false),
     RegExp(r'.*\.apk$', caseSensitive: false),
   ];
@@ -25,7 +27,9 @@ class ApkAssetSelector {
   );
 
   /// Selects the best APK download URL from the list of release assets.
-  static String? selectBestApkUrl(List<dynamic>? assets) {
+  /// If [supportedAbis] is provided, prioritizes split APKs matching the device ABI (e.g. arm64-v8a)
+  /// which cuts download size significantly.
+  static String? selectBestApkUrl(List<dynamic>? assets, {List<String>? supportedAbis}) {
     if (assets == null || assets.isEmpty) return null;
 
     final candidates = <Map<String, dynamic>>[];
@@ -43,7 +47,24 @@ class ApkAssetSelector {
 
     if (candidates.isEmpty) return null;
 
-    // Search by priority rules
+    // 1. If supportedAbis are given, look for an exact matching ABI asset
+    if (supportedAbis != null && supportedAbis.isNotEmpty) {
+      for (final abi in supportedAbis) {
+        final cleanAbi = abi.trim().toLowerCase();
+        if (cleanAbi.isEmpty) continue;
+        for (final asset in candidates) {
+          final name = (asset['name'] as String? ?? '').toLowerCase();
+          if (name.contains(cleanAbi)) {
+            final url = asset['browser_download_url'] as String?;
+            if (UpdateUrlValidator.isAllowed(url)) {
+              return url;
+            }
+          }
+        }
+      }
+    }
+
+    // 2. Search by priority rules
     for (final pattern in _priorityRegexes) {
       for (final asset in candidates) {
         final name = asset['name'] as String? ?? '';
@@ -56,7 +77,7 @@ class ApkAssetSelector {
       }
     }
 
-    // Fallback to first valid candidate
+    // 3. Fallback to first valid candidate
     for (final asset in candidates) {
       final url = asset['browser_download_url'] as String?;
       if (UpdateUrlValidator.isAllowed(url)) {
@@ -165,7 +186,7 @@ class AppUpdateService {
       if (response.statusCode == 304) {
         // Cache is still valid
         debugPrint('AppUpdateService: GitHub returned 304 Not Modified. Using cache.');
-        return _getCachedUpdateInfo(
+        return await _getCachedUpdateInfo(
           currentVersion: currentVersion,
           currentBuild: currentBuildNumber,
           channel: channel,
@@ -185,15 +206,23 @@ class AppUpdateService {
         // Cache the response JSON
         await _prefs.setString(keyCachedReleaseJson, rawJson);
 
+        List<String>? supportedAbis;
+        if (Platform.isAndroid) {
+          try {
+            supportedAbis = await ApkInstallerService.getSupportedAbis();
+          } catch (_) {}
+        }
+
         return _parseReleaseData(
           data: data,
           currentVersion: currentVersion,
           currentBuild: currentBuildNumber,
           channel: channel,
+          supportedAbis: supportedAbis,
         );
       } else {
         debugPrint('AppUpdateService: GitHub responded with status ${response.statusCode}');
-        return _getCachedUpdateInfo(
+        return await _getCachedUpdateInfo(
           currentVersion: currentVersion,
           currentBuild: currentBuildNumber,
           channel: channel,
@@ -217,6 +246,7 @@ class AppUpdateService {
     required String currentVersion,
     required String currentBuild,
     ReleaseChannel channel = ReleaseChannel.stable,
+    List<String>? supportedAbis,
   }) {
     try {
       final isDraft = data['draft'] as bool? ?? false;
@@ -241,7 +271,7 @@ class AppUpdateService {
 
       // Find best APK
       final assets = data['assets'] as List<dynamic>?;
-      final apkUrl = ApkAssetSelector.selectBestApkUrl(assets);
+      final apkUrl = ApkAssetSelector.selectBestApkUrl(assets, supportedAbis: supportedAbis);
 
       // Parse version from tagName (e.g., "v5.8.0+264")
       final latestParsed = VersionComparator.parse(tagName);
@@ -293,11 +323,20 @@ class AppUpdateService {
       final curVer = currentVersion ?? (await PackageInfo.fromPlatform()).version;
       final curBuild = currentBuild ?? (await PackageInfo.fromPlatform()).buildNumber;
       final data = jsonDecode(cachedJson) as Map<String, dynamic>;
+
+      List<String>? supportedAbis;
+      if (Platform.isAndroid) {
+        try {
+          supportedAbis = await ApkInstallerService.getSupportedAbis();
+        } catch (_) {}
+      }
+
       return _parseReleaseData(
         data: data,
         currentVersion: curVer,
         currentBuild: curBuild,
         channel: channel,
+        supportedAbis: supportedAbis,
       );
     } catch (e) {
       return null;

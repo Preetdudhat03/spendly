@@ -251,6 +251,13 @@ class NotificationService {
 
   // --- Scheduled Expense Reminders ---
 
+  /// Public entry to resync the local scheduled reminder alarm.
+  Future<void> syncScheduledReminders([String? userId]) async {
+    final targetId = userId ?? _subscribedUserId ?? _ref.read(authProvider).userId;
+    if (targetId == null || targetId.isEmpty) return;
+    await _syncScheduledReminders(targetId);
+  }
+
   Future<void> _syncScheduledReminders(String userId) async {
     final prefs = await _repo.getPreferences(userId);
     if (!prefs.expenseReminders) {
@@ -268,6 +275,16 @@ class NotificationService {
       minute: minute,
       title: 'Expense Reminder 📝',
       body: "Don't forget to record today's expenses to keep your family budget accurate!",
+    );
+  }
+
+  /// Triggers an immediate test reminder notification for verification.
+  Future<void> sendTestReminder() async {
+    await _localService.showNotification(
+      title: 'Expense Reminder 📝',
+      body: "Don't forget to record today's expenses to keep your family budget accurate!",
+      type: NotificationType.expenseReminder,
+      deepLink: '/add',
     );
   }
 
