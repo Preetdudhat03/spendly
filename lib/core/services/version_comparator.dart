@@ -163,7 +163,11 @@ class VersionComparator {
 
       int? buildNumber;
       if (buildStr != null) {
-        buildNumber = int.tryParse(buildStr);
+        final parsedInt = int.tryParse(buildStr);
+        if (parsedInt != null) {
+          // Normalizes Flutter's split-per-abi architecture prefix (1000 for armeabi-v7a, 2000 for arm64-v8a, etc.)
+          buildNumber = (parsedInt >= 1000 && parsedInt < 5000) ? (parsedInt % 1000) : parsedInt;
+        }
       }
 
       final parsed = ParsedVersion(
