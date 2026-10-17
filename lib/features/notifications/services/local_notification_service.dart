@@ -23,15 +23,34 @@ class LocalNotificationService {
   static const String channelReminders = 'spendly_reminders';
   static const String channelSystem = 'spendly_system';
 
+  void _configureLocalTimezone() {
+    try {
+      tz.initializeTimeZones();
+      final now = DateTime.now();
+      final timeZoneName = now.timeZoneName;
+
+      if (tz.timeZoneDatabase.locations.containsKey(timeZoneName)) {
+        tz.setLocalLocation(tz.getLocation(timeZoneName));
+      } else {
+        final offset = now.timeZoneOffset;
+        for (final loc in tz.timeZoneDatabase.locations.values) {
+          if (Duration(milliseconds: loc.currentTimeZone.offset) == offset) {
+            tz.setLocalLocation(loc);
+            break;
+          }
+        }
+      }
+      debugPrint('[LocalNotificationService] Configured tz.local: ${tz.local.name} (offset: ${DateTime.now().timeZoneOffset})');
+    } catch (e) {
+      debugPrint('[LocalNotificationService] Timezone init warning: $e');
+    }
+  }
+
   Future<void> initialize({NotificationTapCallback? onNotificationTap}) async {
     if (_isInitialized) return;
     this.onNotificationTap = onNotificationTap;
 
-    try {
-      tz.initializeTimeZones();
-    } catch (e) {
-      debugPrint('[LocalNotificationService] Timezone init warning: $e');
-    }
+    _configureLocalTimezone();
 
     const AndroidInitializationSettings androidSettings =
         AndroidInitializationSettings('@mipmap/launcher_icon');
@@ -96,7 +115,8 @@ class LocalNotificationService {
               channelReminders,
               'Spendly Reminders',
               description: 'Daily expense logging reminders',
-              importance: Importance.defaultImportance,
+              importance: Importance.high,
+              enableVibration: true,
             ),
           );
 
