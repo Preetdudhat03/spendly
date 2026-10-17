@@ -259,7 +259,17 @@ class NotificationPreferencesNotifier extends StateNotifier<NotificationPreferen
     final userId = _ref.read(authProvider).userId;
     if (userId != null && userId.isNotEmpty) {
       await _repo.updatePreferences(userId, newPrefs);
+      try {
+        await _ref.read(notificationServiceProvider).syncScheduledReminders(userId);
+      } catch (e) {
+        debugPrint('[NotificationPreferencesNotifier] Error syncing reminder schedule: $e');
+      }
     }
+  }
+
+  /// Triggers an immediate test reminder for verification
+  Future<void> sendTestReminder() async {
+    await _ref.read(notificationServiceProvider).sendTestReminder();
   }
 
   Future<void> togglePushEnabled(bool value) async {
