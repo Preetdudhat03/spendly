@@ -1,7 +1,4 @@
-import 'dart:async';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:http/http.dart' as http;
-import 'package:http/testing.dart';
 import 'package:spendly/core/providers/apk_download_provider.dart';
 import 'package:spendly/core/services/apk_download_service.dart';
 import 'package:spendly/core/services/app_update_service.dart';
