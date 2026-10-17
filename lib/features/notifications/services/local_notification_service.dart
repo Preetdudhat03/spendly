@@ -34,7 +34,7 @@ class LocalNotificationService {
       } else {
         final offset = now.timeZoneOffset;
         for (final loc in tz.timeZoneDatabase.locations.values) {
-          if (loc.currentTimeZone.offset == offset.inMilliseconds) {
+          if (loc.currentTimeZone.offset == offset) {
             tz.setLocalLocation(loc);
             break;
           }
