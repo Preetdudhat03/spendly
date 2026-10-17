@@ -85,6 +85,9 @@ class MainActivity : FlutterActivity() {
                     }
                     result.success(abis)
                 }
+                "getTimeZone" -> {
+                    result.success(java.util.TimeZone.getDefault().id)
+                }
                 else -> {
                     result.notImplemented()
                 }
