@@ -281,6 +281,7 @@ class NotificationService {
   /// Triggers an immediate test reminder notification for verification.
   Future<void> sendTestReminder() async {
     await _localService.showNotification(
+      id: 9999,
       title: 'Expense Reminder 📝',
       body: "Don't forget to record today's expenses to keep your family budget accurate!",
       type: NotificationType.expenseReminder,
