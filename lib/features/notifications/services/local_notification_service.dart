@@ -298,6 +298,7 @@ class LocalNotificationService {
     required String body,
   }) async {
     if (!_isInitialized) await initialize();
+    _configureLocalTimezone();
 
     try {
       await _plugin.cancel(id: id); // Cancel previous reminder with this ID
@@ -319,8 +320,9 @@ class LocalNotificationService {
       const androidDetails = AndroidNotificationDetails(
         channelReminders,
         'Spendly Reminders',
-        importance: Importance.defaultImportance,
-        priority: Priority.defaultPriority,
+        channelDescription: 'Daily expense logging reminders',
+        importance: Importance.high,
+        priority: Priority.high,
         icon: '@mipmap/launcher_icon',
       );
 
@@ -335,21 +337,47 @@ class LocalNotificationService {
         iOS: iosDetails,
       );
 
-      await _plugin.zonedSchedule(
-        id: id,
-        title: title,
-        body: body,
-        scheduledDate: scheduledDate,
-        notificationDetails: details,
-        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-        matchDateTimeComponents: DateTimeComponents.time,
-        payload: jsonEncode({
-          'type': NotificationType.expenseReminder.value,
-          'deep_link': '/add',
-        }),
-      );
+      AndroidScheduleMode scheduleMode = AndroidScheduleMode.inexactAllowWhileIdle;
+      if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
+        final androidPlugin = _plugin.resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>();
+        final canExact = await androidPlugin?.canScheduleExactNotifications() ?? false;
+        if (canExact) {
+          scheduleMode = AndroidScheduleMode.exactAllowWhileIdle;
+        }
+      }
 
-      debugPrint('[LocalNotificationService] Daily reminder scheduled at $hour:$minute');
+      try {
+        await _plugin.zonedSchedule(
+          id: id,
+          title: title,
+          body: body,
+          scheduledDate: scheduledDate,
+          notificationDetails: details,
+          androidScheduleMode: scheduleMode,
+          matchDateTimeComponents: DateTimeComponents.time,
+          payload: jsonEncode({
+            'type': NotificationType.expenseReminder.value,
+            'deep_link': '/add',
+          }),
+        );
+        debugPrint('[LocalNotificationService] Daily reminder scheduled at $scheduledDate in ${tz.local.name} (mode: $scheduleMode)');
+      } catch (e) {
+        debugPrint('[LocalNotificationService] Exact schedule failed ($e). Falling back to inexact...');
+        await _plugin.zonedSchedule(
+          id: id,
+          title: title,
+          body: body,
+          scheduledDate: scheduledDate,
+          notificationDetails: details,
+          androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+          matchDateTimeComponents: DateTimeComponents.time,
+          payload: jsonEncode({
+            'type': NotificationType.expenseReminder.value,
+            'deep_link': '/add',
+          }),
+        );
+      }
     } catch (e) {
       debugPrint('[LocalNotificationService] Error scheduling daily reminder: $e');
     }
