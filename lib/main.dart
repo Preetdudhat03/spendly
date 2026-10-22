@@ -122,7 +122,9 @@ class SpendlyApp extends ConsumerWidget {
       themeMode: ref.watch(settingsProvider).isDarkMode ? ThemeMode.dark : ThemeMode.light,
       routerConfig: router,
       builder: (context, child) {
-        return ConnectionListenerWidget(child: child!);
+        return ConnectionListenerWidget(
+          child: AppLockGate(child: child!),
+        );
       },
     );
   }
