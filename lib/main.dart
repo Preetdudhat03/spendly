@@ -15,6 +15,7 @@ import 'package:spendly/core/services/hive_service.dart';
 import 'package:spendly/core/services/migration_service.dart';
 import 'package:spendly/core/services/sync_service.dart';
 import 'package:spendly/features/notifications/services/notification_service.dart';
+import 'package:spendly/features/security/widgets/app_lock_gate.dart';
 
 final syncServiceProvider = Provider<SyncService>((ref) {
   final service = SyncService(ref);
