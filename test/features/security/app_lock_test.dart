@@ -247,7 +247,7 @@ void main() {
 
       notifier.onAppPaused();
       // App paused briefly, then resumed
-      notifier.onAppResumed();
+      notifier.onAppResumed(true);
 
       // Should be locked
       expect(notifier.state.isLocked, isFalse); // Because authenticateAndUnlock was triggered automatically
