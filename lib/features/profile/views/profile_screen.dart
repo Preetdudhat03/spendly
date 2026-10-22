@@ -1806,7 +1806,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       side: BorderSide(color: Theme.of(context).colorScheme.outline),
                     ),
                     child: ListTile(
-                      leading: const Icon(Icons.security),
+                      leading: Icon(
+                        lockState.isEnabled ? Icons.lock_outline_rounded : Icons.security_rounded,
+                        color: lockState.isEnabled
+                            ? (Theme.of(context).brightness == Brightness.dark
+                                ? const Color(0xFF818CF8)
+                                : const Color(0xFF4F46E5))
+                            : null,
+                      ),
                       title: const Text('Account Security & Deletion', style: TextStyle(fontWeight: FontWeight.bold)),
                       trailing: const Icon(Icons.chevron_right),
                       onTap: () {
