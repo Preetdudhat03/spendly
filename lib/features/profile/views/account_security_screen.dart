@@ -245,6 +245,11 @@ class _AccountSecurityScreenState extends ConsumerState<AccountSecurityScreen> {
     final familyName = familyState.family?.name ?? 'your family';
     final otherMembersExist = familyState.members.where((m) => m.userId != authState.userId).isNotEmpty;
 
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final primaryColor = isDark ? const Color(0xFF818CF8) : const Color(0xFF4F46E5);
+    final lockState = ref.watch(appLockProvider);
+
     final topInset = MediaQuery.of(context).padding.top;
     final contentTopPadding = topInset + 58.0;
 
@@ -266,6 +271,161 @@ class _AccountSecurityScreenState extends ConsumerState<AccountSecurityScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            // App Lock Protection Card
+            Container(
+              decoration: BoxDecoration(
+                color: theme.cardTheme.color ?? (isDark ? const Color(0xFF1E293B) : Colors.white),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: primaryColor.withValues(alpha: isDark ? 0.2 : 0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          lockState.availableBiometrics.contains(BiometricType.face)
+                              ? Icons.face_rounded
+                              : Icons.fingerprint_rounded,
+                          color: primaryColor,
+                          size: 24,
+                        ),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'App Lock Protection',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              lockState.biometricsDescription,
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: theme.colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Switch(
+                        value: lockState.isEnabled,
+                        activeColor: primaryColor,
+                        onChanged: (val) async {
+                          final success = await ref
+                              .read(appLockProvider.notifier)
+                              .toggleAppLock(val);
+                          if (!success && context.mounted) {
+                            final err = ref.read(appLockProvider).authError ??
+                                'Authentication required to modify App Lock.';
+                            SpendlyToast.showError(context, err, isAboveNavBar: false);
+                          } else if (success && context.mounted) {
+                            SpendlyToast.showSuccess(
+                              context,
+                              val
+                                  ? 'App Lock enabled with biometric & device lock'
+                                  : 'App Lock disabled',
+                              isAboveNavBar: false,
+                            );
+                          }
+                        },
+                      ),
+                    ],
+                  ),
+                  if (lockState.isEnabled) ...[
+                    const SizedBox(height: 16),
+                    Divider(height: 1, color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
+                    const SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Require Lock',
+                              style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              'When leaving or switching apps',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: theme.colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                          ],
+                        ),
+                        DropdownButton<int>(
+                          value: lockState.timeoutSeconds,
+                          underline: const SizedBox(),
+                          dropdownColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          items: const [
+                            DropdownMenuItem(value: 0, child: Text('Immediately')),
+                            DropdownMenuItem(value: 60, child: Text('After 1 min')),
+                            DropdownMenuItem(value: 300, child: Text('After 5 mins')),
+                            DropdownMenuItem(value: 900, child: Text('After 15 mins')),
+                          ],
+                          onChanged: (newTimeout) {
+                            if (newTimeout != null) {
+                              ref.read(appLockProvider.notifier).setTimeoutSeconds(newTimeout);
+                            }
+                          },
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 14),
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        onPressed: () {
+                          ref.read(appLockProvider.notifier).lock();
+                        },
+                        icon: const Icon(Icons.lock_outline_rounded, size: 18),
+                        label: const Text('Lock App Now'),
+                        style: OutlinedButton.styleFrom(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          side: BorderSide(
+                            color: isDark ? const Color(0xFF334155) : const Color(0xFFCBD5E1),
+                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 36),
+            Divider(color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
+            const SizedBox(height: 24),
+
             const Icon(Icons.warning_amber_rounded, color: Colors.red, size: 64),
             const SizedBox(height: 16),
             const Text(
