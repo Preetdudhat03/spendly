@@ -1798,6 +1798,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   );
 
 
+                  final lockState = ref.watch(appLockProvider);
                   Widget accountSecurityCard = Card(
                     color: Theme.of(context).cardTheme.color,
                     shape: RoundedRectangleBorder(
