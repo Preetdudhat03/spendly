@@ -1814,7 +1814,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                 : const Color(0xFF4F46E5))
                             : null,
                       ),
-                      title: const Text('Account Security & Deletion', style: TextStyle(fontWeight: FontWeight.bold)),
+                      title: const Text('App Lock & Security', style: TextStyle(fontWeight: FontWeight.bold)),
+                      subtitle: Text(
+                        lockState.isEnabled
+                            ? 'App Lock Active (${lockState.biometricsDescription})'
+                            : 'Protect with biometrics & screen lock',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                      ),
                       trailing: const Icon(Icons.chevron_right),
                       onTap: () {
                         context.push('/account-security');
