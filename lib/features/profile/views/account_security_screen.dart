@@ -332,7 +332,7 @@ class _AccountSecurityScreenState extends ConsumerState<AccountSecurityScreen> {
                       ),
                       Switch(
                         value: lockState.isEnabled,
-                        activeColor: primaryColor,
+                        activeThumbColor: primaryColor,
                         onChanged: (val) async {
                           final success = await ref
                               .read(appLockProvider.notifier)
