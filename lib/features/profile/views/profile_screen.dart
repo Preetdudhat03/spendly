@@ -19,6 +19,7 @@ import 'package:spendly/core/providers/app_update_provider.dart';
 import 'package:spendly/core/widgets/spendly/app_update_dialog.dart';
 import 'package:spendly/features/notifications/providers/notification_providers.dart';
 import 'package:spendly/features/notifications/services/local_notification_service.dart';
+import 'package:spendly/features/security/providers/app_lock_provider.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
