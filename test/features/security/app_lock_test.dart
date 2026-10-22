@@ -249,8 +249,12 @@ void main() {
       // App paused briefly, then resumed
       notifier.onAppResumed(true);
 
-      // Should be locked
-      expect(notifier.state.isLocked, isFalse); // Because authenticateAndUnlock was triggered automatically
+      // Immediately upon resume, app state is locked
+      expect(notifier.state.isLocked, isTrue);
+
+      // After authentication completes
+      await Future<void>.delayed(Duration.zero);
+      expect(notifier.state.isLocked, isFalse);
     });
   });
 }
