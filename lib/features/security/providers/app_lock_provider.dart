@@ -178,9 +178,17 @@ class AppLockNotifier extends StateNotifier<AppLockState> {
   }
 
   /// Called when the app lifecycle resumes.
-  void onAppResumed() {
-    final auth = _ref.read(authProvider);
-    final isLoggedIn = auth.userId != null;
+  void onAppResumed([bool? isLoggedInOverride]) {
+    bool isLoggedIn = false;
+    if (isLoggedInOverride != null) {
+      isLoggedIn = isLoggedInOverride;
+    } else {
+      try {
+        isLoggedIn = _ref.read(authProvider).userId != null;
+      } catch (_) {
+        isLoggedIn = false;
+      }
+    }
 
     if (!state.isEnabled || !isLoggedIn) return;
 
