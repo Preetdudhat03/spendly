@@ -75,12 +75,9 @@ class AppLockService {
 
       final didAuthenticate = await _localAuth.authenticate(
         localizedReason: localizedReason,
-        options: const AuthenticationOptions(
-          biometricOnly: false,
-          stickyAuth: true,
-          sensitiveTransaction: true,
-          useErrorDialogs: true,
-        ),
+        biometricOnly: false,
+        sensitiveTransaction: true,
+        persistAcrossBackgrounding: true,
       );
 
       if (didAuthenticate) {
@@ -88,33 +85,39 @@ class AppLockService {
       } else {
         return const AuthResult.failure('Authentication was not completed.');
       }
-    } on PlatformException catch (e) {
-      debugPrint('[AppLockService] PlatformException: ${e.code} - ${e.message}');
+    } on LocalAuthException catch (e) {
+      debugPrint('[AppLockService] LocalAuthException: ${e.code.name} - ${e.description}');
       String message = 'Authentication failed. Please try again.';
       bool notEnrolled = false;
       bool notAvailable = false;
 
       switch (e.code) {
-        case 'NotAvailable':
-          message = 'Biometrics or lock screen password is not available.';
-          notAvailable = true;
-          break;
-        case 'NotEnrolled':
+        case LocalAuthExceptionCode.noCredentialsSet:
+        case LocalAuthExceptionCode.noBiometricsEnrolled:
           message = 'No lock screen password, PIN, or biometric enrolled on this device. Please set up a screen lock in device settings.';
           notEnrolled = true;
           break;
-        case 'LockedOut':
+        case LocalAuthExceptionCode.noBiometricHardware:
+        case LocalAuthExceptionCode.biometricHardwareTemporarilyUnavailable:
+        case LocalAuthExceptionCode.uiUnavailable:
+          message = 'Biometrics or lock screen password is not available.';
+          notAvailable = true;
+          break;
+        case LocalAuthExceptionCode.temporaryLockout:
           message = 'Too many failed attempts. Device is temporarily locked.';
           break;
-        case 'PermanentlyLockedOut':
-          message = 'Too many failed attempts. Unlock using your device password.';
+        case LocalAuthExceptionCode.biometricLockout:
+          message = 'Biometrics locked out. Unlock using your device screen password/PIN.';
           break;
-        case 'UserCancel':
-        case 'SystemCancel':
+        case LocalAuthExceptionCode.userCanceled:
+        case LocalAuthExceptionCode.systemCanceled:
           message = 'Authentication canceled.';
           break;
+        case LocalAuthExceptionCode.authInProgress:
+          message = 'Authentication is already in progress.';
+          break;
         default:
-          message = e.message ?? 'Authentication failed.';
+          message = e.description ?? 'Authentication failed.';
           break;
       }
 
@@ -123,6 +126,12 @@ class AppLockService {
         errorMessage: message,
         isNotEnrolled: notEnrolled,
         isNotAvailable: notAvailable,
+      );
+    } on PlatformException catch (e) {
+      debugPrint('[AppLockService] PlatformException: ${e.code} - ${e.message}');
+      return AuthResult(
+        success: false,
+        errorMessage: e.message ?? 'Authentication failed.',
       );
     } catch (e) {
       debugPrint('[AppLockService] Unexpected error: $e');
