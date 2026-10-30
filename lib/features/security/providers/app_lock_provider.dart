@@ -109,18 +109,22 @@ class AppLockNotifier extends StateNotifier<AppLockState> {
         ? 'Confirm your fingerprint, face, or lock screen password to enable App Lock'
         : 'Confirm your fingerprint, face, or lock screen password to disable App Lock';
 
+    state = state.copyWith(isAuthenticating: true, clearAuthError: true);
     final result = await _service.authenticate(localizedReason: reason);
 
     if (result.success) {
+      _lastPausedAt = null;
       await HiveService.settings.put(keyAppLockEnabled, enable);
       state = state.copyWith(
         isEnabled: enable,
         isLocked: false,
+        isAuthenticating: false,
         clearAuthError: true,
       );
       return true;
     } else {
       state = state.copyWith(
+        isAuthenticating: false,
         authError: result.errorMessage ?? 'Authentication required to change App Lock settings.',
       );
       return false;
@@ -156,6 +160,7 @@ class AppLockNotifier extends StateNotifier<AppLockState> {
     );
 
     if (result.success) {
+      _lastPausedAt = null;
       state = state.copyWith(
         isLocked: false,
         isAuthenticating: false,
@@ -174,6 +179,9 @@ class AppLockNotifier extends StateNotifier<AppLockState> {
 
   /// Called when the app lifecycle enters background.
   void onAppPaused() {
+    // If an authentication prompt is already showing, the app entering background/inactive
+    // is caused by the system biometric dialog taking focus. Do not record this as leaving the app.
+    if (state.isAuthenticating) return;
     _lastPausedAt = DateTime.now();
   }
 
@@ -192,16 +200,19 @@ class AppLockNotifier extends StateNotifier<AppLockState> {
 
     if (!state.isEnabled || !isLoggedIn) return;
 
+    // Do not re-trigger auth if already in the middle of authenticating
+    if (state.isAuthenticating) return;
+
     if (state.isLocked) {
-      // Already locked, prompt auth if not already prompting
-      if (!state.isAuthenticating) {
-        authenticateAndUnlock();
-      }
+      // Already locked, prompt auth
+      authenticateAndUnlock();
       return;
     }
 
     if (_lastPausedAt != null) {
-      final elapsedSeconds = DateTime.now().difference(_lastPausedAt!).inSeconds;
+      final pausedTime = _lastPausedAt!;
+      _lastPausedAt = null; // Consume pause timestamp immediately so it can't re-trigger
+      final elapsedSeconds = DateTime.now().difference(pausedTime).inSeconds;
       if (elapsedSeconds >= state.timeoutSeconds) {
         state = state.copyWith(isLocked: true, clearAuthError: true);
         authenticateAndUnlock();

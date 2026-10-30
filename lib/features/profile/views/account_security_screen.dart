@@ -361,23 +361,26 @@ class _AccountSecurityScreenState extends ConsumerState<AccountSecurityScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Require Lock',
-                              style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              'When leaving or switching apps',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: theme.colorScheme.onSurfaceVariant,
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Require Lock',
+                                style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
                               ),
-                            ),
-                          ],
+                              const SizedBox(height: 2),
+                              Text(
+                                'When leaving or switching apps',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: theme.colorScheme.onSurfaceVariant,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
+                        const SizedBox(width: 8),
                         DropdownButton<int>(
                           value: lockState.timeoutSeconds,
                           underline: const SizedBox(),

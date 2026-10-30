@@ -30,12 +30,21 @@ class _AppLockGateState extends ConsumerState<AppLockGate> with WidgetsBindingOb
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
     final notifier = ref.read(appLockProvider.notifier);
+    final lockState = ref.read(appLockProvider);
+
+    // If biometric/credential prompt is currently displayed, lifecycle changes
+    // (e.g., inactive, resumed) are triggered by the system authentication dialog
+    // taking and releasing window focus. Ignore them to prevent infinite auth loops.
+    if (lockState.isAuthenticating) return;
 
     switch (state) {
       case AppLifecycleState.paused:
-      case AppLifecycleState.inactive:
       case AppLifecycleState.hidden:
         notifier.onAppPaused();
+        break;
+      case AppLifecycleState.inactive:
+        // Inactive represents temporary focus loss (e.g., system dialogs, notification shade).
+        // Do NOT treat this as app backgrounding.
         break;
       case AppLifecycleState.resumed:
         notifier.onAppResumed();

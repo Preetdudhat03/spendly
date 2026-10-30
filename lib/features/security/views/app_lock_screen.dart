@@ -27,10 +27,13 @@ class _AppLockScreenState extends ConsumerState<AppLockScreen>
       CurvedAnimation(parent: _animController, curve: Curves.easeInOut),
     );
 
-    // Automatically trigger biometric / lock screen prompt on display
+    // Automatically trigger biometric / lock screen prompt on display if not already prompting
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        ref.read(appLockProvider.notifier).authenticateAndUnlock();
+        final lockState = ref.read(appLockProvider);
+        if (!lockState.isAuthenticating && lockState.isLocked) {
+          ref.read(appLockProvider.notifier).authenticateAndUnlock();
+        }
       }
     });
   }
