@@ -4,7 +4,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hive/hive.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:local_auth_platform_interface/types/auth_messages.dart';
-import 'package:spendly/core/providers/state_providers.dart';
 import 'package:spendly/core/services/hive_service.dart';
 import 'package:spendly/features/security/providers/app_lock_provider.dart';
 import 'package:spendly/features/security/services/app_lock_service.dart';
