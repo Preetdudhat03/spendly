@@ -1174,8 +1174,7 @@ class ConnectionNotifier extends StateNotifier<ConnectionStatus> {
 }
 
 final connectionProvider = StateNotifierProvider<ConnectionNotifier, ConnectionStatus>((ref) {
-  final db = ref.watch(dbServiceProvider);
-  return ConnectionNotifier(db);
+  return ConnectionNotifier();
 });
 
 // ==========================================
