@@ -620,23 +620,16 @@ class FamilyNotifier extends StateNotifier<FamilyState> {
       final authState = _ref.read(authProvider);
       final displayName = authState.displayName ?? 'User';
       final family = await _familyRepo.createFamily(name, HiveService.settings.get('active_user_id') ?? '', displayName);
-      if (family != null) {
-        final members = await Future.value(_familyRepo.getFamilyMembers(_familyRepo.getCurrentFamily(HiveService.settings.get('active_user_id') ?? '')?.id ?? ''));
-        state = FamilyState(
-          isLoading: false,
-          hasLoaded: true,
-          family: family,
-          members: members,
-        );
-        _ref.read(expenseProvider.notifier).loadExpenses();
-        _ref.read(budgetProvider.notifier).loadBudget();
-        return true;
-      }
-      state = state.copyWith(
+      final members = await Future.value(_familyRepo.getFamilyMembers(_familyRepo.getCurrentFamily(HiveService.settings.get('active_user_id') ?? '')?.id ?? ''));
+      state = FamilyState(
         isLoading: false,
-        error: 'Could not create family',
+        hasLoaded: true,
+        family: family,
+        members: members,
       );
-      return false;
+      _ref.read(expenseProvider.notifier).loadExpenses();
+      _ref.read(budgetProvider.notifier).loadBudget();
+      return true;
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
