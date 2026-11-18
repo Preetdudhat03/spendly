@@ -1131,10 +1131,9 @@ final budgetProvider = StateNotifierProvider<BudgetNotifier, BudgetState>((ref) 
 enum ConnectionStatus { checking, online, offline, sandbox }
 
 class ConnectionNotifier extends StateNotifier<ConnectionStatus> {
-  final DbService _dbService;
   Timer? _timer;
 
-  ConnectionNotifier(this._dbService) : super(ConnectionStatus.checking) {
+  ConnectionNotifier() : super(ConnectionStatus.checking) {
     checkConnection();
     // Run connection checks every 30 seconds to reduce overhead
     _timer = Timer.periodic(const Duration(seconds: 30), (_) => checkConnection());
