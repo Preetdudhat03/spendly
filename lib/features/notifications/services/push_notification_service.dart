@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
-import 'package:spendly/core/services/hive_service.dart';
 import 'package:spendly/features/notifications/models/notification_model.dart';
 import 'package:spendly/features/notifications/repositories/notification_repository.dart';
 import 'package:spendly/features/notifications/services/local_notification_service.dart';
@@ -86,18 +85,46 @@ class PushNotificationService {
     _messageOpenedSubscription?.cancel();
   }
 
+  Future<bool> unregisterDeviceToken([String? userId]) async {
+    try {
+      final currentUid = userId ?? _repo.currentAuthUserId;
+      if (currentUid == null || currentUid.isEmpty) {
+        debugPrint('[NOTIFICATION] No authenticated user to unregister device token for');
+        return false;
+      }
+      debugPrint('[PushNotificationService] Unregistering device token for user: $currentUid');
+
+      // 1. Unregister active tokens for this user in Supabase
+      final success = await _repo.unregisterDeviceToken(userId: currentUid);
+
+      // 2. Invalidate the FCM token on Google Firebase servers so that Google rejects
+      // any messages directed to this old installation token
+      try {
+        await FirebaseMessaging.instance.deleteToken();
+        debugPrint('[PushNotificationService] FCM token deleted from Firebase client');
+      } catch (fcmErr) {
+        debugPrint('[PushNotificationService] Note: deleteToken error (may be offline/unsupported): $fcmErr');
+      }
+
+      return success;
+    } catch (e) {
+      debugPrint('[NOTIFICATION] Error in PushNotificationService.unregisterDeviceToken: $e');
+      return false;
+    }
+  }
+
   Future<String> syncDeviceToken() async {
     try {
       final token = await FirebaseMessaging.instance.getToken();
       if (token == null || token.isEmpty) {
         final msg = 'FCM returned empty token. Please check Google Play Services / Firebase setup.';
-        debugPrint('[PushNotificationService] $msg');
+        debugPrint('[NOTIFICATION] $msg');
         return msg;
       }
       return await _registerToken(token);
     } catch (e) {
       final msg = 'Error fetching FCM token: $e';
-      debugPrint('[PushNotificationService] $msg');
+      debugPrint('[NOTIFICATION] $msg');
       return msg;
     }
   }
@@ -105,10 +132,9 @@ class PushNotificationService {
   Future<String> _registerToken(String token) async {
     try {
       final authUserId = _repo.currentAuthUserId;
-      final activeUserId = authUserId ?? (HiveService.settings.get('active_user_id') as String?);
-      if (activeUserId == null || activeUserId.isEmpty) {
+      if (authUserId == null || authUserId.isEmpty) {
         final msg = 'Cannot sync token: User is not authenticated. Please log in.';
-        debugPrint('[PushNotificationService] $msg');
+        debugPrint('[NOTIFICATION] $msg');
         return msg;
       }
 
@@ -117,17 +143,17 @@ class PushNotificationService {
           : (defaultTargetPlatform == TargetPlatform.android ? 'android' : 'web');
 
       final result = await _repo.registerDeviceToken(
-        userId: activeUserId,
+        userId: authUserId,
         token: token,
         platform: platform,
       );
 
-      final previewToken = token.length > 15 ? token.substring(0, 15) : token;
-      debugPrint('[PushNotificationService] FCM token ($previewToken...) register result: $result');
+      final previewToken = token.length > 8 ? '${token.substring(0, 8)}...' : token;
+      debugPrint('[NOTIFICATION] FCM token ($previewToken) register result: $result');
       return result;
     } catch (e) {
       final msg = 'Error registering FCM token: $e';
-      debugPrint('[PushNotificationService] $msg');
+      debugPrint('[NOTIFICATION] $msg');
       return msg;
     }
   }
@@ -136,6 +162,22 @@ class PushNotificationService {
     try {
       final data = message.data;
       final notification = message.notification;
+
+      final currentUid = _repo.currentAuthUserId;
+
+      // Isolation Guard: Drop notifications targeted to another user
+      final recipientId = data['user_id'] as String?;
+      if (recipientId != null && recipientId.isNotEmpty && currentUid != null && recipientId != currentUid) {
+        debugPrint('[NOTIFICATION] Dropping push message: targeted to $recipientId, but current user is $currentUid');
+        return;
+      }
+
+      // Self-echo Guard: Drop push notification created by current user
+      final creatorId = data['created_by'] as String?;
+      if (creatorId != null && creatorId.isNotEmpty && creatorId == currentUid) {
+        debugPrint('[NOTIFICATION] Dropping push message: echo of self-created event ($creatorId)');
+        return;
+      }
 
       final title = notification?.title ?? data['title'] ?? 'Spendly Update';
       final body = notification?.body ?? data['body'] ?? '';
@@ -156,7 +198,7 @@ class PushNotificationService {
         payload: data,
       );
     } catch (e) {
-      debugPrint('[PushNotificationService] Error processing foreground FCM message: $e');
+      debugPrint('[NOTIFICATION] Error processing foreground FCM message: $e');
     }
   }
 

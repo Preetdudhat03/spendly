@@ -42,6 +42,7 @@ class NotificationService {
   StreamSubscription<AuthState>? _authStateSubscription;
   String? _subscribedFamilyId;
   String? _subscribedUserId;
+  final Set<String> _recentlyCreatedKeys = <String>{};
 
   NotificationService(
     this._ref,
@@ -52,6 +53,20 @@ class NotificationService {
   }) : _clientOverride = client;
 
   Future<void> initialize() async {
+    // Listen to user and family session changes synchronously so Riverpod listeners
+    // are attached within the provider's synchronous build/mount phase
+    _ref.listen(authProvider, (prev, next) {
+      _onAuthOrFamilyChanged();
+    });
+
+    _ref.listen(currentUserProvider, (prev, next) {
+      _onAuthOrFamilyChanged();
+    });
+
+    _ref.listen(familyProvider, (prev, next) {
+      _onAuthOrFamilyChanged();
+    });
+
     await _localService.initialize(
       onNotificationTap: (payload) {
         _handleNotificationPayloadTap(payload);
@@ -70,29 +85,20 @@ class NotificationService {
     final client = _client;
     if (client != null) {
       _authStateSubscription = client.auth.onAuthStateChange.listen((data) {
-        debugPrint('[NotificationService] Supabase Auth event: ${data.event}');
-        if (data.session?.user != null) {
-          _pushService.syncDeviceToken();
-          _onAuthOrFamilyChanged();
+        debugPrint('[NOTIFICATION] Supabase Auth event: ${data.event}');
+        if (data.event == AuthChangeEvent.signedOut || data.session?.user == null) {
+          debugPrint('[NOTIFICATION] Account switch/signout detected via AuthStateChange');
+          onSignOut();
+        } else if (data.session?.user != null) {
+          final userId = data.session!.user.id;
+          debugPrint('[NOTIFICATION] Authenticated user signed in: $userId');
+          _onUserSignedIn(userId);
         }
       });
     }
 
-    // Listen to user and family session changes to manage realtime subscriptions & reminders
-    _ref.listen(authProvider, (prev, next) {
-      _onAuthOrFamilyChanged();
-    });
-
-    _ref.listen(currentUserProvider, (prev, next) {
-      _onAuthOrFamilyChanged();
-    });
-
-    _ref.listen(familyProvider, (prev, next) {
-      _onAuthOrFamilyChanged();
-    });
-
     _onAuthOrFamilyChanged();
-    debugPrint('[NotificationService] Initialized');
+    debugPrint('[NOTIFICATION] NotificationService Initialized');
   }
 
   void dispose() {
@@ -101,23 +107,63 @@ class NotificationService {
     _pushService.dispose();
   }
 
+  Future<void> onSignOut() async {
+    debugPrint('[NOTIFICATION] onSignOut initiated');
+    try {
+      final currentUid = _client?.auth.currentUser?.id ?? _subscribedUserId;
+      if (currentUid != null && currentUid.isNotEmpty) {
+        await _pushService.unregisterDeviceToken(currentUid);
+      }
+    } catch (e) {
+      debugPrint('[NOTIFICATION] Error unregistering token on signout: $e');
+    }
+
+    _cleanupRealtime();
+
+    try {
+      await _localService.cancelReminder(1001);
+    } catch (e) {
+      debugPrint('[NOTIFICATION] Error cancelling reminder: $e');
+    }
+
+    _subscribedUserId = null;
+    _subscribedFamilyId = null;
+    debugPrint('[NOTIFICATION] Previous notification subscriptions disposed');
+  }
+
+  Future<void> _onUserSignedIn(String userId) async {
+    debugPrint('[NOTIFICATION] Initializing notification services for user: $userId');
+    await _pushService.syncDeviceToken();
+    _onAuthOrFamilyChanged();
+  }
+
   void _onAuthOrFamilyChanged() {
+    final client = _client;
+    final supabaseUser = client?.auth.currentUser;
     final user = _ref.read(currentUserProvider);
     final authState = _ref.read(authProvider);
     final family = _ref.read(familyProvider).family;
-    final supabaseUser = _client?.auth.currentUser;
 
-    final newUserId = supabaseUser?.id ?? user?.id ?? authState.userId ?? (HiveService.settings.get('active_user_id') as String?);
+    // Strict priority: current authenticated Supabase user UID
+    final newUserId = supabaseUser?.id ?? user?.id ?? (client == null ? authState.userId : null);
     final newFamilyId = family?.id;
+
+    debugPrint('[NOTIFICATION] Account switch check: newUserId=$newUserId, prevUser=$_subscribedUserId');
 
     if (newUserId != null && newUserId.isNotEmpty) {
       _pushService.syncDeviceToken();
     }
 
+    if (newUserId == null || newUserId.isEmpty) {
+      _cleanupRealtime();
+      return;
+    }
+
     if (newUserId != _subscribedUserId || newFamilyId != _subscribedFamilyId) {
+      debugPrint('[NOTIFICATION] Switching notification subscription: $_subscribedUserId -> $newUserId');
       _cleanupRealtime();
 
-      if (newUserId != null && newUserId.isNotEmpty && newFamilyId != null && newFamilyId.isNotEmpty) {
+      if (newFamilyId != null && newFamilyId.isNotEmpty) {
         _setupRealtime(newFamilyId, newUserId);
         _syncScheduledReminders(newUserId);
       }
@@ -153,12 +199,12 @@ class NotificationService {
             },
           )
           .subscribe((status, [error]) {
-            debugPrint('[NotificationService] Realtime channel ($channelName) status: $status, error: $error');
+            debugPrint('[NOTIFICATION] Realtime channel ($channelName) status: $status, error: $error');
           });
 
-      debugPrint('[NotificationService] Subscribed to realtime notifications for family: $familyId');
+      debugPrint('[NOTIFICATION] New notification subscriptions initialized for family: $familyId, user: $userId');
     } catch (e) {
-      debugPrint('[NotificationService] Realtime subscription failed: $e');
+      debugPrint('[NOTIFICATION] Realtime subscription failed: $e');
     }
   }
 
@@ -166,9 +212,9 @@ class NotificationService {
     if (_realtimeChannel != null) {
       try {
         _client?.removeChannel(_realtimeChannel!);
-        debugPrint('[NotificationService] Cleaned up realtime channel for family: $_subscribedFamilyId');
+        debugPrint('[NOTIFICATION] Cleaned up realtime channel for family: $_subscribedFamilyId');
       } catch (e) {
-        debugPrint('[NotificationService] Error removing channel: $e');
+        debugPrint('[NOTIFICATION] Error removing channel: $e');
       }
       _realtimeChannel = null;
     }
@@ -179,10 +225,17 @@ class NotificationService {
   Future<void> _handleIncomingRealtimeNotification(Map<String, dynamic> record) async {
     try {
       final notification = SpendlyNotification.fromJson(record);
-      final currentUserId = _ref.read(authProvider).userId ?? (HiveService.settings.get('active_user_id') as String?);
+      final client = _client;
+      final currentUserId = client?.auth.currentUser?.id ?? _ref.read(currentUserProvider)?.id ?? (client == null ? _ref.read(authProvider).userId : null);
+
+      if (currentUserId == null || currentUserId.isEmpty) {
+        debugPrint('[NOTIFICATION] Realtime notification ignored: no authenticated user');
+        return;
+      }
 
       // Filter out if user-specific and not for this user
       if (notification.userId != null && notification.userId != currentUserId) {
+        debugPrint('[NOTIFICATION] Dropping notification targeted to another user (${notification.userId} != $currentUserId)');
         return;
       }
 
@@ -201,20 +254,32 @@ class NotificationService {
       if (!saved) return;
 
       // Check user preferences
-      if (currentUserId != null && currentUserId.isNotEmpty) {
-        final prefs = await _repo.getPreferences(currentUserId);
-        if (!_shouldNotifyForPreferences(notification.type, prefs)) {
-          return;
-        }
-      }
-
-      // If notification was created by this user on this device, skip local pop alert to avoid echo
-      if (notification.createdBy != null && notification.createdBy == currentUserId) {
-        debugPrint('[NotificationService] Ignoring echo notification created by self (${notification.createdBy})');
+      final prefs = await _repo.getPreferences(currentUserId);
+      if (!_shouldNotifyForPreferences(notification.type, prefs)) {
         return;
       }
 
-      debugPrint('[NotificationService] Showing alert for incoming notification: ${notification.title}');
+      // 1. If notification was created on this client in this session, skip local pop alert to avoid echo
+      final notifKey = notification.notificationKey;
+      if (_recentlyCreatedKeys.contains(notification.id) || (notifKey != null && _recentlyCreatedKeys.contains(notifKey))) {
+        debugPrint('[NOTIFICATION] Ignoring echo notification created on this client (id=${notification.id}, key=$notifKey)');
+        return;
+      }
+
+      // 2. If notification was created by this user on this device, skip local pop alert to avoid echo
+      if (notification.createdBy != null && notification.createdBy == currentUserId) {
+        debugPrint('[NOTIFICATION] Ignoring echo notification created by self (${notification.createdBy})');
+        return;
+      }
+
+      // 3. Also check if payload contains creator matching current user
+      final payloadCreator = notification.payload['created_by'] as String?;
+      if (payloadCreator != null && payloadCreator == currentUserId) {
+        debugPrint('[NOTIFICATION] Ignoring echo notification created by self via payload ($payloadCreator)');
+        return;
+      }
+
+      debugPrint('[NOTIFICATION] Showing alert for incoming notification: ${notification.title}');
 
       // Show local notification pop
       await _localService.showNotification(
@@ -227,7 +292,7 @@ class NotificationService {
         payload: notification.payload,
       );
     } catch (e) {
-      debugPrint('[NotificationService] Error processing realtime record: $e');
+      debugPrint('[NOTIFICATION] Error processing realtime record: $e');
     }
   }
 
@@ -300,6 +365,14 @@ class NotificationService {
     );
   }
 
+  Future<SpendlyNotification?> _emitNotification(SpendlyNotification notification) async {
+    if (notification.id.isNotEmpty) _recentlyCreatedKeys.add(notification.id);
+    if (notification.notificationKey != null && notification.notificationKey!.isNotEmpty) {
+      _recentlyCreatedKeys.add(notification.notificationKey!);
+    }
+    return await _repo.createNotification(notification);
+  }
+
   // --- Event Generators ---
 
   /// Emitted when an expense is added
@@ -311,6 +384,8 @@ class NotificationService {
     required String category,
     required String createdByUserId,
   }) async {
+    final authUserId = _client?.auth.currentUser?.id ?? _ref.read(currentUserProvider)?.id;
+    final effectiveCreator = authUserId ?? createdByUserId;
     final formattedAmount = CurrencyFormatter.format(amount);
     final notificationKey = 'expense_added:$expenseId';
 
@@ -324,14 +399,15 @@ class NotificationService {
         'expense_id': expenseId,
         'amount': amount,
         'category': category,
+        'created_by': effectiveCreator,
       },
       deepLink: '/expenses',
       notificationKey: notificationKey,
-      createdBy: createdByUserId,
+      createdBy: effectiveCreator,
       createdAt: DateTime.now(),
     );
 
-    await _repo.createNotification(notification);
+    await _emitNotification(notification);
   }
 
   /// Emitted when an expense is updated
@@ -344,6 +420,8 @@ class NotificationService {
     required String category,
     required String updatedByUserId,
   }) async {
+    final authUserId = _client?.auth.currentUser?.id ?? _ref.read(currentUserProvider)?.id;
+    final effectiveCreator = authUserId ?? updatedByUserId;
     final formattedOld = CurrencyFormatter.format(oldAmount);
     final formattedNew = CurrencyFormatter.format(newAmount);
     final notificationKey = 'expense_updated:${expenseId}_${newAmount.toStringAsFixed(2)}';
@@ -359,14 +437,15 @@ class NotificationService {
         'old_amount': oldAmount,
         'new_amount': newAmount,
         'category': category,
+        'created_by': effectiveCreator,
       },
       deepLink: '/expenses',
       notificationKey: notificationKey,
-      createdBy: updatedByUserId,
+      createdBy: effectiveCreator,
       createdAt: DateTime.now(),
     );
 
-    await _repo.createNotification(notification);
+    await _emitNotification(notification);
   }
 
   /// Emitted when an expense is deleted
@@ -378,6 +457,8 @@ class NotificationService {
     required String category,
     required String deletedByUserId,
   }) async {
+    final authUserId = _client?.auth.currentUser?.id ?? _ref.read(currentUserProvider)?.id;
+    final effectiveCreator = authUserId ?? deletedByUserId;
     final formattedAmount = CurrencyFormatter.format(amount);
     final notificationKey = 'expense_deleted:$expenseId';
 
@@ -391,14 +472,15 @@ class NotificationService {
         'expense_id': expenseId,
         'amount': amount,
         'category': category,
+        'created_by': effectiveCreator,
       },
       deepLink: '/expenses',
       notificationKey: notificationKey,
-      createdBy: deletedByUserId,
+      createdBy: effectiveCreator,
       createdAt: DateTime.now(),
     );
 
-    await _repo.createNotification(notification);
+    await _emitNotification(notification);
   }
 
   /// Check and emit budget threshold alerts strictly at 80%, 95%, and 100%
@@ -485,6 +567,8 @@ class NotificationService {
       priority = NotificationPriority.normal;
     }
 
+    final authUserId = _client?.auth.currentUser?.id ?? _ref.read(currentUserProvider)?.id;
+
     final notification = SpendlyNotification(
       id: const Uuid().v4(),
       familyId: familyId,
@@ -502,10 +586,11 @@ class NotificationService {
       },
       deepLink: '/home',
       notificationKey: notificationKey,
+      createdBy: authUserId,
       createdAt: DateTime.now(),
     );
 
-    await _repo.createNotification(notification);
+    await _emitNotification(notification);
   }
 
   /// Emitted when a new member joins family
@@ -516,6 +601,7 @@ class NotificationService {
     required String joinedUserId,
   }) async {
     final notificationKey = 'family_joined:${familyId}_$joinedUserId';
+    final authUserId = _client?.auth.currentUser?.id ?? _ref.read(currentUserProvider)?.id ?? joinedUserId;
 
     final notification = SpendlyNotification(
       id: const Uuid().v4(),
@@ -529,10 +615,11 @@ class NotificationService {
       },
       deepLink: '/profile',
       notificationKey: notificationKey,
+      createdBy: authUserId,
       createdAt: DateTime.now(),
     );
 
-    await _repo.createNotification(notification);
+    await _emitNotification(notification);
   }
 
   /// Emitted when a member leaves or is removed
@@ -543,6 +630,7 @@ class NotificationService {
     required String leftUserId,
   }) async {
     final notificationKey = 'family_left:${familyId}_${leftUserId}_${DateTime.now().month}';
+    final authUserId = _client?.auth.currentUser?.id ?? _ref.read(currentUserProvider)?.id ?? leftUserId;
 
     final notification = SpendlyNotification(
       id: const Uuid().v4(),
@@ -556,10 +644,11 @@ class NotificationService {
       },
       deepLink: '/profile',
       notificationKey: notificationKey,
+      createdBy: authUserId,
       createdAt: DateTime.now(),
     );
 
-    await _repo.createNotification(notification);
+    await _emitNotification(notification);
   }
 
   /// Emitted for verified analytics insights
@@ -571,6 +660,7 @@ class NotificationService {
     Map<String, dynamic>? metadata,
   }) async {
     final notificationKey = 'insight:${familyId}_$insightKey';
+    final authUserId = _client?.auth.currentUser?.id ?? _ref.read(currentUserProvider)?.id;
 
     final notification = SpendlyNotification(
       id: const Uuid().v4(),
@@ -581,9 +671,10 @@ class NotificationService {
       payload: metadata ?? {},
       deepLink: '/analytics',
       notificationKey: notificationKey,
+      createdBy: authUserId,
       createdAt: DateTime.now(),
     );
 
-    await _repo.createNotification(notification);
+    await _emitNotification(notification);
   }
 }

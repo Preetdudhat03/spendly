@@ -199,11 +199,40 @@ serve(async (req) => {
       });
     }
 
-    // Deduplicate device tokens to ensure each physical token receives only one push
+    // 3. Collect active device tokens currently associated with the creator (author of this event)
+    const creatorTokens = new Set<string>();
+    if (record.created_by) {
+      const { data: creatorRows } = await supabase
+        .from("user_device_tokens")
+        .select("push_token, device_token")
+        .eq("user_id", record.created_by)
+        .eq("is_active", true);
+
+      if (creatorRows) {
+        for (const r of creatorRows) {
+          if (r.push_token) creatorTokens.add(r.push_token);
+          if (r.device_token) creatorTokens.add(r.device_token);
+        }
+      }
+    }
+
+    // Deduplicate device tokens and filter out any token currently assigned to the creator
     const uniqueTokensMap = new Map<string, any>();
     for (const device of deviceTokens) {
       const token = device.push_token || device.device_token;
-      if (token && !uniqueTokensMap.has(token)) {
+      if (!token) continue;
+
+      // Multi-Account Isolation Guard:
+      // If this token belongs to the device where the creator is currently signed in,
+      // it is a leftover from a previous session on the creator's device.
+      // Deactivate it in the database and skip dispatching!
+      if (creatorTokens.has(token)) {
+        console.log(`[PushFunction] Deactivating stale token for previous user ${device.user_id} on creator's active device`);
+        await supabase.from("user_device_tokens").update({ is_active: false }).eq("id", device.id);
+        continue;
+      }
+
+      if (!uniqueTokensMap.has(token)) {
         uniqueTokensMap.set(token, device);
       }
     }
@@ -246,6 +275,8 @@ serve(async (req) => {
           type: String(record.type),
           deep_link: String(record.deep_link || "/expenses"),
           created_at: String(record.created_at),
+          created_by: String(record.created_by || ""),
+          user_id: String(record.user_id || device.user_id || ""),
         };
 
         if (record.payload) {
@@ -322,6 +353,8 @@ serve(async (req) => {
           type: record.type,
           deep_link: record.deep_link || "/expenses",
           created_at: record.created_at,
+          created_by: record.created_by || "",
+          user_id: device.user_id || record.user_id || "",
           ...(record.payload || {}),
         },
         priority: "high",

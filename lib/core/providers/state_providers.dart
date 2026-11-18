@@ -360,6 +360,20 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   Future<void> signOut() async {
     state = state.copyWith(isLoading: true);
+    debugPrint('[NOTIFICATION] AuthNotifier.signOut started');
+
+    // 1. Deactivate FCM device token and stop notification services before Supabase session is destroyed
+    try {
+      await _ref.read(notificationServiceProvider).onSignOut();
+    } catch (e) {
+      debugPrint('[NOTIFICATION] Error during notificationService.onSignOut: $e');
+    }
+
+    // 2. Reset user-specific notification and preferences providers
+    _ref.read(notificationsProvider.notifier).reset();
+    _ref.read(notificationPreferencesProvider.notifier).reset();
+
+    // 3. Clear local active user pointer and sign out
     await HiveService.settings.delete('active_user_id');
     await _dbService.signOut();
     await HiveService.openUserBoxes(HiveService.guestNamespace);
@@ -367,6 +381,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     _ref.read(familyProvider.notifier).reset();
     _ref.read(expenseProvider.notifier).reset();
     _ref.read(budgetProvider.notifier).reset();
+    debugPrint('[NOTIFICATION] AuthNotifier.signOut completed');
   }
 
   Future<void> deleteAccount() async {
@@ -521,8 +536,12 @@ class FamilyNotifier extends StateNotifier<FamilyState> {
   Timer? _debounceTimer;
 
   FamilyNotifier(this._familyRepo, this._ref) : super(FamilyState.initial()) {
-    HiveService.families.watch().listen((_) => _onHiveChanged());
-    HiveService.familyMembers.watch().listen((_) => _onHiveChanged());
+    try {
+      HiveService.families.watch().listen((_) => _onHiveChanged());
+      HiveService.familyMembers.watch().listen((_) => _onHiveChanged());
+    } catch (_) {
+      // Ignore in unit tests or before user boxes are initialized
+    }
   }
 
   void _onHiveChanged() {
@@ -815,10 +834,14 @@ class ExpenseNotifier extends StateNotifier<ExpenseState> {
   }) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      final activeUserId = HiveService.settings.get('active_user_id') ?? '';
+      final authUserId = Supabase.instance.client.auth.currentUser?.id ?? _ref.read(currentUserProvider)?.id;
+      final activeUserId = authUserId ?? (HiveService.settings.get('active_user_id') as String? ?? '');
       final family = _familyRepo.getCurrentFamily(activeUserId);
       final familyId = family?.id ?? '';
-      final displayName = HiveService.profiles.get(activeUserId)?.displayName ?? 'User';
+      final displayName = _ref.read(authProvider).displayName ??
+          Supabase.instance.client.auth.currentUser?.userMetadata?['display_name'] as String? ??
+          HiveService.profiles.get(activeUserId)?.displayName ??
+          'User';
 
       final newExpense = await _expenseRepo.addExpense(
         familyId: familyId,
@@ -844,7 +867,7 @@ class ExpenseNotifier extends StateNotifier<ExpenseState> {
           memberName: displayName,
           amount: amount,
           category: category,
-          createdByUserId: activeUserId,
+          createdByUserId: authUserId ?? activeUserId,
         );
 
         // Check budget thresholds
@@ -875,10 +898,14 @@ class ExpenseNotifier extends StateNotifier<ExpenseState> {
   Future<bool> deleteExpense(String id) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      final activeUserId = HiveService.settings.get('active_user_id') ?? '';
+      final authUserId = Supabase.instance.client.auth.currentUser?.id ?? _ref.read(currentUserProvider)?.id;
+      final activeUserId = authUserId ?? (HiveService.settings.get('active_user_id') as String? ?? '');
       final family = _familyRepo.getCurrentFamily(activeUserId);
       final familyId = family?.id ?? '';
-      final displayName = HiveService.profiles.get(activeUserId)?.displayName ?? 'User';
+      final displayName = _ref.read(authProvider).displayName ??
+          Supabase.instance.client.auth.currentUser?.userMetadata?['display_name'] as String? ??
+          HiveService.profiles.get(activeUserId)?.displayName ??
+          'User';
 
       final expenses = _expenseRepo.getExpenses(familyId);
       final currentExpense = expenses.firstWhere(
@@ -911,7 +938,7 @@ class ExpenseNotifier extends StateNotifier<ExpenseState> {
           memberName: displayName,
           amount: currentExpense.amount,
           category: currentExpense.category,
-          deletedByUserId: activeUserId,
+          deletedByUserId: authUserId ?? activeUserId,
         );
       }
 
@@ -932,10 +959,14 @@ class ExpenseNotifier extends StateNotifier<ExpenseState> {
   }) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      final activeUserId = HiveService.settings.get('active_user_id') ?? '';
+      final authUserId = Supabase.instance.client.auth.currentUser?.id ?? _ref.read(currentUserProvider)?.id;
+      final activeUserId = authUserId ?? (HiveService.settings.get('active_user_id') as String? ?? '');
       final family = _familyRepo.getCurrentFamily(activeUserId);
       final familyId = family?.id ?? '';
-      final displayName = HiveService.profiles.get(activeUserId)?.displayName ?? 'User';
+      final displayName = _ref.read(authProvider).displayName ??
+          Supabase.instance.client.auth.currentUser?.userMetadata?['display_name'] as String? ??
+          HiveService.profiles.get(activeUserId)?.displayName ??
+          'User';
 
       final currentExpense = _expenseRepo.getExpenses(familyId).firstWhere((e) => e.id == id);
       final oldAmount = currentExpense.amount;
@@ -963,7 +994,7 @@ class ExpenseNotifier extends StateNotifier<ExpenseState> {
           oldAmount: oldAmount,
           newAmount: amount,
           category: category,
-          updatedByUserId: activeUserId,
+          updatedByUserId: authUserId ?? activeUserId,
         );
 
         // Check budget thresholds

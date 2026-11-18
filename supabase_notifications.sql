@@ -139,3 +139,92 @@ begin
     alter publication supabase_realtime add table public.notifications;
   end if;
 end $$;
+
+-- 4. Clean Multi-Account Device Token Reassignment Trigger
+-- Ensures that when an account activates a device token, any previous account on that physical device
+-- or sharing the same FCM token is cleanly deactivated.
+create or replace function public.handle_device_token_reassignment()
+returns trigger as $$
+begin
+  if new.is_active = true then
+    update public.user_device_tokens
+    set is_active = false, updated_at = now()
+    where (device_id = new.device_id or push_token = new.push_token)
+      and user_id != new.user_id
+      and is_active = true;
+  end if;
+  return new;
+end;
+$$ language plpgsql security definer;
+
+drop trigger if exists on_device_token_registered on public.user_device_tokens;
+create trigger on_device_token_registered
+  before insert or update of is_active, push_token on public.user_device_tokens
+  for each row
+  execute function public.handle_device_token_reassignment();
+
+-- Ensure created_by column exists on notifications table
+alter table public.notifications add column if not exists created_by uuid references auth.users(id) on delete set null;
+
+-- 5. Atomic RPC for Device Token Registration with Guaranteed Multi-Account Isolation
+create or replace function public.register_device_token(
+  p_device_id text,
+  p_platform text,
+  p_push_token text
+)
+returns void as $$
+begin
+  -- Deactivate any active token for other users sharing this physical device ID or push token
+  update public.user_device_tokens
+  set is_active = false, updated_at = now()
+  where (device_id = p_device_id or push_token = p_push_token)
+    and user_id != auth.uid()
+    and is_active = true;
+
+  -- Upsert current user's token
+  insert into public.user_device_tokens (
+    user_id,
+    device_id,
+    platform,
+    push_token,
+    device_token,
+    is_active,
+    last_seen_at,
+    updated_at
+  )
+  values (
+    auth.uid(),
+    p_device_id,
+    p_platform,
+    p_push_token,
+    p_push_token,
+    true,
+    now(),
+    now()
+  )
+  on conflict (user_id, device_id)
+  do update set
+    platform = excluded.platform,
+    push_token = excluded.push_token,
+    device_token = excluded.device_token,
+    is_active = true,
+    last_seen_at = now(),
+    updated_at = now();
+end;
+$$ language plpgsql security definer;
+
+-- 6. Atomic RPC for Deactivating Device Token on Logout
+create or replace function public.deactivate_device_token(
+  p_device_id text,
+  p_push_token text default null
+)
+returns void as $$
+begin
+  update public.user_device_tokens
+  set is_active = false, updated_at = now()
+  where user_id = auth.uid()
+    and (device_id = p_device_id or (p_push_token is not null and push_token = p_push_token));
+end;
+$$ language plpgsql security definer;
+
+

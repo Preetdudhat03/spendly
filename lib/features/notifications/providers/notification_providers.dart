@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:spendly/core/providers/auth_providers.dart';
 import 'package:spendly/core/providers/state_providers.dart';
 import 'package:spendly/core/services/hive_service.dart';
 import 'package:spendly/features/notifications/models/notification_model.dart';
@@ -104,6 +105,22 @@ class NotificationsNotifier extends StateNotifier<NotificationsState> {
         loadNotifications();
       }
     });
+
+    // Listen to auth changes: reset on logout, reload on account switch
+    _ref.listen(authProvider, (previousAuth, nextAuth) {
+      debugPrint('[NOTIFICATION] NotificationsNotifier auth change: prev=${previousAuth?.userId}, next=${nextAuth.userId}');
+      if (nextAuth.userId == null || nextAuth.userId!.isEmpty) {
+        reset();
+      } else if (previousAuth?.userId != nextAuth.userId) {
+        reset();
+        loadNotifications();
+      }
+    });
+  }
+
+  void reset() {
+    debugPrint('[NOTIFICATION] NotificationsNotifier state reset');
+    state = NotificationsState.initial();
   }
 
   void _listenToHive() {
@@ -129,9 +146,9 @@ class NotificationsNotifier extends StateNotifier<NotificationsState> {
 
   Future<void> loadNotifications() async {
     final family = _ref.read(familyProvider).family;
-    final user = _ref.read(authProvider).userId;
+    final user = _repo.currentAuthUserId ?? _ref.read(currentUserProvider)?.id ?? _ref.read(authProvider).userId;
 
-    if (family == null) {
+    if (family == null || user == null || user.isEmpty) {
       state = NotificationsState.initial();
       return;
     }
@@ -162,8 +179,8 @@ class NotificationsNotifier extends StateNotifier<NotificationsState> {
 
   void _reloadFromLocalCache() {
     final family = _ref.read(familyProvider).family;
-    final user = _ref.read(authProvider).userId;
-    if (family == null) return;
+    final user = _repo.currentAuthUserId ?? _ref.read(currentUserProvider)?.id ?? _ref.read(authProvider).userId;
+    if (family == null || user == null || user.isEmpty) return;
 
     final localItems = _repo.getLocalNotifications(family.id, user);
     state = state.copyWith(notifications: localItems);
@@ -242,17 +259,27 @@ class NotificationPreferencesNotifier extends StateNotifier<NotificationPreferen
       : super(const NotificationPreferences()) {
     _loadPreferences();
     _ref.listen(authProvider, (prev, next) {
-      if (prev?.userId != next.userId) {
+      if (next.userId == null || next.userId!.isEmpty) {
+        reset();
+      } else if (prev?.userId != next.userId) {
+        reset();
         _loadPreferences();
       }
     });
   }
 
+  void reset() {
+    debugPrint('[NOTIFICATION] NotificationPreferencesNotifier reset');
+    state = const NotificationPreferences();
+  }
+
   Future<void> _loadPreferences() async {
-    final userId = _ref.read(authProvider).userId;
+    final userId = _repo.currentAuthUserId ?? _ref.read(currentUserProvider)?.id ?? _ref.read(authProvider).userId;
     if (userId != null && userId.isNotEmpty) {
       final prefs = await _repo.getPreferences(userId);
       state = prefs;
+    } else {
+      reset();
     }
   }
 

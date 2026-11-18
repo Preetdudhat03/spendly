@@ -1,3 +1,4 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive/hive.dart';
@@ -33,7 +34,12 @@ class NotificationRepository {
 
   String? get _currentUserId {
     try {
-      return _client?.auth.currentUser?.id ?? (HiveService.settings.get('active_user_id') as String?);
+      final authId = _client?.auth.currentUser?.id;
+      if (authId != null && authId.isNotEmpty) return authId;
+      if (_client == null) {
+        return HiveService.settings.get('active_user_id') as String?;
+      }
+      return null;
     } catch (_) {
       return null;
     }
@@ -279,26 +285,53 @@ class NotificationRepository {
   }
 
   Future<SpendlyNotification?> createNotification(SpendlyNotification notification) async {
+    final client = _client;
+    final currentUserId = client?.auth.currentUser?.id;
+
+    debugPrint('[NOTIFICATION] Notification creation started: key=${notification.notificationKey}, type=${notification.type.value}');
+    debugPrint('[NOTIFICATION] Authenticated user: ${currentUserId ?? "none"}');
+
+    // Strict Ownership & Race Condition Guard:
+    // If the client is authenticated with Supabase, the notification must belong to the active user.
+    SpendlyNotification effectiveNotification = notification;
+    if (client != null && currentUserId != null && currentUserId.isNotEmpty) {
+      if (notification.createdBy != null && notification.createdBy != currentUserId) {
+        debugPrint('[NOTIFICATION] Rejected stale operation: creator (${notification.createdBy}) does not match authenticated user ($currentUserId)');
+        return null;
+      }
+      if (notification.createdBy == null) {
+        effectiveNotification = notification.copyWith(createdBy: currentUserId);
+      }
+    }
+
+    debugPrint('[NOTIFICATION] Notification owner: ${effectiveNotification.createdBy}');
+    debugPrint('[NOTIFICATION] Notification recipient: ${effectiveNotification.userId ?? "family"}');
+
     // 0. Idempotency check: if notificationKey is present, check if already stored anywhere
-    if (notification.notificationKey != null && notification.notificationKey!.isNotEmpty) {
-      final exists = await hasNotificationKey(notification.familyId, notification.notificationKey!);
+    if (effectiveNotification.notificationKey != null && effectiveNotification.notificationKey!.isNotEmpty) {
+      final exists = await hasNotificationKey(effectiveNotification.familyId, effectiveNotification.notificationKey!);
       if (exists) {
-        debugPrint('[NotificationRepository] Duplicate notification key ignored: ${notification.notificationKey}');
+        debugPrint('[NOTIFICATION] Duplicate notification key ignored: ${effectiveNotification.notificationKey}');
         return null;
       }
     }
 
     // 1. If not authored by current user (or personal reminder), save locally
-    final client = _client;
-    final currentUserId = client?.auth.currentUser?.id;
-    if (notification.createdBy == null || notification.createdBy != currentUserId || notification.type.category != NotificationCategory.expense) {
-      await saveLocalNotification(notification);
+    if (effectiveNotification.createdBy == null || effectiveNotification.createdBy != currentUserId || effectiveNotification.type.category != NotificationCategory.expense) {
+      await saveLocalNotification(effectiveNotification);
     }
 
     // 2. If authenticated online, sync to Supabase for other family members
     if (client != null && client.auth.currentUser != null) {
+      // Re-verify session identity immediately prior to writing to database
+      final writeTimeUserId = client.auth.currentUser?.id;
+      if (writeTimeUserId != currentUserId) {
+        debugPrint('[NOTIFICATION] Rejected stale write: user switched from $currentUserId to $writeTimeUserId during execution');
+        return null;
+      }
+
       try {
-        final payload = notification.toJson();
+        final payload = effectiveNotification.toJson();
         final response = await client
             .from('notifications')
             .upsert(
@@ -310,15 +343,15 @@ class NotificationRepository {
 
         if (response != null) {
           final saved = SpendlyNotification.fromJson(response);
-          debugPrint('[NotificationRepository] Successfully inserted remote notification: ${saved.title}');
+          debugPrint('[NOTIFICATION] Notification created successfully: ${saved.id} (${saved.title})');
           return saved;
         }
       } catch (e) {
-        debugPrint('[NotificationRepository] Remote insert error: $e');
+        debugPrint('[NOTIFICATION] Remote insert error: $e');
       }
     }
 
-    return notification;
+    return effectiveNotification;
   }
 
   Future<void> markAsRead(String notificationId) async {
@@ -529,14 +562,18 @@ class NotificationRepository {
     required String platform,
   }) async {
     final client = _client;
-    final effectiveUserId = client?.auth.currentUser?.id ?? (userId.isNotEmpty ? userId : null);
-    if (client == null || effectiveUserId == null || effectiveUserId.isEmpty) {
+    final effectiveUserId = client?.auth.currentUser?.id ?? (client == null && userId.isNotEmpty ? userId : null);
+    if (effectiveUserId == null || effectiveUserId.isEmpty) {
       final msg = 'Cannot register token: User is not logged in.';
-      debugPrint('[NotificationRepository] $msg');
+      debugPrint('[NOTIFICATION] $msg');
       return msg;
     }
 
     final deviceId = HiveService.deviceId;
+    debugPrint('[NOTIFICATION] FCM token registration started');
+    debugPrint('[NOTIFICATION] Authenticated user: $effectiveUserId');
+    debugPrint('[NOTIFICATION] Device ID: $deviceId');
+
     final payload = {
       'user_id': effectiveUserId,
       'device_id': deviceId,
@@ -548,44 +585,107 @@ class NotificationRepository {
       'updated_at': DateTime.now().toIso8601String(),
     };
 
-    try {
-      await client.from('user_device_tokens').upsert(
-        payload,
-        onConflict: 'user_id,device_id',
-      );
-
-      final msg = 'Device token registered successfully for user $effectiveUserId';
-      debugPrint('[NotificationRepository] $msg');
-      return msg;
-    } catch (e) {
-      debugPrint('[NotificationRepository] Upsert error (trying fallback): $e');
+    if (client != null) {
       try {
-        final existing = await client
-            .from('user_device_tokens')
-            .select('id')
-            .eq('user_id', effectiveUserId)
-            .eq('device_id', deviceId)
-            .maybeSingle();
-
-        if (existing != null && existing['id'] != null) {
-          await client.from('user_device_tokens').update({
-            'push_token': token,
-            'device_token': token,
-            'is_active': true,
-            'last_seen_at': DateTime.now().toIso8601String(),
-            'updated_at': DateTime.now().toIso8601String(),
-          }).eq('id', existing['id']);
-        } else {
-          await client.from('user_device_tokens').insert(payload);
-        }
-        final msg = 'Device token registered via fallback for user $effectiveUserId';
-        debugPrint('[NotificationRepository] $msg');
+        // 1. Try atomic security-definer RPC if deployed in Supabase
+        await client.rpc('register_device_token', params: {
+          'p_device_id': deviceId,
+          'p_platform': platform,
+          'p_push_token': token,
+        });
+        final msg = 'Device token registered successfully via RPC for user $effectiveUserId';
+        debugPrint('[NOTIFICATION] FCM token registration completed: $msg');
         return msg;
-      } catch (fallbackError) {
-        final msg = 'Failed to register token in Supabase: $fallbackError';
-        debugPrint('[NotificationRepository] $msg');
-        return msg;
+      } catch (rpcErr) {
+        debugPrint('[NOTIFICATION] RPC register_device_token notice (using direct upsert): $rpcErr');
       }
+
+      try {
+        await client.from('user_device_tokens').upsert(
+          payload,
+          onConflict: 'user_id,device_id',
+        );
+
+        final msg = 'Device token registered successfully for user $effectiveUserId';
+        debugPrint('[NOTIFICATION] FCM token registration completed: $msg');
+        return msg;
+      } catch (e) {
+        debugPrint('[NOTIFICATION] Upsert error (trying fallback): $e');
+        try {
+          final existing = await client
+              .from('user_device_tokens')
+              .select('id')
+              .eq('user_id', effectiveUserId)
+              .eq('device_id', deviceId)
+              .maybeSingle();
+
+          if (existing != null && existing['id'] != null) {
+            await client.from('user_device_tokens').update({
+              'push_token': token,
+              'device_token': token,
+              'is_active': true,
+              'last_seen_at': DateTime.now().toIso8601String(),
+              'updated_at': DateTime.now().toIso8601String(),
+            }).eq('id', existing['id']);
+          } else {
+            await client.from('user_device_tokens').insert(payload);
+          }
+          final msg = 'Device token registered via fallback for user $effectiveUserId';
+          debugPrint('[NOTIFICATION] FCM token registration completed: $msg');
+          return msg;
+        } catch (fallbackError) {
+          final msg = 'Failed to register token in Supabase: $fallbackError';
+          debugPrint('[NOTIFICATION] $msg');
+          return msg;
+        }
+      }
+    }
+    return 'Device token saved locally';
+  }
+
+  Future<bool> unregisterDeviceToken({String? userId, String? deviceId}) async {
+    final client = _client;
+    final currentUserId = userId ?? client?.auth.currentUser?.id;
+    final effectiveDeviceId = deviceId ?? HiveService.deviceId;
+
+    if (client == null || currentUserId == null || currentUserId.isEmpty) {
+      debugPrint('[NOTIFICATION] Cannot unregister device token: No active authenticated session');
+      return false;
+    }
+
+    debugPrint('[NOTIFICATION] Unregistering FCM device token for user: $currentUserId, device: $effectiveDeviceId');
+    try {
+      // 0. Try atomic RPC if deployed in Supabase
+      try {
+        final currentToken = await FirebaseMessaging.instance.getToken();
+        await client.rpc('deactivate_device_token', params: {
+          'p_device_id': effectiveDeviceId,
+          'p_push_token': currentToken,
+        });
+      } catch (_) {}
+
+      // 1. Deactivate by user_id and device_id
+      await client.from('user_device_tokens').update({
+        'is_active': false,
+        'updated_at': DateTime.now().toIso8601String(),
+      }).eq('user_id', currentUserId).eq('device_id', effectiveDeviceId);
+
+      // 2. Also deactivate by push token for current user to catch any token variant
+      try {
+        final currentToken = await FirebaseMessaging.instance.getToken();
+        if (currentToken != null && currentToken.isNotEmpty) {
+          await client.from('user_device_tokens').update({
+            'is_active': false,
+            'updated_at': DateTime.now().toIso8601String(),
+          }).eq('user_id', currentUserId).eq('push_token', currentToken);
+        }
+      } catch (_) {}
+
+      debugPrint('[NOTIFICATION] Successfully unregistered device token for user: $currentUserId');
+      return true;
+    } catch (e) {
+      debugPrint('[NOTIFICATION] Error unregistering device token: $e');
+      return false;
     }
   }
 }
