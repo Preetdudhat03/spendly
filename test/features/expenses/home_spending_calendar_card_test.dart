@@ -255,6 +255,16 @@ void main() {
 
       expect(find.byType(DrillDownSheet), findsOneWidget);
       expect(find.text('Friday, 6 November 2026'), findsOneWidget);
+
+      // Scroll down inside DrillDownSheet to reveal the transaction list
+      await tester.scrollUntilVisible(
+        find.text('Family Lunch'),
+        200,
+        scrollable: find.descendant(
+          of: find.byType(DrillDownSheet),
+          matching: find.byType(Scrollable),
+        ).first,
+      );
       expect(find.text('Family Lunch'), findsOneWidget);
       expect(find.text('Snacks'), findsOneWidget);
     });
