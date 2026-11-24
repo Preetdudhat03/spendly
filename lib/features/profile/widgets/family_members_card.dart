@@ -132,6 +132,7 @@ class _FamilyMembersCardState extends ConsumerState<FamilyMembersCard> {
 
     showModalBottomSheet(
       context: context,
+      useRootNavigator: true,
       isScrollControlled: true,
       useSafeArea: true,
       backgroundColor: Theme.of(context).cardTheme.color ??
