@@ -222,20 +222,31 @@ class BudgetAnalysisCard extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-            color: colorScheme.onSurfaceVariant,
+        Flexible(
+          child: Text(
+            label,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: colorScheme.onSurfaceVariant,
+            ),
           ),
         ),
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 15,
-            fontWeight: FontWeight.bold,
-            color: valueColor,
+        const SizedBox(width: 8),
+        Flexible(
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerRight,
+            child: Text(
+              value,
+              maxLines: 1,
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.bold,
+                color: valueColor,
+              ),
+            ),
           ),
         ),
       ],
