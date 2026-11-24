@@ -75,7 +75,10 @@ void main() {
 
       // Next month button should be disabled when on current month
       final nextBtn = tester.widget<IconButton>(
-        find.byTooltip('Next Month'),
+        find.ancestor(
+          of: find.byIcon(Icons.chevron_right_rounded),
+          matching: find.byType(IconButton),
+        ),
       );
       expect(nextBtn.onPressed, isNull);
     });
