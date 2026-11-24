@@ -436,7 +436,7 @@ class _FamilyMembersCardState extends ConsumerState<FamilyMembersCard> {
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               itemCount: widget.members.length,
-              separatorBuilder: (_, __) => Divider(
+              separatorBuilder: (_, _) => Divider(
                 height: 1,
                 color: colorScheme.outline
                     .withValues(alpha: isDark ? 0.2 : 0.35),
