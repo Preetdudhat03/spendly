@@ -153,7 +153,7 @@ class _FamilyMembersCardState extends ConsumerState<FamilyMembersCard> {
                 24,
                 14,
                 24,
-                MediaQuery.of(ctx).viewInsets.bottom + 24,
+                MediaQuery.of(ctx).viewInsets.bottom + 32,
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
