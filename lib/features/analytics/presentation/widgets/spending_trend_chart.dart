@@ -199,7 +199,7 @@ class SpendingTrendChart extends StatelessWidget {
                         sideTitles: SideTitles(
                           showTitles: true,
                           interval: max(100.0, (maxAmount / 4).roundToDouble()),
-                          reservedSize: 42,
+                          reservedSize: 54,
                           getTitlesWidget: (value, meta) {
                             if (value == 0) return const SizedBox.shrink();
                             String formatted = '';
@@ -213,6 +213,8 @@ class SpendingTrendChart extends StatelessWidget {
                               axisSide: meta.axisSide,
                               child: Text(
                                 formatted,
+                                maxLines: 1,
+                                softWrap: false,
                                 style: TextStyle(
                                   color: colorScheme.onSurfaceVariant,
                                   fontSize: 10,

@@ -127,7 +127,7 @@ class BudgetAnalysisCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                const SizedBox(width: 24),
+                const SizedBox(width: 14),
 
                 // Circular Progress Gauge
                 SizedBox(
