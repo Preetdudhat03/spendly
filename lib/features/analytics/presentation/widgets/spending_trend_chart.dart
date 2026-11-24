@@ -91,45 +91,53 @@ class SpendingTrendChart extends StatelessWidget {
             // Chart Title & Legend
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Spending Trend',
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: colorScheme.onSurface,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Spending Trend',
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: colorScheme.onSurface,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      'Cumulative spending trajectory',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: colorScheme.onSurfaceVariant,
+                      const SizedBox(height: 2),
+                      Text(
+                        'Cumulative spending trajectory',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: colorScheme.onSurfaceVariant,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
+                const SizedBox(width: 8),
                 // Legend indicators
-                Row(
-                  children: [
-                    _buildLegendItem(
-                      context,
-                      'This Period',
-                      colorScheme.primary,
-                      false,
-                    ),
-                    const SizedBox(width: 12),
-                    if (prevSpots.isNotEmpty)
+                Flexible(
+                  child: Wrap(
+                    alignment: WrapAlignment.end,
+                    spacing: 12,
+                    runSpacing: 4,
+                    children: [
                       _buildLegendItem(
                         context,
-                        'Last Period',
-                        colorScheme.onSurfaceVariant,
-                        true,
+                        'This Period',
+                        colorScheme.primary,
+                        false,
                       ),
-                  ],
+                      if (prevSpots.isNotEmpty)
+                        _buildLegendItem(
+                          context,
+                          'Last Period',
+                          colorScheme.onSurfaceVariant,
+                          true,
+                        ),
+                    ],
+                  ),
                 ),
               ],
             ),
