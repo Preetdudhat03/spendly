@@ -11,7 +11,7 @@ void main() {
   final family = Family(
     id: 'fam-1',
     name: 'Dudhat Family',
-    inviteCode: 'FAM-1234',
+    familyCode: 'FAM-1234',
     createdBy: 'u-admin',
     createdAt: DateTime(2026, 1, 1),
   );
