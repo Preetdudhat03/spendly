@@ -103,7 +103,10 @@ void main() {
 
       // Next month button should now be enabled
       final nextBtn = tester.widget<IconButton>(
-        find.byTooltip('Next Month'),
+        find.ancestor(
+          of: find.byIcon(Icons.chevron_right_rounded),
+          matching: find.byType(IconButton),
+        ),
       );
       expect(nextBtn.onPressed, isNotNull);
 
@@ -138,6 +141,7 @@ void main() {
       await tester.pumpWidget(
         _wrapWithApp(
           child: HomeSpendingCalendarCard(
+            key: const ValueKey('feb-2026'),
             expenses: const [],
             currencyFormat: currencyFormat,
             initialMonth: DateTime(2026, 2, 10),
