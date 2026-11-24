@@ -35,6 +35,28 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   final _budgetController = TextEditingController();
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
+  Set<String> _leaveRequestedUserIds = {};
+  String? _loadedLeaveRequestFamilyId;
+
+  Future<void> _ensureLeaveRequestsLoaded(String familyId) async {
+    if (_loadedLeaveRequestFamilyId == familyId) return;
+    _loadedLeaveRequestFamilyId = familyId;
+    final prefs = await SharedPreferences.getInstance();
+    final saved = prefs.getStringList('leave_requested_members_$familyId') ?? [];
+    if (mounted) {
+      setState(() {
+        _leaveRequestedUserIds = saved.toSet();
+      });
+    }
+  }
+
+  Future<void> _persistLeaveRequests(String familyId) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(
+      'leave_requested_members_$familyId',
+      _leaveRequestedUserIds.toList(),
+    );
+  }
 
   void _showEditBudgetDialog(double currentBudget) {
     _budgetController.text = CurrencyFormatter.toEditString(currentBudget);
