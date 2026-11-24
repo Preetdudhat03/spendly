@@ -651,6 +651,51 @@ class NotificationService {
     await _emitNotification(notification);
   }
 
+  /// Emitted when an admin requests a member to leave the family
+  Future<void> notifyFamilyLeaveRequest({
+    required String familyId,
+    required String targetUserId,
+    required String targetMemberName,
+    required String familyName,
+    required String requestedByName,
+    String? reason,
+  }) async {
+    final notificationKey =
+        'family_leave_request:${familyId}_${targetUserId}_${DateTime.now().millisecondsSinceEpoch}';
+    final authUserId =
+        _client?.auth.currentUser?.id ?? _ref.read(currentUserProvider)?.id ?? '';
+
+    final trimmedReason = reason?.trim();
+    final reasonSuffix = (trimmedReason != null && trimmedReason.isNotEmpty)
+        ? ' Note: "$trimmedReason"'
+        : '';
+
+    final notification = SpendlyNotification(
+      id: const Uuid().v4(),
+      userId: targetUserId,
+      familyId: familyId,
+      type: NotificationType.familyMemberActivity,
+      priority: NotificationPriority.high,
+      title: 'Request to Leave Family',
+      body:
+          '$requestedByName has requested $targetMemberName to leave $familyName.$reasonSuffix',
+      payload: {
+        'action': 'leave_request',
+        'target_user_id': targetUserId,
+        'target_member_name': targetMemberName,
+        'requested_by': requestedByName,
+        if (trimmedReason != null && trimmedReason.isNotEmpty)
+          'reason': trimmedReason,
+      },
+      deepLink: '/profile',
+      notificationKey: notificationKey,
+      createdBy: authUserId,
+      createdAt: DateTime.now(),
+    );
+
+    await _emitNotification(notification);
+  }
+
   /// Emitted for verified analytics insights
   Future<void> notifySpendingInsight({
     required String familyId,
