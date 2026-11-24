@@ -3,13 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:spendly/core/providers/state_providers.dart';
 import 'package:spendly/core/utils/currency_formatter.dart';
-import 'package:spendly/core/services/suggestions_service.dart';
 import 'package:spendly/core/widgets/shimmer_loading.dart';
 import 'package:spendly/features/expenses/widgets/budget_overview_card.dart';
 import 'package:spendly/features/expenses/widgets/financial_hero.dart';
-import 'package:spendly/features/expenses/widgets/frequent_expenses_carousel.dart';
 import 'package:spendly/features/expenses/widgets/home_header.dart';
-import 'package:spendly/features/expenses/widgets/quick_category_carousel.dart';
+import 'package:spendly/features/expenses/widgets/home_spending_calendar_card.dart';
 import 'package:spendly/features/expenses/widgets/recent_transactions_section.dart';
 import 'package:spendly/features/expenses/widgets/spending_metric_card.dart';
 import 'package:go_router/go_router.dart';
@@ -93,13 +91,6 @@ class HomeScreen extends ConsumerWidget {
 
     final currencyFormat = NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 2);
 
-    // Smart Suggestions
-    final blacklistedKeys = ref.watch(blacklistSuggestionsProvider);
-    final suggestions = SuggestionsService.generateSuggestions(expenseState.expenses).where((sug) {
-      final key = '${sug.category}|${sug.description}|${sug.amount}';
-      return !blacklistedKeys.contains(key);
-    }).toList();
-
     final displayName = authState.displayName ?? 'Family Member';
     final familyName = familyState.family?.name ?? 'Spendly';
 
@@ -149,12 +140,10 @@ class HomeScreen extends ConsumerWidget {
                           currencyFormat: currencyFormat,
                         );
 
-                        final suggestionsWidget = FrequentExpensesCarousel(
-                          suggestions: suggestions,
+                        final calendarWidget = HomeSpendingCalendarCard(
+                          expenses: expenseState.expenses,
                           currencyFormat: currencyFormat,
                         );
-
-                        const quickAddWidget = QuickCategoryCarousel();
 
                         final recentExpensesWidget = RecentTransactionsSection(
                           expenses: expenseState.expenses,
@@ -188,11 +177,7 @@ class HomeScreen extends ConsumerWidget {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     const SizedBox(height: 8),
-                                    if (suggestions.isNotEmpty) ...[
-                                      suggestionsWidget,
-                                      const SizedBox(height: 24),
-                                    ],
-                                    quickAddWidget,
+                                    calendarWidget,
                                     const SizedBox(height: 24),
                                     recentExpensesWidget,
                                   ],
@@ -213,12 +198,8 @@ class HomeScreen extends ConsumerWidget {
                             metricsWidget,
                             const SizedBox(height: 24),
                             budgetWidget,
-                            if (suggestions.isNotEmpty) ...[
-                              const SizedBox(height: 24),
-                              suggestionsWidget,
-                            ],
                             const SizedBox(height: 24),
-                            quickAddWidget,
+                            calendarWidget,
                             const SizedBox(height: 24),
                             recentExpensesWidget,
                           ],
@@ -284,12 +265,31 @@ class HomeScreen extends ConsumerWidget {
             SizedBox(height: 24),
             ShimmerPlaceholder(height: 140, borderRadius: 24),
             SizedBox(height: 24),
-            ShimmerPlaceholder(width: 160, height: 22),
+            // Calendar shimmer card (header, summary strip, weekday row, grid)
+            ShimmerPlaceholder(width: 170, height: 22),
             SizedBox(height: 12),
-            ShimmerPlaceholder(height: 96, borderRadius: 18),
+            ShimmerPlaceholder(height: 64, borderRadius: 18),
+            SizedBox(height: 14),
+            Row(
+              children: [
+                Expanded(child: ShimmerPlaceholder(height: 14, borderRadius: 6)),
+                SizedBox(width: 8),
+                Expanded(child: ShimmerPlaceholder(height: 14, borderRadius: 6)),
+                SizedBox(width: 8),
+                Expanded(child: ShimmerPlaceholder(height: 14, borderRadius: 6)),
+                SizedBox(width: 8),
+                Expanded(child: ShimmerPlaceholder(height: 14, borderRadius: 6)),
+                SizedBox(width: 8),
+                Expanded(child: ShimmerPlaceholder(height: 14, borderRadius: 6)),
+                SizedBox(width: 8),
+                Expanded(child: ShimmerPlaceholder(height: 14, borderRadius: 6)),
+                SizedBox(width: 8),
+                Expanded(child: ShimmerPlaceholder(height: 14, borderRadius: 6)),
+              ],
+            ),
+            SizedBox(height: 10),
+            ShimmerPlaceholder(height: 220, borderRadius: 20),
             SizedBox(height: 24),
-            ShimmerPlaceholder(width: 160, height: 22),
-            SizedBox(height: 12),
             ShimmerListPlaceholder(itemCount: 4),
           ],
         ),

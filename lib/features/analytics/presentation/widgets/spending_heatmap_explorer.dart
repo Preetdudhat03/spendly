@@ -9,12 +9,14 @@ enum ExplorerLevel { year, month, day }
 class SpendingHeatmapExplorer extends StatefulWidget {
   final List<Expense> expenses;
   final int initialYear;
+  final int? initialMonth;
   final String? activeMemberName;
 
   const SpendingHeatmapExplorer({
     super.key,
     required this.expenses,
     required this.initialYear,
+    this.initialMonth,
     this.activeMemberName,
   });
 
@@ -22,6 +24,7 @@ class SpendingHeatmapExplorer extends StatefulWidget {
     BuildContext context, {
     required List<Expense> expenses,
     required int initialYear,
+    int? initialMonth,
     String? activeMemberName,
   }) {
     return showModalBottomSheet(
@@ -32,6 +35,7 @@ class SpendingHeatmapExplorer extends StatefulWidget {
       builder: (context) => SpendingHeatmapExplorer(
         expenses: expenses,
         initialYear: initialYear,
+        initialMonth: initialMonth,
         activeMemberName: activeMemberName,
       ),
     );
@@ -56,8 +60,13 @@ class _SpendingHeatmapExplorerState extends State<SpendingHeatmapExplorer> {
   @override
   void initState() {
     super.initState();
-    _level = ExplorerLevel.year;
     _selectedYear = widget.initialYear;
+    if (widget.initialMonth != null) {
+      _level = ExplorerLevel.month;
+      _selectedMonth = widget.initialMonth!.clamp(1, 12);
+    } else {
+      _level = ExplorerLevel.year;
+    }
     _indexExpenses();
   }
 
