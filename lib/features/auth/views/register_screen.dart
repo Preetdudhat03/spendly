@@ -38,81 +38,47 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     super.dispose();
   }
 
+  void _safeBack() {
+    if (context.canPop()) {
+      context.pop();
+    } else {
+      context.go('/login');
+    }
+  }
+
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
 
     final name = _nameController.text.trim();
     final email = _emailController.text.trim();
-    final password = _passwordController.text.trim();
+    final password = _passwordController.text;
 
     final success = await ref.read(authProvider.notifier).signUp(email, password, name);
 
     if (!mounted) return;
 
     if (success) {
-      final stateMsg = ref.read(authProvider).error ?? 'Check your email for confirmation!';
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: const Text('Confirm Email'),
-          content: Text(stateMsg),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context); // Close dialog
-                context.go('/login'); // Return to login
-              },
-              child: const Text('OK'),
-            ),
-          ],
-        ),
-      );
+      final auth = ref.read(authProvider);
+      if (auth.userId != null) {
+        context.go('/home');
+      } else {
+        context.go('/verify-email');
+      }
     } else {
       final error = ref.read(authProvider).error ?? 'Registration failed';
       SpendlyToast.showError(context, error, isAboveNavBar: false);
     }
   }
 
-  String _checkPasswordStrength(String password) {
-    if (password.isEmpty) return '';
-    if (password.length < 6) return 'Weak';
-    
-    bool hasUppercase = password.contains(RegExp(r'[A-Z]'));
-    bool hasDigits = password.contains(RegExp(r'[0-9]'));
-    bool hasSpecialCharacters = password.contains(RegExp(r'[!@#\$%^&*(),.?":{}|<>]'));
-    
-    if (password.length >= 8 && hasUppercase && hasDigits && hasSpecialCharacters) {
-      return 'Strong';
-    }
-    if (password.length >= 6 && (hasDigits || hasSpecialCharacters)) {
-      return 'Medium';
-    }
-    return 'Weak';
-  }
-
-  Color _getStrengthColor(String strength) {
-    switch (strength) {
-      case 'Strong':
+  Color _getStrengthColor(PasswordStrengthLevel level) {
+    switch (level) {
+      case PasswordStrengthLevel.strong:
         return const Color(0xFF22C55E);
-      case 'Medium':
+      case PasswordStrengthLevel.medium:
         return const Color(0xFFF59E0B);
-      case 'Weak':
-      default:
+      case PasswordStrengthLevel.weak:
+      case PasswordStrengthLevel.none:
         return const Color(0xFFEF4444);
-    }
-  }
-
-  double _getStrengthPercent(String strength) {
-    switch (strength) {
-      case 'Strong':
-        return 1.0;
-      case 'Medium':
-        return 0.6;
-      case 'Weak':
-      default:
-        return 0.3;
     }
   }
 
@@ -141,7 +107,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
-          onPressed: () => context.pop(),
+          onPressed: _safeBack,
         ),
         title: const CapsuleHeader(
           title: 'Create Account',
@@ -341,6 +307,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                             },
                             decoration: InputDecoration(
                               labelText: 'Password',
+                              errorMaxLines: 3,
                               prefixIcon: const Icon(Icons.lock_outline_rounded, size: 20),
                               filled: true,
                               fillColor: isDark
@@ -402,17 +369,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           const SizedBox(height: 12),
                           Builder(
                             builder: (context) {
-                              final strength = _checkPasswordStrength(_passwordController.text);
-                              if (strength.isEmpty) return const SizedBox.shrink();
-                              final color = _getStrengthColor(strength);
-                              final percent = _getStrengthPercent(strength);
-                              
-                              String tip = 'Tip: Use at least 6 characters, including numbers and symbols.';
-                              if (strength == 'Medium') {
-                                tip = 'Tip: Add capital letters and symbols to make it Strong.';
-                              } else if (strength == 'Strong') {
-                                tip = 'Excellent! Your password is highly secure.';
+                              final eval = SchemaValidator.evaluatePassword(_passwordController.text);
+                              if (eval.level == PasswordStrengthLevel.none) {
+                                return const SizedBox.shrink();
                               }
+                              final color = _getStrengthColor(eval.level);
+                              final percent = eval.percent;
 
                               return Container(
                                 padding: const EdgeInsets.all(12),
@@ -430,7 +392,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                       children: [
                                         Text(
-                                          'Password Strength: $strength',
+                                          'Password Strength: ${eval.label}',
                                           style: TextStyle(
                                             fontSize: 12,
                                             fontWeight: FontWeight.w700,
@@ -459,7 +421,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                     ),
                                     const SizedBox(height: 6),
                                     Text(
-                                      tip,
+                                      eval.tip,
                                       style: TextStyle(
                                         fontSize: 11,
                                         fontWeight: FontWeight.w500,
@@ -505,7 +467,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                 ),
                               ),
                               TextButton(
-                                onPressed: () => context.pop(),
+                                onPressed: _safeBack,
                                 style: TextButton.styleFrom(
                                   padding: const EdgeInsets.symmetric(horizontal: 6),
                                 ),

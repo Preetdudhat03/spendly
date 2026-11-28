@@ -6,6 +6,8 @@ import 'package:spendly/features/auth/views/login_screen.dart';
 import 'package:spendly/features/auth/views/register_screen.dart';
 import 'package:spendly/features/auth/views/forgot_password_screen.dart';
 import 'package:spendly/features/auth/views/verify_email_screen.dart';
+import 'package:spendly/features/auth/views/otp_verification_screen.dart';
+import 'package:spendly/features/auth/views/auth_callback_screen.dart';
 import 'package:spendly/features/auth/views/startup_screen.dart';
 import 'package:spendly/features/family/views/family_setup_screen.dart';
 import 'package:spendly/features/navigation/views/main_layout.dart';
@@ -35,18 +37,40 @@ final routerProvider = Provider<GoRouter>((ref) {
       }
 
       final isLoggedIn = auth.userId != null;
-      
-      final publicRoutes = ['/login', '/register', '/forgot-password', '/verify-email', '/splash'];
+
+      final publicRoutes = [
+        '/login',
+        '/register',
+        '/forgot-password',
+        '/verify-email',
+        '/otp-verify',
+        '/auth-callback',
+        '/reset-password',
+        '/splash',
+      ];
       final isPublicRoute = publicRoutes.contains(state.matchedLocation);
 
+      // Allow OTP verification and auth-callback routes for both authenticated
+      // (e.g. email change) and unauthenticated (e.g. signup / OTP login) users.
+      if (state.matchedLocation == '/otp-verify' ||
+          state.matchedLocation == '/auth-callback' ||
+          state.matchedLocation == '/reset-password') {
+        return null;
+      }
+
       if (!isLoggedIn) {
+        // If verification is pending and user is not already on verify/otp/register/login,
+        // direct them to the verification screen instead of leaving a blank screen.
+        if (auth.isVerificationPending && !isPublicRoute) {
+          return '/verify-email';
+        }
         // If unauthenticated, allow public routes, else redirect to /login
         return isPublicRoute ? null : '/login';
       }
 
       // If they are logged in, prevent accessing public authentication routes
-      if (state.matchedLocation == '/login' || 
-          state.matchedLocation == '/register' || 
+      if (state.matchedLocation == '/login' ||
+          state.matchedLocation == '/register' ||
           state.matchedLocation == '/forgot-password' ||
           state.matchedLocation == '/verify-email' ||
           state.matchedLocation == '/splash') {
@@ -94,6 +118,27 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/verify-email',
         builder: (context, state) => const VerifyEmailScreen(),
+      ),
+      GoRoute(
+        path: '/otp-verify',
+        builder: (context, state) {
+          final email = state.uri.queryParameters['email'];
+          final modeStr = state.uri.queryParameters['mode'];
+          final mode = switch (modeStr) {
+            'signup' => OtpVerificationMode.signup,
+            'emailChange' => OtpVerificationMode.emailChange,
+            _ => OtpVerificationMode.login,
+          };
+          return OtpVerificationScreen(email: email, mode: mode);
+        },
+      ),
+      GoRoute(
+        path: '/auth-callback',
+        builder: (context, state) => AuthCallbackScreen(callbackUri: state.uri),
+      ),
+      GoRoute(
+        path: '/reset-password',
+        builder: (context, state) => AuthCallbackScreen(callbackUri: state.uri),
       ),
       GoRoute(
         path: '/family-setup',
@@ -171,6 +216,11 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const NotificationsPage(),
       ),
     ],
+    errorBuilder: (context, state) => AuthCallbackScreen(
+      callbackUri: state.uri,
+      fallbackError: state.error?.toString() ??
+          'We could not open that page. Please return to Spendly.',
+    ),
   );
 });
 
@@ -178,6 +228,7 @@ class _ProviderListenable extends ChangeNotifier {
   _ProviderListenable(Ref ref) {
     ref.listen(authProvider, (previous, next) {
       if (previous?.userId != next.userId ||
+          previous?.status != next.status ||
           previous?.isInitializing != next.isInitializing ||
           previous?.isLoading != next.isLoading) {
         notifyListeners();

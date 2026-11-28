@@ -1,3 +1,23 @@
+enum PasswordStrengthLevel { none, weak, medium, strong }
+
+class PasswordStrengthEvaluation {
+  final PasswordStrengthLevel level;
+  final String label;
+  final double percent;
+  final bool isValid;
+  final String tip;
+  final String? validationError;
+
+  const PasswordStrengthEvaluation({
+    required this.level,
+    required this.label,
+    required this.percent,
+    required this.isValid,
+    required this.tip,
+    this.validationError,
+  });
+}
+
 class SchemaValidationException implements Exception {
   final String message;
   const SchemaValidationException(this.message);
@@ -12,10 +32,12 @@ class SchemaValidator {
     r"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,253}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,253}[a-zA-Z0-9])?)*$",
   );
 
-  // Strict Password: Min 8 chars, 1 upper, 1 lower, 1 digit, 1 special char
-  static final RegExp _passwordRegExp = RegExp(
-    r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&.])[A-Za-z\d@$!%*?&.]{8,}$',
-  );
+  static final RegExp _upperCaseRegExp = RegExp(r'[A-Z]');
+  static final RegExp _lowerCaseRegExp = RegExp(r'[a-z]');
+  static final RegExp _digitRegExp = RegExp(r'[0-9]');
+  // Allow any printable ASCII special character (non-alphanumeric, non-whitespace)
+  static final RegExp _specialCharRegExp = RegExp(r'[^A-Za-z0-9\s]');
+  static final RegExp _whitespaceRegExp = RegExp(r'\s');
 
   // Alphanumeric name validation to prevent HTML injection/control chars
   static final RegExp _nameRegExp = RegExp(r"^[a-zA-Z0-9\s\-_']+$");
@@ -64,20 +86,103 @@ class SchemaValidator {
     return email.trim();
   }
 
-  /// Strict Password validation (For signup & password resets only)
-  static String validateStrictPassword(String? password) {
+  /// Unified password policy evaluation used by both validation and strength UI.
+  /// Guarantees that 100% ("Strong") is never reported when validation fails.
+  static PasswordStrengthEvaluation evaluatePassword(String? password) {
     if (password == null || password.isEmpty) {
-      throw const SchemaValidationException('Password cannot be empty.');
-    }
-    if (password.length > 64) {
-      throw const SchemaValidationException('Password must be 64 characters or less.');
-    }
-    if (!_passwordRegExp.hasMatch(password)) {
-      throw const SchemaValidationException(
-        'Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one digit, and one special character (@\$!%*?&.).',
+      return const PasswordStrengthEvaluation(
+        level: PasswordStrengthLevel.none,
+        label: '',
+        percent: 0.0,
+        isValid: false,
+        tip: 'Use at least 8 characters with uppercase, lowercase, number, and symbol.',
+        validationError: 'Password cannot be empty.',
       );
     }
-    return password;
+
+    if (password.length > 64) {
+      return const PasswordStrengthEvaluation(
+        level: PasswordStrengthLevel.weak,
+        label: 'Too Long',
+        percent: 0.3,
+        isValid: false,
+        tip: 'Password must be 64 characters or less.',
+        validationError: 'Password must be 64 characters or less.',
+      );
+    }
+
+    if (_whitespaceRegExp.hasMatch(password)) {
+      return const PasswordStrengthEvaluation(
+        level: PasswordStrengthLevel.weak,
+        label: 'Invalid',
+        percent: 0.3,
+        isValid: false,
+        tip: 'Password cannot contain spaces or whitespace.',
+        validationError: 'Password cannot contain spaces.',
+      );
+    }
+
+    final hasMinLength = password.length >= 8;
+    final hasUpper = _upperCaseRegExp.hasMatch(password);
+    final hasLower = _lowerCaseRegExp.hasMatch(password);
+    final hasDigit = _digitRegExp.hasMatch(password);
+    final hasSpecial = _specialCharRegExp.hasMatch(password);
+
+    final missing = <String>[];
+    if (!hasMinLength) missing.add('at least 8 characters');
+    if (!hasUpper) missing.add('an uppercase letter');
+    if (!hasLower) missing.add('a lowercase letter');
+    if (!hasDigit) missing.add('a number');
+    if (!hasSpecial) missing.add('a special character');
+
+    if (missing.isEmpty) {
+      return const PasswordStrengthEvaluation(
+        level: PasswordStrengthLevel.strong,
+        label: 'Strong',
+        percent: 1.0,
+        isValid: true,
+        tip: 'Excellent! Your password meets all security requirements.',
+      );
+    }
+
+    final metCount = (hasMinLength ? 1 : 0) +
+        (hasUpper ? 1 : 0) +
+        (hasLower ? 1 : 0) +
+        (hasDigit ? 1 : 0) +
+        (hasSpecial ? 1 : 0);
+
+    final errorMsg = 'Password must include ${missing.join(', ')}.';
+
+    if (!hasMinLength || metCount <= 2) {
+      return PasswordStrengthEvaluation(
+        level: PasswordStrengthLevel.weak,
+        label: 'Weak',
+        percent: 0.3,
+        isValid: false,
+        tip: 'Add ${missing.join(', ')}.',
+        validationError: errorMsg,
+      );
+    }
+
+    return PasswordStrengthEvaluation(
+      level: PasswordStrengthLevel.medium,
+      label: 'Medium',
+      percent: metCount == 4 ? 0.8 : 0.6,
+      isValid: false,
+      tip: 'Almost there! Add ${missing.join(', ')}.',
+      validationError: errorMsg,
+    );
+  }
+
+  /// Strict Password validation (For signup & password resets only)
+  static String validateStrictPassword(String? password) {
+    final evaluation = evaluatePassword(password);
+    if (!evaluation.isValid) {
+      throw SchemaValidationException(
+        evaluation.validationError ?? 'Password does not meet security requirements.',
+      );
+    }
+    return password!;
   }
 
   /// Basic Password validation (For login only to ensure backward compatibility)

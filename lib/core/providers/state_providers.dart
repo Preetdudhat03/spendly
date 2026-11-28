@@ -7,15 +7,18 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:spendly/core/utils/error_helper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:spendly/core/constants/auth_constants.dart';
 import 'package:spendly/core/constants/config.dart';
 import 'package:spendly/core/providers/auth_providers.dart';
 import 'package:spendly/core/repositories/expense_repository.dart';
 import 'package:spendly/core/repositories/budget_repository.dart';
 import 'package:spendly/core/repositories/family_repository.dart';
 import 'package:spendly/core/repositories/profile_repository.dart';
+import 'package:spendly/core/services/auth_deep_link_service.dart';
 import 'package:spendly/core/services/hive_service.dart';
 import 'package:spendly/core/services/db_provider.dart';
 import 'package:spendly/core/services/db_service.dart';
+import 'package:spendly/core/utils/schema_validator.dart';
 import 'package:spendly/main.dart';
 import 'package:spendly/models/family.dart';
 import 'package:spendly/models/family_member.dart';
@@ -30,43 +33,119 @@ import 'package:spendly/features/notifications/providers/notification_providers.
 // 1. Authentication State & Provider
 // ==========================================
 
+enum AuthStatus {
+  initializing,
+  loading,
+  verificationPending,
+  authenticated,
+  unauthenticated,
+  error,
+}
+
+enum VerificationPurpose {
+  signup,
+  emailChange,
+  otpLogin,
+}
+
 class AuthState {
+  final AuthStatus status;
   final bool isLoading;
   final bool isInitializing;
   final String? userId;
   final String? email;
+  final String? pendingEmail;
+  final VerificationPurpose? verificationPurpose;
+  final DateTime? lastOtpSentAt;
   final String? displayName;
   final String? avatarColor;
+  final String? statusMessage;
   final String? error;
 
   AuthState({
+    AuthStatus? status,
     required this.isLoading,
     this.isInitializing = false,
     this.userId,
     this.email,
+    this.pendingEmail,
+    this.verificationPurpose,
+    this.lastOtpSentAt,
     this.displayName,
     this.avatarColor,
+    this.statusMessage,
     this.error,
-  });
+  }) : status = status ??
+            (isInitializing
+                ? AuthStatus.initializing
+                : isLoading
+                    ? AuthStatus.loading
+                    : userId != null
+                        ? AuthStatus.authenticated
+                        : error != null
+                            ? AuthStatus.error
+                            : AuthStatus.unauthenticated);
 
-  factory AuthState.initial() => AuthState(isLoading: false, isInitializing: true);
+  factory AuthState.initial() => AuthState(
+        status: AuthStatus.initializing,
+        isLoading: false,
+        isInitializing: true,
+      );
+
+  bool get isVerificationPending => status == AuthStatus.verificationPending;
+
+  int get resendCooldownRemaining {
+    if (lastOtpSentAt == null) return 0;
+    final elapsed = DateTime.now().difference(lastOtpSentAt!).inSeconds;
+    final remaining = AuthConstants.resendCooldownSeconds - elapsed;
+    return remaining > 0 ? remaining : 0;
+  }
 
   AuthState copyWith({
+    AuthStatus? status,
     bool? isLoading,
     bool? isInitializing,
     String? userId,
     String? email,
+    String? pendingEmail,
+    bool clearPendingEmail = false,
+    VerificationPurpose? verificationPurpose,
+    bool clearVerificationPurpose = false,
+    DateTime? lastOtpSentAt,
     String? displayName,
     String? avatarColor,
+    String? statusMessage,
+    bool clearStatusMessage = false,
     String? error,
   }) {
+    final nextUserId = userId ?? this.userId;
+    final nextIsInitializing = isInitializing ?? this.isInitializing;
+    final nextIsLoading = isLoading ?? this.isLoading;
+    final nextStatus = status ??
+        (nextIsInitializing
+            ? AuthStatus.initializing
+            : nextIsLoading
+                ? AuthStatus.loading
+                : nextUserId != null
+                    ? AuthStatus.authenticated
+                    : error != null
+                        ? AuthStatus.error
+                        : AuthStatus.unauthenticated);
+
     return AuthState(
-      isLoading: isLoading ?? this.isLoading,
-      isInitializing: isInitializing ?? this.isInitializing,
-      userId: userId ?? this.userId,
+      status: nextStatus,
+      isLoading: nextIsLoading,
+      isInitializing: nextIsInitializing,
+      userId: nextUserId,
       email: email ?? this.email,
+      pendingEmail: clearPendingEmail ? null : (pendingEmail ?? this.pendingEmail),
+      verificationPurpose: clearVerificationPurpose
+          ? null
+          : (verificationPurpose ?? this.verificationPurpose),
+      lastOtpSentAt: lastOtpSentAt ?? this.lastOtpSentAt,
       displayName: displayName ?? this.displayName,
       avatarColor: avatarColor ?? this.avatarColor,
+      statusMessage: clearStatusMessage ? null : (statusMessage ?? this.statusMessage),
       error: error,
     );
   }
@@ -75,21 +154,31 @@ class AuthState {
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
     return other is AuthState &&
+        other.status == status &&
         other.isLoading == isLoading &&
         other.isInitializing == isInitializing &&
         other.userId == userId &&
         other.email == email &&
+        other.pendingEmail == pendingEmail &&
+        other.verificationPurpose == verificationPurpose &&
+        other.lastOtpSentAt == lastOtpSentAt &&
         other.displayName == displayName &&
+        other.statusMessage == statusMessage &&
         other.error == error;
   }
 
   @override
   int get hashCode => Object.hash(
+        status,
         isLoading,
         isInitializing,
         userId,
         email,
+        pendingEmail,
+        verificationPurpose,
+        lastOtpSentAt,
         displayName,
+        statusMessage,
         error,
       );
 }
@@ -97,6 +186,7 @@ class AuthState {
 class AuthNotifier extends StateNotifier<AuthState> {
   final DbService _dbService;
   final Ref _ref;
+  AuthDeepLinkService? _deepLinkService;
 
   AuthNotifier(this._dbService, this._ref) : super(AuthState.initial()) {
     // Listen to native Supabase Auth user changes
@@ -109,32 +199,68 @@ class AuthNotifier extends StateNotifier<AuthState> {
       _updateStateFromProviders();
     });
 
+    // Listen to deep-link auth callbacks (when Supabase is initialized)
+    if (AppConfig.isSupabaseInitialized && !kIsWeb) {
+      _deepLinkService = AuthDeepLinkService()
+        ..startListening(onCallback: handleAuthCallback);
+    }
+
     // Run initial checks
     _checkCurrentSession();
+  }
+
+  @override
+  void dispose() {
+    _deepLinkService?.dispose();
+    super.dispose();
   }
 
   Future<void> _checkCurrentSession() async {
     // Postpone to next microtask to avoid Riverpod modify-while-building errors
     await Future.microtask(() {});
-    
-    state = state.copyWith(isLoading: true, isInitializing: true);
-    
-    // Check native user (Account Integrity Guard)
-    final user = _ref.read(currentUserProvider);
-    if (user != null) {
-      if (HiveService.currentUserId != user.id) {
-        await HiveService.openUserBoxes(user.id);
-      }
-      await HiveService.settings.put('active_user_id', user.id);
-      _updateStateFromProviders();
-      _ref.read(familyProvider.notifier).loadFamily();
-      return;
-    }
+    if (state.status != AuthStatus.initializing) return;
 
-    if (HiveService.currentUserId != HiveService.guestNamespace) {
-      await HiveService.openUserBoxes(HiveService.guestNamespace);
+    state = state.copyWith(
+      status: AuthStatus.initializing,
+      isLoading: true,
+      isInitializing: true,
+    );
+
+    try {
+      // Check native user (Account Integrity Guard) with a safety timeout so
+      // startup never hangs on a grey/splash screen.
+      final user = _ref.read(currentUserProvider);
+      if (user != null) {
+        if (HiveService.currentUserId != user.id) {
+          await HiveService.openUserBoxes(user.id).timeout(AuthConstants.networkTimeout);
+        }
+        await HiveService.settings.put('active_user_id', user.id);
+        await _updateStateFromProviders().timeout(AuthConstants.networkTimeout);
+        _ref.read(familyProvider.notifier).loadFamily();
+        return;
+      }
+
+      if (HiveService.currentUserId != HiveService.guestNamespace) {
+        await HiveService.openUserBoxes(HiveService.guestNamespace);
+      }
+      if (state.status == AuthStatus.initializing) {
+        state = AuthState(
+          status: AuthStatus.unauthenticated,
+          isLoading: false,
+          isInitializing: false,
+        );
+      }
+    } catch (e) {
+      debugPrint('AuthNotifier._checkCurrentSession fallback error: $e');
+      if (state.status == AuthStatus.initializing) {
+        state = AuthState(
+          status: AuthStatus.unauthenticated,
+          isLoading: false,
+          isInitializing: false,
+          error: ErrorHelper.getReadableErrorMessage(e),
+        );
+      }
     }
-    state = AuthState(isLoading: false, isInitializing: false);
   }
 
   Future<void> _updateStateFromProviders() async {
@@ -143,7 +269,20 @@ class AuthNotifier extends StateNotifier<AuthState> {
       if (HiveService.currentUserId != HiveService.guestNamespace) {
         await HiveService.openUserBoxes(HiveService.guestNamespace);
       }
-      state = AuthState(isLoading: false, isInitializing: false);
+      // Preserve verificationPending state if user is currently on OTP / Verify Email screen
+      if (state.status == AuthStatus.verificationPending) {
+        state = state.copyWith(
+          status: AuthStatus.verificationPending,
+          isLoading: false,
+          isInitializing: false,
+        );
+        return;
+      }
+      state = AuthState(
+        status: AuthStatus.unauthenticated,
+        isLoading: false,
+        isInitializing: false,
+      );
       return;
     }
 
@@ -160,46 +299,62 @@ class AuthNotifier extends StateNotifier<AuthState> {
       boxVersion: 1,
     );
 
-    final savedAvatar = state.avatarColor ?? (user.userMetadata?['avatar_color'] as String?) ?? HiveService.settings.get('avatar_color') as String?;
+    final savedAvatar = state.avatarColor ??
+        (user.userMetadata?['avatar_color'] as String?) ??
+        HiveService.settings.get('avatar_color') as String?;
+
+    // Check if an authoritative email change just completed
+    final confirmedEmail = user.email;
+    final shouldClearPending = state.pendingEmail != null &&
+        confirmedEmail != null &&
+        confirmedEmail.toLowerCase() == state.pendingEmail!.toLowerCase();
 
     final profileAsync = _ref.read(profileProvider);
     profileAsync.when(
       data: (profile) {
-        if (profile != null) {
-          state = AuthState(
-            isLoading: false,
-            isInitializing: false,
-            userId: profile.id,
-            email: profile.email,
-            displayName: profile.displayName.isNotEmpty ? profile.displayName : (user.userMetadata?['display_name'] as String? ?? 'User'),
-            avatarColor: savedAvatar,
-          );
-          HiveService.settings.put('active_user_id', profile.id);
-          _ref.read(familyProvider.notifier).loadFamily();
-        } else {
-          state = AuthState(
-            isLoading: false,
-            isInitializing: false,
-            userId: user.id,
-            email: user.email,
-            displayName: user.userMetadata?['display_name'] as String? ?? 'User',
-            avatarColor: savedAvatar,
-          );
-          HiveService.settings.put('active_user_id', user.id);
-          _ref.read(familyProvider.notifier).loadFamily();
-        }
+        final effectiveEmail = confirmedEmail ?? profile?.email;
+        final effectiveName = (profile != null && profile.displayName.isNotEmpty)
+            ? profile.displayName
+            : (user.userMetadata?['display_name'] as String? ?? 'User');
+        state = AuthState(
+          status: AuthStatus.authenticated,
+          isLoading: false,
+          isInitializing: false,
+          userId: profile?.id ?? user.id,
+          email: effectiveEmail,
+          pendingEmail: shouldClearPending ? null : state.pendingEmail,
+          verificationPurpose: shouldClearPending ? null : state.verificationPurpose,
+          lastOtpSentAt: state.lastOtpSentAt,
+          displayName: effectiveName,
+          avatarColor: savedAvatar,
+          statusMessage: shouldClearPending ? 'Email address verified and updated.' : state.statusMessage,
+        );
+        HiveService.settings.put('active_user_id', profile?.id ?? user.id);
+        _ref.read(familyProvider.notifier).loadFamily();
       },
       loading: () {
         if (state.isInitializing) {
-          state = state.copyWith(isLoading: true);
+          state = state.copyWith(
+            status: AuthStatus.loading,
+            isLoading: true,
+          );
         }
       },
       error: (e, s) {
-        state = state.copyWith(
+        // Fallback to native Supabase user even if profile fetch fails,
+        // preventing an indefinite splash/grey screen.
+        state = AuthState(
+          status: AuthStatus.authenticated,
           isLoading: false,
           isInitializing: false,
+          userId: user.id,
+          email: confirmedEmail,
+          displayName: user.userMetadata?['display_name'] as String? ?? 'User',
+          avatarColor: savedAvatar,
           error: ErrorHelper.getReadableErrorMessage(e),
         );
+        HiveService.settings.put('active_user_id', user.id);
+        _ref.read(familyProvider.notifier).loadFamily();
       },
     );
   }
@@ -210,11 +365,11 @@ class AuthNotifier extends StateNotifier<AuthState> {
     try {
       final cleanEmail = email.toLowerCase().trim();
 
-      // Check internet connectivity first if Supabase is configured
-      if (AppConfig.isSupabaseConfigured) {
-        final connectivityResult = await Connectivity().checkConnectivity();
-        if (connectivityResult.contains(ConnectivityResult.none) || connectivityResult.isEmpty) {
+      // Check internet connectivity first if Supabase is configured & initialized
+      if (AppConfig.isSupabaseConfigured && AppConfig.isSupabaseInitialized) {
+        if (!await _hasInternetConnection()) {
           state = state.copyWith(
+            status: AuthStatus.error,
             isLoading: false,
             error: "You're offline. Connect to the internet to sign in.",
           );
@@ -254,108 +409,520 @@ class AuthNotifier extends StateNotifier<AuthState> {
       // 1. Native Supabase Auth sign-in
       try {
         final client = Supabase.instance.client;
-        final response = await client.auth.signInWithPassword(
-          email: cleanEmail,
-          password: password,
-        ).timeout(const Duration(seconds: 10));
+        final response = await client.auth
+            .signInWithPassword(
+              email: cleanEmail,
+              password: password,
+            )
+            .timeout(AuthConstants.networkTimeout);
         if (response.user != null) {
           await _ref.read(syncServiceProvider).mergeLocalDataToCloud(response.user!.id);
-          _updateStateFromProviders();
+          await _updateStateFromProviders();
           return true;
         }
+        state = state.copyWith(
+          status: AuthStatus.error,
+          isLoading: false,
+          error: 'Authentication failed. Please try again.',
+        );
+        return false;
       } on AuthException catch (supabaseError) {
         final msg = supabaseError.message.toLowerCase();
         if (msg.contains('invalid login credentials') || msg.contains('invalid_credentials')) {
-          state = state.copyWith(isLoading: false, error: 'Invalid email or password.');
+          state = state.copyWith(
+            status: AuthStatus.unauthenticated,
+            isLoading: false,
+            error: 'Invalid email or password.',
+          );
           return false;
         } else if (msg.contains('email not confirmed')) {
           state = AuthState(
+            status: AuthStatus.verificationPending,
             isLoading: false,
             email: cleanEmail,
+            pendingEmail: cleanEmail,
+            verificationPurpose: VerificationPurpose.signup,
             error: 'Please verify your email address before logging in.',
           );
           return false;
         } else {
-          state = state.copyWith(isLoading: false, error: supabaseError.message);
+          state = state.copyWith(
+            status: AuthStatus.error,
+            isLoading: false,
+            error: supabaseError.message,
+          );
           return false;
         }
       }
-      return false;
     } catch (e) {
-      final errStr = e.toString().toLowerCase();
-      if (e is TimeoutException ||
-          e is SocketException ||
-          errStr.contains('timeout') ||
-          errStr.contains('socketexception') ||
-          errStr.contains('httpexception') ||
-          errStr.contains('clientexception') ||
-          errStr.contains('failed host lookup') ||
-          errStr.contains('connection failed') ||
-          errStr.contains('handshake') ||
-          errStr.contains('unreachable')) {
-        state = state.copyWith(
-          isLoading: false,
-          error: "Unable to connect. Check your internet connection and try again.",
-        );
-      } else {
-        state = state.copyWith(
-          isLoading: false,
-          error: ErrorHelper.getReadableErrorMessage(e),
-        );
-      }
+      state = state.copyWith(
+        status: AuthStatus.error,
+        isLoading: false,
+        error: _isNetworkError(e)
+            ? 'Unable to connect. Check your internet connection and try again.'
+            : ErrorHelper.getReadableErrorMessage(e),
+      );
       return false;
     }
   }
 
-  Future<bool> signUp(String email, String password, String displayName) async {
-    state = state.copyWith(isLoading: true, error: null);
+  bool _isNetworkError(Object e) {
+    if (e is TimeoutException || e is SocketException) return true;
+    final errStr = e.toString().toLowerCase();
+    return errStr.contains('timeout') ||
+        errStr.contains('socketexception') ||
+        errStr.contains('httpexception') ||
+        errStr.contains('clientexception') ||
+        errStr.contains('failed host lookup') ||
+        errStr.contains('connection failed') ||
+        errStr.contains('handshake') ||
+        errStr.contains('unreachable');
+  }
+
+  Future<bool> _hasInternetConnection() async {
+    if (!AppConfig.isSupabaseConfigured || !AppConfig.isSupabaseInitialized) {
+      return true;
+    }
     try {
-      final cleanEmail = email.toLowerCase().trim();
+      final connectivityResult = await Connectivity().checkConnectivity();
+      return !(connectivityResult.contains(ConnectivityResult.none) ||
+          connectivityResult.isEmpty);
+    } catch (_) {
+      return true;
+    }
+  }
+
+  Future<bool> signUp(String email, String password, String displayName) async {
+    if (state.isLoading) return false;
+    state = state.copyWith(
+      status: AuthStatus.loading,
+      isLoading: true,
+      error: null,
+      clearStatusMessage: true,
+    );
+    try {
+      final cleanEmail = SchemaValidator.validateEmail(email).toLowerCase();
+      final cleanName = SchemaValidator.validateDisplayName(displayName);
+      SchemaValidator.validateStrictPassword(password);
+
+      if (!await _hasInternetConnection() && AppConfig.isSupabaseInitialized) {
+        state = state.copyWith(
+          status: AuthStatus.error,
+          isLoading: false,
+          error: "You're offline. Connect to the internet to create an account.",
+        );
+        return false;
+      }
 
       // Fallback to local DB Service if Supabase is not configured or initialized
       if (!AppConfig.isSupabaseConfigured || !AppConfig.isSupabaseInitialized) {
-        final userId = await _dbService.signUp(
-          email: cleanEmail,
-          password: password,
-          displayName: displayName,
-        );
+        final userId = await _dbService
+            .signUp(
+              email: cleanEmail,
+              password: password,
+              displayName: cleanName,
+            )
+            .timeout(AuthConstants.networkTimeout);
         if (userId != null) {
           state = AuthState(
+            status: AuthStatus.verificationPending,
             isLoading: false,
             email: cleanEmail,
-            displayName: displayName,
-            error: 'Registration successful! You can now log in.',
+            pendingEmail: cleanEmail,
+            verificationPurpose: VerificationPurpose.signup,
+            lastOtpSentAt: DateTime.now(),
+            displayName: cleanName,
+            statusMessage:
+                'Registration successful! Please verify your email address.',
           );
           return true;
         }
-        state = state.copyWith(isLoading: false, error: 'Registration failed');
+        state = state.copyWith(
+          status: AuthStatus.error,
+          isLoading: false,
+          error: 'Registration failed',
+        );
         return false;
       }
 
       final client = Supabase.instance.client;
-      final response = await client.auth.signUp(
-        email: cleanEmail,
-        password: password,
-        data: {'display_name': displayName},
-      );
+      final response = await client.auth
+          .signUp(
+            email: cleanEmail,
+            password: password,
+            data: {'display_name': cleanName},
+            emailRedirectTo: kIsWeb ? null : AuthConstants.authCallbackUri,
+          )
+          .timeout(AuthConstants.networkTimeout);
+
       if (response.user != null) {
-        if (response.session != null) {
-           await _ref.read(syncServiceProvider).mergeLocalDataToCloud(response.user!.id);
+        // Supabase returns empty identities for existing confirmed accounts
+        // when email enumeration protection is enabled.
+        final identities = response.user!.identities;
+        if (identities != null && identities.isEmpty) {
+          state = state.copyWith(
+            status: AuthStatus.error,
+            isLoading: false,
+            error:
+                'An account with this email already exists. Please log in or use Email OTP.',
+          );
+          return false;
         }
+
+        if (response.session != null) {
+          await _ref
+              .read(syncServiceProvider)
+              .mergeLocalDataToCloud(response.user!.id);
+          await _updateStateFromProviders();
+          return true;
+        }
+
+        // Standard confirmation-required flow: user exists, session is null.
+        // Never treat unconfirmed user as authenticated.
         state = AuthState(
+          status: AuthStatus.verificationPending,
           isLoading: false,
-          email: cleanEmail,
-          displayName: displayName,
-          error: 'Registration successful! A verification email has been sent. Please confirm your email.',
+          isInitializing: false,
+          pendingEmail: cleanEmail,
+          verificationPurpose: VerificationPurpose.signup,
+          lastOtpSentAt: DateTime.now(),
+          displayName: cleanName,
+          statusMessage:
+              'Verification email sent. Please confirm your email to continue.',
         );
         return true;
       }
-      state = state.copyWith(isLoading: false, error: 'Sign up failed');
+
+      state = state.copyWith(
+        status: AuthStatus.error,
+        isLoading: false,
+        error: 'Sign up failed. Please try again.',
+      );
+      return false;
+    } on AuthException catch (e) {
+      final msg = e.message.toLowerCase();
+      String readable = e.message;
+      if (msg.contains('already registered') || msg.contains('user_already_exists')) {
+        readable = 'An account with this email already exists. Please log in instead.';
+      } else if (msg.contains('rate limit') || msg.contains('over_email_send_rate_limit')) {
+        readable = 'Too many verification emails requested. Please wait a moment before trying again.';
+      }
+      state = state.copyWith(
+        status: AuthStatus.error,
+        isLoading: false,
+        error: readable,
+      );
       return false;
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: ErrorHelper.getReadableErrorMessage(e));
+      state = state.copyWith(
+        status: AuthStatus.error,
+        isLoading: false,
+        error: _isNetworkError(e)
+            ? 'Network timeout while creating account. Please check your connection and try again.'
+            : ErrorHelper.getReadableErrorMessage(e),
+      );
       return false;
     }
+  }
+
+  /// Resends signup confirmation email without creating a duplicate account.
+  Future<bool> resendSignupVerification(String email) async {
+    final cooldown = state.resendCooldownRemaining;
+    if (cooldown > 0) {
+      state = state.copyWith(
+        status: AuthStatus.verificationPending,
+        error: 'Please wait $cooldown seconds before requesting another email.',
+      );
+      return false;
+    }
+
+    state = state.copyWith(
+      status: AuthStatus.loading,
+      isLoading: true,
+      error: null,
+      clearStatusMessage: true,
+    );
+
+    try {
+      final cleanEmail = SchemaValidator.validateEmail(email).toLowerCase();
+      if (!AppConfig.isSupabaseConfigured || !AppConfig.isSupabaseInitialized) {
+        state = state.copyWith(
+          status: AuthStatus.verificationPending,
+          isLoading: false,
+          pendingEmail: cleanEmail,
+          verificationPurpose: VerificationPurpose.signup,
+          lastOtpSentAt: DateTime.now(),
+          statusMessage: 'Verification email resent to $cleanEmail.',
+        );
+        return true;
+      }
+
+      if (!await _hasInternetConnection()) {
+        state = state.copyWith(
+          status: AuthStatus.verificationPending,
+          isLoading: false,
+          error: "You're offline. Connect to the internet and try again.",
+        );
+        return false;
+      }
+
+      final client = Supabase.instance.client;
+      await client.auth
+          .resend(
+            type: OtpType.signup,
+            email: cleanEmail,
+            emailRedirectTo: kIsWeb ? null : AuthConstants.authCallbackUri,
+          )
+          .timeout(AuthConstants.networkTimeout);
+
+      state = state.copyWith(
+        status: AuthStatus.verificationPending,
+        isLoading: false,
+        pendingEmail: cleanEmail,
+        verificationPurpose: VerificationPurpose.signup,
+        lastOtpSentAt: DateTime.now(),
+        statusMessage: 'A new confirmation email has been sent.',
+      );
+      return true;
+    } on AuthException catch (e) {
+      state = state.copyWith(
+        status: AuthStatus.verificationPending,
+        isLoading: false,
+        error: e.message.toLowerCase().contains('rate limit')
+            ? 'Email rate limit reached. Please wait a minute before trying again.'
+            : e.message,
+      );
+      return false;
+    } catch (e) {
+      state = state.copyWith(
+        status: AuthStatus.verificationPending,
+        isLoading: false,
+        error: _isNetworkError(e)
+            ? 'Unable to connect. Check your internet connection and try again.'
+            : ErrorHelper.getReadableErrorMessage(e),
+      );
+      return false;
+    }
+  }
+
+  /// Passwordless Email OTP login (existing accounts only: `shouldCreateUser: false`).
+  Future<bool> sendEmailOtp(String email) async {
+    final cooldown = state.resendCooldownRemaining;
+    if (cooldown > 0 &&
+        state.pendingEmail?.toLowerCase() == email.trim().toLowerCase()) {
+      state = state.copyWith(
+        error: 'Please wait $cooldown seconds before requesting another OTP.',
+      );
+      return false;
+    }
+
+    state = state.copyWith(
+      status: AuthStatus.loading,
+      isLoading: true,
+      error: null,
+      clearStatusMessage: true,
+    );
+
+    try {
+      final cleanEmail = SchemaValidator.validateEmail(email).toLowerCase();
+
+      if (!AppConfig.isSupabaseConfigured || !AppConfig.isSupabaseInitialized) {
+        state = state.copyWith(
+          status: AuthStatus.verificationPending,
+          isLoading: false,
+          pendingEmail: cleanEmail,
+          verificationPurpose: VerificationPurpose.otpLogin,
+          lastOtpSentAt: DateTime.now(),
+          statusMessage: 'OTP sent to $cleanEmail.',
+        );
+        return true;
+      }
+
+      if (!await _hasInternetConnection()) {
+        state = state.copyWith(
+          status: AuthStatus.error,
+          isLoading: false,
+          error: "You're offline. Connect to the internet to request an OTP.",
+        );
+        return false;
+      }
+
+      final client = Supabase.instance.client;
+      await client.auth
+          .signInWithOtp(
+            email: cleanEmail,
+            shouldCreateUser: false,
+            emailRedirectTo: kIsWeb ? null : AuthConstants.authCallbackUri,
+          )
+          .timeout(AuthConstants.networkTimeout);
+
+      state = state.copyWith(
+        status: AuthStatus.verificationPending,
+        isLoading: false,
+        pendingEmail: cleanEmail,
+        verificationPurpose: VerificationPurpose.otpLogin,
+        lastOtpSentAt: DateTime.now(),
+        statusMessage: 'Verification code sent.',
+      );
+      return true;
+    } on AuthException catch (e) {
+      final msg = e.message.toLowerCase();
+      String readable = e.message;
+      if (msg.contains('signups not allowed') ||
+          msg.contains('user not found') ||
+          msg.contains('otp_disabled')) {
+        readable = 'No account found for this email. Please sign up first.';
+      } else if (msg.contains('rate limit') ||
+          msg.contains('over_email_send_rate_limit')) {
+        readable =
+            'Too many OTP requests. Please wait a moment before trying again.';
+      }
+      state = state.copyWith(
+        status: AuthStatus.error,
+        isLoading: false,
+        error: readable,
+      );
+      return false;
+    } catch (e) {
+      state = state.copyWith(
+        status: AuthStatus.error,
+        isLoading: false,
+        error: _isNetworkError(e)
+            ? 'Unable to connect. Check your internet connection and try again.'
+            : ErrorHelper.getReadableErrorMessage(e),
+      );
+      return false;
+    }
+  }
+
+  /// Verifies a 6-digit Email OTP for login, signup confirmation, or email change.
+  Future<bool> verifyEmailOtp({
+    required String email,
+    required String token,
+    OtpType type = OtpType.email,
+  }) async {
+    final cleanToken = token.trim();
+    if (cleanToken.length != 6 || int.tryParse(cleanToken) == null) {
+      state = state.copyWith(
+        error: 'Please enter the 6-digit verification code.',
+      );
+      return false;
+    }
+
+    state = state.copyWith(
+      status: AuthStatus.loading,
+      isLoading: true,
+      error: null,
+      clearStatusMessage: true,
+    );
+
+    try {
+      final cleanEmail = SchemaValidator.validateEmail(email).toLowerCase();
+
+      if (!AppConfig.isSupabaseConfigured || !AppConfig.isSupabaseInitialized) {
+        state = state.copyWith(
+          status: AuthStatus.error,
+          isLoading: false,
+          error: 'OTP verification requires an active Supabase connection.',
+        );
+        return false;
+      }
+
+      if (!await _hasInternetConnection()) {
+        state = state.copyWith(
+          status: AuthStatus.verificationPending,
+          isLoading: false,
+          error: "You're offline. Connect to the internet to verify the code.",
+        );
+        return false;
+      }
+
+      final client = Supabase.instance.client;
+      final previousUserId = state.userId;
+
+      final response = await client.auth
+          .verifyOTP(
+            email: cleanEmail,
+            token: cleanToken,
+            type: type,
+          )
+          .timeout(AuthConstants.networkTimeout);
+
+      final verifiedUser = response.user ?? client.auth.currentUser;
+      if (verifiedUser != null) {
+        // Account isolation guard for email change: ensure UUID did not switch
+        if (type == OtpType.emailChange &&
+            previousUserId != null &&
+            verifiedUser.id != previousUserId) {
+          state = state.copyWith(
+            status: AuthStatus.error,
+            isLoading: false,
+            error: 'Account mismatch detected. Email change was aborted.',
+          );
+          return false;
+        }
+
+        if (response.session != null) {
+          await _ref
+              .read(syncServiceProvider)
+              .mergeLocalDataToCloud(verifiedUser.id);
+        }
+        await _updateStateFromProviders();
+        state = state.copyWith(
+          status: AuthStatus.authenticated,
+          isLoading: false,
+          clearPendingEmail: true,
+          clearVerificationPurpose: true,
+          statusMessage: type == OtpType.emailChange
+              ? 'Your email address has been verified and updated.'
+              : 'Email verified successfully.',
+        );
+        return true;
+      }
+
+      state = state.copyWith(
+        status: AuthStatus.verificationPending,
+        isLoading: false,
+        error: 'Verification failed. Please check the code and try again.',
+      );
+      return false;
+    } on AuthException catch (e) {
+      final msg = e.message.toLowerCase();
+      String readable = e.message;
+      if (msg.contains('expired')) {
+        readable = 'This verification code has expired. Please request a new one.';
+      } else if (msg.contains('invalid') || msg.contains('token')) {
+        readable = 'Invalid verification code. Please check and try again.';
+      }
+      state = state.copyWith(
+        status: AuthStatus.verificationPending,
+        isLoading: false,
+        error: readable,
+      );
+      return false;
+    } catch (e) {
+      state = state.copyWith(
+        status: AuthStatus.verificationPending,
+        isLoading: false,
+        error: _isNetworkError(e)
+            ? 'Network error while verifying code. Please try again.'
+            : ErrorHelper.getReadableErrorMessage(e),
+      );
+      return false;
+    }
+  }
+
+  void clearPendingVerification() {
+    state = state.copyWith(
+      status: state.userId != null
+          ? AuthStatus.authenticated
+          : AuthStatus.unauthenticated,
+      isLoading: false,
+      clearPendingEmail: true,
+      clearVerificationPurpose: true,
+      clearStatusMessage: true,
+      error: null,
+    );
   }
 
   Future<void> signOut() async {
@@ -437,33 +1004,217 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
-  Future<void> updateEmail(String newEmail) async {
+  /// Initiates an email change without overwriting the current confirmed email
+  /// or altering the user's UUID. Profile email updates only after Supabase
+  /// confirms the change.
+  Future<bool> updateEmail(String newEmail) async {
+    state = state.copyWith(
+      isLoading: true,
+      error: null,
+      clearStatusMessage: true,
+    );
     try {
-      await _dbService.updateEmail(newEmail);
-      state = state.copyWith(email: newEmail.toLowerCase().trim());
-      
-      // Refresh native profile notifier
-      final user = _ref.read(currentUserProvider);
-      if (user != null) {
-        _ref.read(profileNotifierProvider(user.id).notifier).refresh();
+      final cleanEmail = SchemaValidator.validateEmail(newEmail).toLowerCase();
+      if (state.email != null && state.email!.toLowerCase() == cleanEmail) {
+        state = state.copyWith(
+          isLoading: false,
+          error: 'This is already your current email address.',
+        );
+        return false;
       }
+
+      await _dbService
+          .updateEmail(cleanEmail)
+          .timeout(AuthConstants.networkTimeout);
+
+      state = state.copyWith(
+        status: state.userId != null
+            ? AuthStatus.authenticated
+            : AuthStatus.unauthenticated,
+        isLoading: false,
+        pendingEmail: cleanEmail,
+        verificationPurpose: VerificationPurpose.emailChange,
+        lastOtpSentAt: DateTime.now(),
+        statusMessage:
+            'Confirmation sent to $cleanEmail. Your email will update after confirmation.',
+      );
+      return true;
+    } on AuthException catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: e.message.toLowerCase().contains('already')
+            ? 'This email address is already associated with another account.'
+            : e.message,
+      );
+      return false;
     } catch (e) {
-      state = state.copyWith(error: ErrorHelper.getReadableErrorMessage(e));
+      state = state.copyWith(
+        isLoading: false,
+        error: _isNetworkError(e)
+            ? 'Unable to connect. Check your internet connection and try again.'
+            : ErrorHelper.getReadableErrorMessage(e),
+      );
+      return false;
+    }
+  }
+
+  /// Refreshes the authenticated user from Supabase to check whether a pending
+  /// email change has been confirmed, preserving the original user UUID.
+  Future<bool> refreshAuthenticatedUser() async {
+    if (!AppConfig.isSupabaseConfigured || !AppConfig.isSupabaseInitialized) {
+      return false;
+    }
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      final client = Supabase.instance.client;
+      final previousUserId = state.userId;
+      final userResp = await client.auth
+          .getUser()
+          .timeout(AuthConstants.networkTimeout);
+      final refreshedUser = userResp.user;
+      if (refreshedUser == null) {
+        state = state.copyWith(isLoading: false);
+        return false;
+      }
+      if (previousUserId != null && refreshedUser.id != previousUserId) {
+        state = state.copyWith(
+          isLoading: false,
+          error: 'Session user mismatch detected.',
+        );
+        return false;
+      }
+
+      await _ref.read(profileNotifierProvider(refreshedUser.id).notifier).refresh();
+      await _updateStateFromProviders();
+
+      final confirmed = state.pendingEmail != null &&
+          refreshedUser.email?.toLowerCase() ==
+              state.pendingEmail!.toLowerCase();
+      if (confirmed) {
+        state = state.copyWith(
+          isLoading: false,
+          clearPendingEmail: true,
+          clearVerificationPurpose: true,
+          statusMessage: 'Email address confirmed and updated.',
+        );
+      } else {
+        state = state.copyWith(isLoading: false);
+      }
+      return confirmed;
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: _isNetworkError(e)
+            ? 'Network error while checking email status.'
+            : ErrorHelper.getReadableErrorMessage(e),
+      );
+      return false;
+    }
+  }
+
+  void cancelPendingEmailChange() {
+    state = state.copyWith(
+      isLoading: false,
+      clearPendingEmail: true,
+      clearVerificationPurpose: true,
+      clearStatusMessage: true,
+      error: null,
+    );
+  }
+
+  Future<void> handleAuthCallback(AuthCallbackResult result) async {
+    if (result.kind == AuthCallbackKind.ignored) return;
+
+    if (result.isError) {
+      state = state.copyWith(
+        status: state.userId != null
+            ? AuthStatus.authenticated
+            : AuthStatus.error,
+        isLoading: false,
+        isInitializing: false,
+        error: result.errorMessage ??
+            'Authentication link is invalid or expired.',
+      );
+      return;
+    }
+
+    state = state.copyWith(
+      status: AuthStatus.loading,
+      isLoading: true,
+      error: null,
+      clearStatusMessage: true,
+    );
+
+    try {
+      await AuthDeepLinkService.exchangeSessionIfNeeded(result);
+      await refreshAuthenticatedUser();
+
+      final successMsg = switch (result.kind) {
+        AuthCallbackKind.signup => 'Email verified! Welcome to Spendly.',
+        AuthCallbackKind.emailChange =>
+          'Your new email address has been confirmed.',
+        AuthCallbackKind.recovery =>
+          'Recovery link verified. You can now update your password.',
+        AuthCallbackKind.otp => 'Email login verified.',
+        _ => 'Authentication verified.',
+      };
+
+      state = state.copyWith(
+        status: state.userId != null
+            ? AuthStatus.authenticated
+            : AuthStatus.unauthenticated,
+        isLoading: false,
+        isInitializing: false,
+        clearPendingEmail: true,
+        clearVerificationPurpose: true,
+        statusMessage: successMsg,
+      );
+    } on AuthException catch (e) {
+      state = state.copyWith(
+        status: state.userId != null
+            ? AuthStatus.authenticated
+            : AuthStatus.error,
+        isLoading: false,
+        isInitializing: false,
+        error: AuthDeepLinkService.mapCallbackError(
+          errorCode: e.statusCode,
+          description: e.message,
+        ),
+      );
+    } catch (e) {
+      state = state.copyWith(
+        status: state.userId != null
+            ? AuthStatus.authenticated
+            : AuthStatus.error,
+        isLoading: false,
+        isInitializing: false,
+        error: _isNetworkError(e)
+            ? 'Network error while verifying link. Please try again.'
+            : ErrorHelper.getReadableErrorMessage(e),
+      );
     }
   }
 
   Future<String?> forgotPassword(String email) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
+      final cleanEmail = SchemaValidator.validateEmail(email).toLowerCase();
       final client = Supabase.instance.client;
-      await client.auth.resetPasswordForEmail(
-        email.toLowerCase().trim(),
-        redirectTo: kIsWeb ? null : 'spendly://reset-password',
-      );
+      await client.auth
+          .resetPasswordForEmail(
+            cleanEmail,
+            redirectTo: kIsWeb ? null : AuthConstants.resetPasswordUri,
+          )
+          .timeout(AuthConstants.networkTimeout);
       state = state.copyWith(isLoading: false);
       return 'SUCCESS';
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: ErrorHelper.getReadableErrorMessage(e));
+      state = state.copyWith(
+        isLoading: false,
+        error: _isNetworkError(e)
+            ? 'Unable to connect. Check your internet connection and try again.'
+            : ErrorHelper.getReadableErrorMessage(e),
+      );
       return null;
     }
   }

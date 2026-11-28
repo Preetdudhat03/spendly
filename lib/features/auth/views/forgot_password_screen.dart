@@ -83,7 +83,13 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
         centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
-          onPressed: () => context.pop(),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/login');
+            }
+          },
         ),
         title: const CapsuleHeader(
           title: 'Reset Password',
@@ -253,7 +259,13 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               TextButton(
-                                onPressed: () => context.pop(),
+                                onPressed: () {
+                                  if (context.canPop()) {
+                                    context.pop();
+                                  } else {
+                                    context.go('/login');
+                                  }
+                                },
                                 style: TextButton.styleFrom(
                                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                                 ),

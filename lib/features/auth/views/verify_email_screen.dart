@@ -1,23 +1,79 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:spendly/core/constants/auth_constants.dart';
 import 'package:spendly/core/providers/state_providers.dart';
 import 'package:spendly/core/widgets/capsule_top_bar.dart';
+import 'package:spendly/core/widgets/spendly_toast.dart';
 
-class VerifyEmailScreen extends ConsumerWidget {
+class VerifyEmailScreen extends ConsumerStatefulWidget {
   const VerifyEmailScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<VerifyEmailScreen> createState() => _VerifyEmailScreenState();
+}
+
+class _VerifyEmailScreenState extends ConsumerState<VerifyEmailScreen> {
+  Timer? _cooldownTimer;
+  int _cooldownSeconds = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _cooldownSeconds = ref.read(authProvider).resendCooldownRemaining;
+    _cooldownTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (!mounted) return;
+      final remaining = ref.read(authProvider).resendCooldownRemaining;
+      if (remaining != _cooldownSeconds) {
+        setState(() {
+          _cooldownSeconds = remaining;
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _cooldownTimer?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _resendConfirmation(String email) async {
+    if (email.isEmpty || _cooldownSeconds > 0) return;
+    final ok = await ref
+        .read(authProvider.notifier)
+        .resendSignupVerification(email);
+    if (!mounted) return;
+    setState(() {
+      _cooldownSeconds = ref.read(authProvider).resendCooldownRemaining;
+    });
+    if (ok) {
+      SpendlyToast.showSuccess(
+        context,
+        'Verification email resent. Please check your inbox.',
+        isAboveNavBar: false,
+      );
+    } else {
+      final err = ref.read(authProvider).error ?? 'Failed to resend email.';
+      SpendlyToast.showError(context, err, isAboveNavBar: false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final isDark = theme.brightness == Brightness.dark;
     final isWide = MediaQuery.of(context).size.width > 720;
+    final accentColor = isDark ? const Color(0xFF818CF8) : colorScheme.primary;
 
-    final accentColor = isDark
-        ? const Color(0xFF818CF8)
-        : colorScheme.primary;
+    final pendingEmail =
+        (authState.pendingEmail ?? authState.email ?? '').trim();
+    final maskedEmail = pendingEmail.isNotEmpty
+        ? AuthConstants.maskEmail(pendingEmail)
+        : '';
 
     final topInset = MediaQuery.of(context).padding.top;
     final contentTopPadding = topInset + 58.0;
@@ -32,7 +88,10 @@ class VerifyEmailScreen extends ConsumerWidget {
         centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
-          onPressed: () => context.go('/login'),
+          onPressed: () {
+            ref.read(authProvider.notifier).clearPendingVerification();
+            context.go('/login');
+          },
         ),
         title: const CapsuleHeader(
           title: 'Verify Email',
@@ -41,7 +100,12 @@ class VerifyEmailScreen extends ConsumerWidget {
       ),
       body: Center(
         child: SingleChildScrollView(
-          padding: EdgeInsets.fromLTRB(24.0, contentTopPadding + 8.0, 24.0, 32.0),
+          padding: EdgeInsets.fromLTRB(
+            24.0,
+            contentTopPadding + 8.0,
+            24.0,
+            32.0,
+          ),
           child: Container(
             constraints: BoxConstraints(maxWidth: isWide ? 480 : double.infinity),
             child: Card(
@@ -50,7 +114,9 @@ class VerifyEmailScreen extends ConsumerWidget {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(28),
                 side: BorderSide(
-                  color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                  color: isDark
+                      ? const Color(0xFF334155)
+                      : const Color(0xFFE2E8F0),
                   width: 1,
                 ),
               ),
@@ -75,7 +141,10 @@ class VerifyEmailScreen extends ConsumerWidget {
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24.0,
+                      vertical: 32.0,
+                    ),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -85,15 +154,21 @@ class VerifyEmailScreen extends ConsumerWidget {
                             width: 76,
                             height: 76,
                             decoration: BoxDecoration(
-                              color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                              color: isDark
+                                  ? const Color(0xFF1E293B)
+                                  : Colors.white,
                               shape: BoxShape.circle,
                               border: Border.all(
-                                color: accentColor.withValues(alpha: isDark ? 0.3 : 0.2),
+                                color: accentColor.withValues(
+                                  alpha: isDark ? 0.3 : 0.2,
+                                ),
                                 width: 2,
                               ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: accentColor.withValues(alpha: isDark ? 0.2 : 0.1),
+                                  color: accentColor.withValues(
+                                    alpha: isDark ? 0.2 : 0.1,
+                                  ),
                                   blurRadius: 16,
                                   offset: const Offset(0, 4),
                                 ),
@@ -118,8 +193,8 @@ class VerifyEmailScreen extends ConsumerWidget {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          authState.email != null && authState.email!.isNotEmpty
-                              ? 'A verification email has been sent to:\n${authState.email}'
+                          pendingEmail.isNotEmpty
+                              ? 'We sent a confirmation link to:\n$maskedEmail ($pendingEmail)'
                               : 'A verification link has been sent to your registered email address.',
                           textAlign: TextAlign.center,
                           style: theme.textTheme.bodyMedium?.copyWith(
@@ -131,10 +206,14 @@ class VerifyEmailScreen extends ConsumerWidget {
                         Container(
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: isDark ? const Color(0xFF0F172A).withValues(alpha: 0.6) : const Color(0xFFF8FAFC),
+                            color: isDark
+                                ? const Color(0xFF0F172A).withValues(alpha: 0.6)
+                                : const Color(0xFFF8FAFC),
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(
-                              color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                              color: isDark
+                                  ? const Color(0xFF334155)
+                                  : const Color(0xFFE2E8F0),
                             ),
                           ),
                           child: Column(
@@ -147,26 +226,117 @@ class VerifyEmailScreen extends ConsumerWidget {
                                 ),
                               ),
                               const SizedBox(height: 12),
-                              _buildStepRow(context, '1', 'Open your email inbox (or spam folder).', accentColor),
+                              _buildStepRow(
+                                context,
+                                '1',
+                                'Open your email inbox (or spam folder).',
+                                accentColor,
+                              ),
                               const SizedBox(height: 10),
-                              _buildStepRow(context, '2', 'Click the confirmation link to verify your account.', accentColor),
+                              _buildStepRow(
+                                context,
+                                '2',
+                                'Tap the confirmation link to open Spendly, or enter the 6-digit code.',
+                                accentColor,
+                              ),
                               const SizedBox(height: 10),
-                              _buildStepRow(context, '3', 'Return to Spendly and sign in to get started.', accentColor),
+                              _buildStepRow(
+                                context,
+                                '3',
+                                'Once verified, you will be signed in to your account.',
+                                accentColor,
+                              ),
                             ],
                           ),
                         ),
-                        const SizedBox(height: 28),
-                        ElevatedButton(
-                          onPressed: () => context.go('/login'),
-                          style: ElevatedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                            elevation: 0,
+                        const SizedBox(height: 24),
+                        if (authState.isLoading)
+                          const Center(child: CircularProgressIndicator())
+                        else ...[
+                          ElevatedButton.icon(
+                            onPressed: (_cooldownSeconds > 0 || pendingEmail.isEmpty)
+                                ? null
+                                : () => _resendConfirmation(pendingEmail),
+                            icon: const Icon(Icons.refresh_rounded, size: 18),
+                            label: Text(
+                              _cooldownSeconds > 0
+                                  ? 'RESEND EMAIL IN ${_cooldownSeconds}S'
+                                  : 'RESEND VERIFICATION EMAIL',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w800,
+                                fontSize: 13,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              elevation: 0,
+                            ),
                           ),
-                          child: const Text(
-                            'BACK TO LOGIN',
-                            style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13, letterSpacing: 0.5),
-                          ),
+                          if (pendingEmail.isNotEmpty) ...[
+                            const SizedBox(height: 12),
+                            OutlinedButton.icon(
+                              onPressed: () {
+                                context.push(
+                                  '/otp-verify?mode=signup&email=${Uri.encodeComponent(pendingEmail)}',
+                                );
+                              },
+                              icon: const Icon(Icons.pin_outlined, size: 18),
+                              label: const Text(
+                                'ENTER 6-DIGIT OTP CODE',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 13,
+                                ),
+                              ),
+                              style: OutlinedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(vertical: 14),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
+                        const SizedBox(height: 16),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            TextButton(
+                              onPressed: () {
+                                context.go(
+                                  '/register?email=${Uri.encodeComponent(pendingEmail)}',
+                                );
+                              },
+                              child: Text(
+                                'Change Email',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 13,
+                                  color: accentColor,
+                                ),
+                              ),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                ref
+                                    .read(authProvider.notifier)
+                                    .clearPendingVerification();
+                                context.go('/login');
+                              },
+                              child: Text(
+                                'Back to Login',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 13,
+                                  color: colorScheme.onSurfaceVariant,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
@@ -180,7 +350,12 @@ class VerifyEmailScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildStepRow(BuildContext context, String number, String text, Color accentColor) {
+  Widget _buildStepRow(
+    BuildContext context,
+    String number,
+    String text,
+    Color accentColor,
+  ) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

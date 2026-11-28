@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:spendly/core/constants/auth_constants.dart';
 import 'package:spendly/core/services/db_service.dart';
 import 'package:spendly/core/services/hive_service.dart';
 import 'package:spendly/core/utils/crypto_utils.dart';
@@ -404,8 +405,14 @@ class SupabaseDbService implements DbService {
 
     final nativeUser = _client.auth.currentUser;
     if (nativeUser != null) {
-      // Update email in auth.users (which syncs to profiles via trigger)
-      await _client.auth.updateUser(UserAttributes(email: cleanEmail));
+      // Request email change in auth.users with explicit Spendly deep-link redirect.
+      // Do NOT update profiles.email here; the DB trigger syncs it once confirmed.
+      await _client.auth
+          .updateUser(
+            UserAttributes(email: cleanEmail),
+            emailRedirectTo: kIsWeb ? null : AuthConstants.authCallbackUri,
+          )
+          .timeout(AuthConstants.networkTimeout);
     } else {
       // Fallback for legacy user
       await _client

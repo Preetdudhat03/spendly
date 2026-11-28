@@ -366,15 +366,68 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           final nav = Navigator.of(context);
                           nav.pop(); // Close dialog first
                           
-                          try {
-                            await ref.read(authProvider.notifier).updateEmail(newEmail);
-                            if (context.mounted) {
-                              SpendlyToast.showSuccess(context, 'Email updated to "$newEmail"');
-                            }
-                          } catch (e) {
-                            if (context.mounted) {
-                              SpendlyToast.showError(context, 'Failed to update email: $e');
-                            }
+                          final ok = await ref
+                              .read(authProvider.notifier)
+                              .updateEmail(newEmail);
+                          if (!context.mounted) return;
+                          if (ok) {
+                            showDialog(
+                              context: context,
+                              builder: (ctx) => AlertDialog(
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                title: const Text('Confirm New Email'),
+                                content: Text(
+                                  'A confirmation link has been sent to $newEmail (and to your current email if double-confirmation is enabled).\n\nYour account email will update only after confirmation. Your existing account and family data remain untouched.',
+                                ),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () {
+                                      ref
+                                          .read(authProvider.notifier)
+                                          .cancelPendingEmailChange();
+                                      Navigator.pop(ctx);
+                                    },
+                                    child: const Text('Cancel Change'),
+                                  ),
+                                  TextButton(
+                                    onPressed: () {
+                                      Navigator.pop(ctx);
+                                      context.push(
+                                        '/otp-verify?mode=emailChange&email=${Uri.encodeComponent(newEmail)}',
+                                      );
+                                    },
+                                    child: const Text('Enter OTP'),
+                                  ),
+                                  ElevatedButton(
+                                    onPressed: () async {
+                                      Navigator.pop(ctx);
+                                      final confirmed = await ref
+                                          .read(authProvider.notifier)
+                                          .refreshAuthenticatedUser();
+                                      if (!context.mounted) return;
+                                      if (confirmed) {
+                                        SpendlyToast.showSuccess(
+                                          context,
+                                          'Email address confirmed and updated!',
+                                        );
+                                      } else {
+                                        SpendlyToast.showWarning(
+                                          context,
+                                          'Confirmation is still pending. Please click the link in your email.',
+                                        );
+                                      }
+                                    },
+                                    child: const Text('I Confirmed'),
+                                  ),
+                                ],
+                              ),
+                            );
+                          } else {
+                            final err = ref.read(authProvider).error ??
+                                'Failed to request email change.';
+                            SpendlyToast.showError(context, err);
                           }
                         } else {
                           SpendlyToast.showWarning(context, 'Please enter a valid email address');

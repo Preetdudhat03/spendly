@@ -17,6 +17,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
+  bool _useEmailOtp = false;
 
   @override
   void dispose() {
@@ -29,15 +30,35 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     final email = _emailController.text.trim();
-    final password = _passwordController.text.trim();
+    if (_useEmailOtp) {
+      final sent = await ref.read(authProvider.notifier).sendEmailOtp(email);
+      if (!mounted) return;
+      if (sent) {
+        context.push('/otp-verify?mode=login&email=${Uri.encodeComponent(email)}');
+      } else {
+        final error = ref.read(authProvider).error ?? 'Could not send OTP.';
+        SpendlyToast.showError(context, error, isAboveNavBar: false);
+      }
+      return;
+    }
+
+    final password = _passwordController.text;
 
     final success = await ref.read(authProvider.notifier).signIn(email, password);
 
     if (!mounted) return;
 
     if (!success) {
-      final error = ref.read(authProvider).error;
-      if (error == 'USER_NOT_FOUND') {
+      final authState = ref.read(authProvider);
+      final error = authState.error;
+      if (authState.isVerificationPending) {
+        SpendlyToast.showWarning(
+          context,
+          error ?? 'Please verify your email address before logging in.',
+          isAboveNavBar: false,
+        );
+        context.go('/verify-email');
+      } else if (error == 'USER_NOT_FOUND') {
         SpendlyToast.showWarning(
           context,
           'This account does not exist. Please sign up first.',
@@ -281,78 +302,92 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             },
                           ),
                           const SizedBox(height: 16),
-                          TextFormField(
-                            controller: _passwordController,
-                            obscureText: _obscurePassword,
-                            textInputAction: TextInputAction.done,
-                            autofillHints: const [AutofillHints.password],
-                            onFieldSubmitted: (_) => _submit(),
-                            decoration: InputDecoration(
-                              labelText: 'Password',
-                              prefixIcon: const Icon(Icons.lock_outline, size: 20),
-                              filled: true,
-                              fillColor: isDark
-                                  ? const Color(0xFF0F172A).withValues(alpha: 0.6)
-                                  : const Color(0xFFF8FAFC),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(16),
-                                borderSide: BorderSide(
-                                  color: isDark
-                                      ? const Color(0xFF334155)
-                                      : const Color(0xFFE2E8F0),
+                          if (!_useEmailOtp) ...[
+                            TextFormField(
+                              controller: _passwordController,
+                              obscureText: _obscurePassword,
+                              textInputAction: TextInputAction.done,
+                              autofillHints: const [AutofillHints.password],
+                              onFieldSubmitted: (_) => _submit(),
+                              decoration: InputDecoration(
+                                labelText: 'Password',
+                                prefixIcon: const Icon(Icons.lock_outline, size: 20),
+                                filled: true,
+                                fillColor: isDark
+                                    ? const Color(0xFF0F172A).withValues(alpha: 0.6)
+                                    : const Color(0xFFF8FAFC),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                  borderSide: BorderSide(
+                                    color: isDark
+                                        ? const Color(0xFF334155)
+                                        : const Color(0xFFE2E8F0),
+                                  ),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                  borderSide: BorderSide(
+                                    color: isDark
+                                        ? const Color(0xFF334155)
+                                        : const Color(0xFFE2E8F0),
+                                  ),
+                                ),
+                                suffixIcon: IconButton(
+                                  icon: Icon(
+                                    _obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                                    size: 20,
+                                  ),
+                                  tooltip: _obscurePassword ? 'Show Password' : 'Hide Password',
+                                  onPressed: () {
+                                    setState(() {
+                                      _obscurePassword = !_obscurePassword;
+                                    });
+                                  },
                                 ),
                               ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(16),
-                                borderSide: BorderSide(
-                                  color: isDark
-                                      ? const Color(0xFF334155)
-                                      : const Color(0xFFE2E8F0),
+                              validator: (value) {
+                                try {
+                                  SchemaValidator.validateBasicPassword(value);
+                                  return null;
+                                } catch (e) {
+                                  return e.toString();
+                                }
+                              },
+                            ),
+                            Align(
+                              alignment: Alignment.centerRight,
+                              child: TextButton(
+                                onPressed: () => context.push('/forgot-password'),
+                                style: TextButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
                                 ),
-                              ),
-                              suffixIcon: IconButton(
-                                icon: Icon(
-                                  _obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
-                                  size: 20,
+                                child: Text(
+                                  'Forgot Password?',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 13,
+                                    color: accentColor,
+                                  ),
                                 ),
-                                tooltip: _obscurePassword ? 'Show Password' : 'Hide Password',
-                                onPressed: () {
-                                  setState(() {
-                                    _obscurePassword = !_obscurePassword;
-                                  });
-                                },
                               ),
                             ),
-                            validator: (value) {
-                              try {
-                                SchemaValidator.validateBasicPassword(value);
-                                return null;
-                              } catch (e) {
-                                return e.toString();
-                              }
-                            },
-                          ),
-                          Align(
-                            alignment: Alignment.centerRight,
-                            child: TextButton(
-                              onPressed: () => context.push('/forgot-password'),
-                              style: TextButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-                              ),
+                          ] else
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 8.0),
                               child: Text(
-                                'Forgot Password?',
+                                'We will send a 6-digit one-time verification code to your registered email address.',
+                                textAlign: TextAlign.center,
                                 style: TextStyle(
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 13,
-                                  color: accentColor,
+                                  fontSize: 12,
+                                  color: colorScheme.onSurfaceVariant,
+                                  fontWeight: FontWeight.w500,
                                 ),
                               ),
                             ),
-                          ),
                           const SizedBox(height: 16),
                           if (authState.isLoading)
                             const Center(child: CircularProgressIndicator())
-                          else
+                          else ...[
                             ElevatedButton(
                               onPressed: _submit,
                               style: ElevatedButton.styleFrom(
@@ -362,15 +397,41 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 ),
                                 elevation: 0,
                               ),
-                              child: const Text(
-                                'LOGIN',
-                                style: TextStyle(
+                              child: Text(
+                                _useEmailOtp ? 'SEND OTP CODE' : 'LOGIN',
+                                style: const TextStyle(
                                   fontWeight: FontWeight.w800,
                                   fontSize: 15,
                                   letterSpacing: 0.5,
                                 ),
                               ),
                             ),
+                            const SizedBox(height: 12),
+                            OutlinedButton.icon(
+                              onPressed: () {
+                                setState(() {
+                                  _useEmailOtp = !_useEmailOtp;
+                                });
+                              },
+                              icon: Icon(
+                                _useEmailOtp ? Icons.lock_outline_rounded : Icons.pin_outlined,
+                                size: 18,
+                              ),
+                              label: Text(
+                                _useEmailOtp ? 'Sign in with Password' : 'Sign in with Email OTP',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 13,
+                                ),
+                              ),
+                              style: OutlinedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(vertical: 14),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                              ),
+                            ),
+                          ],
                           const SizedBox(height: 20),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
